@@ -1,0 +1,64 @@
+{
+    "addstaff":
+        {"help": "https://docs.lukesaltweather.de/commands/addstaff",
+        "brief": "Adds staff with given discord ID to DB.",
+        "description": "This command can be used to add new staff to the database. This is required if you want the bot to interact with a newly introduced staffmember.",
+        "usage": [
+        {"p": "-id=", "e": "Discord ID of the staffmember you want to add."}
+        ]
+        },
+    "addchapter":
+        {"help": "https://docs.lukesaltweather.de/commands/addchapter",
+        "brief": "Adds a chapter to the database",
+        "description": "Add a chapter to the database. Requires raws to do so, as well as a project it belongs to.\n Aliases: `addc, addch, ac`",
+        "usage": [
+            {"p": "-c=" , "e": "Chapter Number - **REQUIRED**"},
+            {"p": "-p=" , "e": "Project - **REQUIRED**"},
+            {"p": "-link=" , "e": "Link to raws - **REQUIRED**"},
+            {"p": "-tl=" , "e": "Translator"},
+            {"p": "-rd" , "e": "Redrawer"},
+            {"p": "-ts=" , "e": "Typesetter"},
+            {"p": "-pr=" , "e": "Proofreader"},
+            {"p": "-link_tl=" , "e": "Link to translation"},
+            {"p": "-link_rd=" , "e": "Link to redraws"},
+            {"p": "-link_ts=" , "e": "Link to typeset"},
+            {"p": "-link_pr=" , "e": "Link to proofreader"}
+        ]
+        },
+    "addproject": {
+        "help": "https://docs.lukesaltweather.de/commands/addproject",
+        "brief": "Adds a project to the database. Requires role `Neko Herder`.",
+        "description": "Add a project to the database. Requires role `Neko Herder`.\n Aliases: `addp, addproj, ap`",
+        "usage": [
+            {"p": "-title=" , "e": "Project's title - **REQUIRED**"},
+            {"p": "-status=" , "e": "Project's status (mostly either active or inactive) - **REQUIRED**"},
+            {"p": "-link=" , "e": "Link to folder on box - **REQUIRED**"},
+            {"p": "-altNames=" , "e": "Alternative project titles, separated by comma - **REQUIRED**"},
+            {"p": "-tl=" , "e": "Default Translator"},
+            {"p": "-rd" , "e": "Default Redrawer"},
+            {"p": "-ts=" , "e": "Default Typesetter"},
+            {"p": "-pr=" , "e": "Default Proofreader"},
+            {"p": "-icon=" , "e": "Link to small icon next to the title in the board entry."},
+            {"p": "-thumbnail=" , "e": "Link to thumbnail in the board entry."}
+        ]
+    },
+    "infochapter": {
+        "help": "https://docs.lukesaltweather.de/commands/infochapter",
+        "brief": "Retrieve information about one or multiple chapters. Requires role `Neko Herder`.",
+        "description": "Display information about chapters in form of a table,\nwhich is either sent as an image or as plain text. Requires role `Neko Herder`.\n Aliases: `infochapters, infoc, ic`",
+        "usage": [
+            {"p": "-p=" , "e": "Project title"},
+            {"p": "-c=" , "e": "Chapter number"},
+            {"p": "-chapter_from=" , "e": "Chapters with numbers from this point on"},
+            {"p": "-chapter_upto=" , "e": "Chapters with numbers up to this point"},
+            {"p": "-title=" , "e": "Filter by title"},
+            {"p": "-id=" , "e": "Filter by ID"},
+            {"p": "-tl= / -ts= / -rd= / -pr=" , "e": "Filter by staff"},
+            {"p": "-link_tl= /-link_rd= / -link_ts= / -link_pr= / -link_qcts=" , "e": "Filter by link, if you ever wanted to"},
+            {"p": "-creation_on= / -creation_upto= / -creation_from=" , "e": "Date it was created on"},
+            {"p": "-tl_on= / -tl_from= / -tl_upto" , "e": "Filter by date. Identical commands exist for `ts, rd, pr, qcts and rl`"},
+            {"p": "-output=" , "e": "Can be either `image` or `text`. Defaults to `image`."},
+            {"p": "-fields=" , "e": "Possible values: `title, id, link_{step}, tl, rd, ts, pr, d_c (date it was created on), d_{step} (Date)`"}
+        ]
+    }
+}

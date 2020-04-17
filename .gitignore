@@ -1,0 +1,17 @@
+idea/
+Pipfile
+/Pipfile.lock
+chapter.cpython-38.pyc
+src/model/__pycache__/
+venv/
+src/util/config.json
+vcs.xml
+workspace.xml
+/.idea/.gitignore
+/.idea/TaigaBot.iml
+/.idea/dataSources.xml
+/.idea/deployment.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/webServers.xml

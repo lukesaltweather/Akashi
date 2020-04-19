@@ -5,6 +5,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import MissingRequiredArgument
 from prettytable import PrettyTable
+from sqlalchemy import func
 from sqlalchemy.orm import aliased
 
 from datetime import datetime, timedelta
@@ -18,24 +19,21 @@ from src.util.misc import formatNumber, drawimage
 import time
 from src.util.checks import is_admin
 
-with open('src/util/config.json', 'r') as f:
-    config = json.load(f)
 
+with open('src/util/help.json', 'r') as f:
+    jsonhelp = json.load(f)
 
 class Edit(commands.Cog):
 
-    def __init__(self, client, sessionmaker):
+    def __init__(self, client):
         self.bot = client
-        self.Session = sessionmaker
-        self.config = config
-
 
 
     async def cog_check(self, ctx):
-        admin = ctx.guild.get_role(self.config["neko_herders"])
-        poweruser = ctx.guild.get_role(self.config["power_user"])
+        admin = ctx.guild.get_role(self.bot.config["neko_herders"])
+        poweruser = ctx.guild.get_role(self.bot.config["power_user"])
         ia = admin in ctx.message.author.roles or ctx.message.author.id == 358244935041810443 or poweruser in ctx.message.author.roles
-        ic = ctx.channel.id == self.config["command_channel"]
+        ic = ctx.channel.id == self.bot.config["command_channel"]
         guild = ctx.guild is not None
         if ia and ic and guild:
             return True
@@ -45,9 +43,11 @@ class Edit(commands.Cog):
             raise exceptions.MissingRequiredPermission("Missing permission `Server Member`.")
 
 
-    @commands.command()
+    @commands.command(aliases=["editch", "editc", "ec"], description=jsonhelp["editchapter"]["description"],
+                      usage=jsonhelp["editchapter"]["usage"], brief=jsonhelp["editchapter"]["brief"], help=jsonhelp["editchapter"]["help"])
+    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
     async def editchapter(self, ctx, *, arg):
-        session = self.Session()
+        session = self.bot.Session()
         try:
             async with ctx.channel.typing():
                 arg = arg[1:]
@@ -195,9 +195,10 @@ class Edit(commands.Cog):
         finally:
             session.close()
 
-    @commands.command(aliases=["editproj", "editp", "ep"])
+    @commands.command(aliases=["editproj", "editp", "ep"],description=jsonhelp["editproject"]["description"],
+                      usage=jsonhelp["editproject"]["usage"], brief=jsonhelp["editproject"]["brief"], help=jsonhelp["editproject"]["help"])
     async def editproject(self, ctx, *, arg):
-        session = self.Session()
+        session = self.bot.Session()
         try:
             arg = arg[1:]
             d = dict(x.split('=', 1) for x in arg.split(' -'))
@@ -250,45 +251,73 @@ class Edit(commands.Cog):
                         table.add_column("Pos", ["None", d["position"]])
                     record.position = int(d["position"])
             if "tl" in d:
-                tl = await searchstaff(d["tl"], ctx, session)
-                if tl is not None:
+                if d["tl"] in ("None", "none"):
                     if record.translator is not None:
-                        table.add_column("Translator", [record.translator.name, d["tl"]])
+                        table.add_column("Translator", [record.translator.name, "None"])
                     else:
                         table.add_column("Translator", ["None", d["tl"]])
-                    record.translator = tl
+                    record.translator = None
                 else:
-                    raise exceptions.StaffNotFoundError
+                    tl = await searchstaff(d["tl"], ctx, session)
+                    if tl is not None:
+                        if record.translator is not None:
+                            table.add_column("Translator", [record.translator.name, d["tl"]])
+                        else:
+                            table.add_column("Translator", ["None", d["tl"]])
+                        record.translator = tl
+                    else:
+                        raise exceptions.StaffNotFoundError
             if "rd" in d:
-                rd = await searchstaff(d["rd"], ctx, session)
-                if rd is not None:
+                if d["rd"] in ("None", "none"):
                     if record.redrawer is not None:
                         table.add_column("Redrawer", [record.redrawer.name, d["rd"]])
                     else:
                         table.add_column("Redrawer", ["None", d["rd"]])
-                    record.redrawer = rd
+                    record.redrawer = None
                 else:
-                    raise exceptions.StaffNotFoundError
+                    rd = await searchstaff(d["rd"], ctx, session)
+                    if rd is not None:
+                        if record.redrawer is not None:
+                            table.add_column("Redrawer", [record.redrawer.name, d["rd"]])
+                        else:
+                            table.add_column("Redrawer", ["None", d["rd"]])
+                        record.redrawer = rd
+                    else:
+                        raise exceptions.StaffNotFoundError
             if "ts" in d:
-                ts = await searchstaff(d["ts"], ctx, session)
-                if ts is not None:
+                if d["ts"] in ("None", "none"):
                     if record.typesetter is not None:
                         table.add_column("Typesetter", [record.typesetter.name, d["ts"]])
                     else:
                         table.add_column("Typesetter", ["None", d["ts"]])
-                    record.typesetter = ts
+                    record.typesetter = None
                 else:
-                    raise exceptions.StaffNotFoundError
+                    ts = await searchstaff(d["ts"], ctx, session)
+                    if ts is not None:
+                        if record.typesetter is not None:
+                            table.add_column("Typesetter", [record.typesetter.name, d["ts"]])
+                        else:
+                            table.add_column("Typesetter", ["None", d["ts"]])
+                        record.typesetter = ts
+                    else:
+                        raise exceptions.StaffNotFoundError
             if "pr" in d:
-                pr = await searchstaff(d["pr"], ctx, session)
-                if pr is not None:
+                if d["pr"] in ("None", "none"):
                     if record.proofreader is not None:
                         table.add_column("Proofreader", [record.proofreader.name, d["pr"]])
                     else:
                         table.add_column("Proofreader", ["None", d["pr"]])
-                    record.proofreader = pr
+                    record.proofreader = None
                 else:
-                    raise exceptions.StaffNotFoundError
+                    pr = await searchstaff(d["pr"], ctx, session)
+                    if pr is not None:
+                        if record.proofreader is not None:
+                            table.add_column("Proofreader", [record.proofreader.name, d["pr"]])
+                        else:
+                            table.add_column("Proofreader", ["None", d["pr"]])
+                        record.proofreader = pr
+                    else:
+                        raise exceptions.StaffNotFoundError
             if "altNames" in d:
                 if record.altNames is not None:
                     table.add_column("Altnames", [record.altNames, d["altNames"]])
@@ -341,10 +370,12 @@ class Edit(commands.Cog):
             session.close()
 
 
-    @commands.command()
+    @commands.command(description=jsonhelp["editstaff"]["description"],
+                      usage=jsonhelp["editstaff"]["usage"], brief=jsonhelp["editstaff"]["brief"], help=jsonhelp["editstaff"]["help"])
     @is_admin()
+    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
     async def editstaff(self, ctx, *, arg):
-        session = self.Session()
+        session = self.bot.Session()
         try:
             arg = arg[1:]
             d = dict(x.split('=', 1) for x in arg.split(' -'))
@@ -364,10 +395,12 @@ class Edit(commands.Cog):
         finally:
             session.close()
 
-    @commands.command()
+    @commands.command(description=jsonhelp["clear"]["description"],
+                      usage=jsonhelp["clear"]["usage"], brief=jsonhelp["clear"]["brief"], help=jsonhelp["clear"]["help"])
     @is_admin()
+    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
     async def clear(self, ctx, *, arg):
-        session = self.Session()
+        session = self.bot.Session()
         try:
             arg = arg[1:]
             d = dict(x.split('=', 1) for x in arg.split(' -'))
@@ -400,3 +433,31 @@ class Edit(commands.Cog):
             session.commit()
         finally:
             session.close()
+
+
+    @commands.command(description=jsonhelp["release"]["description"],
+                      usage=jsonhelp["release"]["usage"], brief=jsonhelp["release"]["brief"], help=jsonhelp["release"]["help"])
+    async def release(self, ctx, *, arg):
+        async with ctx.channel.typing():
+            arg = arg[1:]
+            d = dict(x.split('=', 1) for x in arg.split(' -'))
+            session = self.bot.Session()
+            query = session.query(Chapter). \
+                join(Project, Chapter.project_id == Project.id)
+            if "p" in d and "c" in d:
+                proj = searchproject(d["p"], session)
+                record = query.filter(Chapter.project_id == proj.id).filter(Chapter.number == float(d["c"])).one()
+            elif "id" in d:
+                record = query.filter(Chapter.id == int(d["id"])).one()
+            else:
+                raise MissingRequiredArgument
+            if "date" in d:
+                record.date_release = datetime.strptime(d["date"], "%Y %m %d")
+            else:
+                record.date_release = func.now()
+            embed = discord.Embed(color=discord.Colour.green())
+            embed.set_author(name="Success!",
+                             icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128")
+            embed.add_field(name="\u200b",
+                            value=f"Releasedate of {record.project.title} {record.number} set to {record.date_release.strftime('%Y/%m/%d')}")
+            await ctx.send(embed=embed)

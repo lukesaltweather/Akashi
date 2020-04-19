@@ -23,6 +23,7 @@ from src.cogs.edit import Edit
 from src.cogs.help import MyCog
 from src.cogs.info import Info
 from src.cogs.misc import Misc
+from src.cogs.note import Note
 from src.util.checks import is_admin, is_worker, is_power_user
 from src.model.message import Message
 from src.model.staff import Staff
@@ -41,16 +42,20 @@ from src.util.search import *
 from src.util.misc import *
 import logging
 
-engine = loadDB()
-Session = sessionmaker(bind=engine)
+with open('src/util/config.json', 'r') as f:
+    config = json.load(f)
+
+with open('src/util/help.json', 'r') as f:
+    jsonhelp = json.load(f)
+
+engine = loadDB(config["db_uri"])
 logger = logging.getLogger('discord')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.WARNING)
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-with open('src/util/config.json', 'r') as f:
-    config = json.load(f)
+
 if config["online"]:
     bot = commands.Bot(command_prefix='$')
 else:
@@ -70,18 +75,21 @@ async def on_ready():
     await bot.change_presence(activity=activity)
     deletemessages.start()
     refreshembed.start()
-    bot.add_cog(Assign(bot, Session, config))
-    bot.add_cog(Edit(bot, Session))
-    bot.add_cog(Misc(bot, Session))
-    bot.add_cog(Info(bot, Session))
-    bot.add_cog(Add(bot, Session))
-    bot.add_cog(Done(bot, Session, config))
+    bot.add_cog(Assign(bot))
+    bot.add_cog(Edit(bot))
+    bot.add_cog(Misc(bot))
+    bot.add_cog(Info(bot))
+    bot.add_cog(Add(bot))
+    bot.add_cog(Done(bot))
+    bot.add_cog(Note(bot))
     bot.add_cog(MyCog(bot))
+    bot.config = config
+    bot.Session = sessionmaker(bind=engine)
     print(discord.version_info)
     # Set-up the engine here.
     # Create a session
 
-"""
+
 @bot.event
 async def on_command_error(ctx, error):
     # This prevents any commands with local handlers being handled here in on_command_error.
@@ -108,10 +116,11 @@ async def on_command_error(ctx, error):
     if isinstance(error, exceptions.MissingRequiredParameter):
         await ctx.send("Missing %s" % error.param)
     if isinstance(error, sqlalchemy.orm.exc.NoResultFound):
-        await ctx.send("Sorry, I couldn't find what you were looking for.")"""
+        await ctx.send("Sorry, I couldn't find what you were looking for.")
 
 
-@bot.command()
+
+@bot.command(hidden=True)
 @is_admin()
 @block_dms()
 async def restart(ctx):
@@ -128,7 +137,7 @@ async def on_raw_reaction_add(payload):
     if payload.user_id != 603216263484801039 and has_role:
         msg = None
         try:
-            session = Session()
+            session = bot.Session()
             msg = session.query(Message).filter(payload.message_id == Message.message_id).one()
             ca = await bot.fetch_channel(payload.channel_id)
             ma = await ca.fetch_message(ca)
@@ -208,7 +217,7 @@ async def on_raw_reaction_add(payload):
 
 
 @is_admin()
-@bot.command()
+@bot.command(enable=False, hidden=True)
 @block_dms()
 async def allcommands(ctx):
     list = ""
@@ -219,7 +228,7 @@ async def allcommands(ctx):
 
 
 @is_admin()
-@bot.command()
+@bot.command(enable=False, hidden=True)
 @block_dms()
 async def createtables(ctx):
     await testdb.createtables()
@@ -227,10 +236,10 @@ async def createtables(ctx):
 
 @tasks.loop(hours=2)
 async def deletemessages():
-    session = Session()
+    session = bot.Session()
     messages = session.query(Message).all()
     for message in messages:
-        if message.created_on < (datetime.utcnow() - timedelta(hours=48)):
+        if message.created_on < (datetime.utcnow() - timedelta(hours=48)) and message.reminder:
             channel = bot.get_channel(config["command_channel"])
             m = await channel.fetch_message(message.message_id)
             await m.clear_reactions()
@@ -244,6 +253,21 @@ async def deletemessages():
             embed.description = f"*{chapter.project.title}* {formatNumber(chapter.number)}\nNo staffmember assigned themselves to Chapter.\n[Jump!]({msg})\n"
             await channel.send(message={wordy}, embed=embed)
             session.delete(message)
+        elif message.created_on < (datetime.utcnow() - timedelta(hours=24)) and not message.reminder:
+            channel = bot.get_channel(config["command_channel"])
+            m = await channel.fetch_message(message.message_id)
+            msg = m.jump_url
+            embed = discord.Embed(color=discord.Colour.red())
+            embed.set_author(name="Assignment Reminder", icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128")
+            chapter = session.query(Chapter).filter(Chapter.id == message.chapter).one()
+            who = {    config["ts_id"]: "Typesetter",
+                        config["rd_id"]: "Redrawer",
+                        config["tl_id"]: "Translator",
+                        config["pr_id"]: "Proofreader",
+            }
+            embed.description = f"*{chapter.project.title}* {formatNumber(chapter.number)}\nStill requires a {who.get(int(message.awaiting))}!\n[Jump!]({msg})\n"
+            await channel.send(embed=embed)
+            message.reminder = True
         else:
             pass
     session.commit()
@@ -255,7 +279,7 @@ async def refreshembed():
     with open('src/util/board.json', 'r') as f:
         messages = json.load(f)
     ch = bot.get_channel(config['board_channel'])
-    session = Session()
+    session = bot.Session()
     projects = session.query(Project).filter\
         (Project.status == "active").order_by(Project.position.asc()).all()
     for x in projects:
@@ -356,53 +380,14 @@ async def refreshembed():
     session.close()
 
 
-@bot.command()
-@is_admin()
-@block_dms()
-async def debugboard(ctx, amount:int):
-    ch = config["board_channel"]
-    channel = bot.get_channel(ch)
-    await channel.purge(limit=amount)
-    messages = {}
-    with open('src/util/board.json', 'w') as f:
-        json.dump(messages, f, indent=4)
-
-
-@is_power_user()
-@bot.command()
-@block_dms()
-async def release(ctx, *, arg):
-    async with ctx.channel.typing():
-        arg = arg[1:]
-        d = dict(x.split('=', 1) for x in arg.split(' -'))
-        session = Session()
-        query = session.query(Chapter).\
-            join(Project, Chapter.project_id == Project.id)
-        if "p" in d and "c" in d:
-            proj = searchproject(d["p"], session)
-            record = query.filter(Chapter.project_id == proj.id).filter(Chapter.number == float(d["c"])).one()
-        elif "id" in d:
-            record = query.filter(Chapter.id == int(d["id"])).one()
-        else:
-            raise MissingRequiredArgument
-        if "date" in d:
-            record.date_release = datetime.strptime(d["date"], "%Y %m %d")
-        else:
-            record.date_release = func.now()
-        embed = discord.Embed(color=discord.Colour.green())
-        embed.set_author(name="Success!", icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128")
-        embed.add_field(name="\u200b", value=f"Releasedate of {record.project.title} {record.number} set to {record.date_release.strftime('%Y/%m/%d')}")
-        await ctx.send(embed=embed)
-
-
-@bot.command()
+@bot.command(hidden=True)
 @is_admin()
 @block_dms()
 async def deletechapter(ctx, *, arg):
     arg = arg[1:]
     d = dict(x.split('=', 1) for x in arg.split(' -'))
     try:
-        session = Session()
+        session = bot.Session()
         query = session.query(Chapter)
         if "id" in d:
             record = query.filter(Project.id == int(d["id"])).one()
@@ -413,50 +398,8 @@ async def deletechapter(ctx, *, arg):
         session.close()
 
 
-@is_worker()
-@bot.command()
-@block_dms()
-async def addnote(ctx, *, arg):
-    try:
-        arg = arg[1:]
-        d = dict(x.split('=', 1) for x in arg.split(' -'))
-        session = Session()
-        if "p" in d and "c" in d and "note" in d:
-            query = session.query(Chapter)
-            proj = searchproject(d["p"], session)
-            record = query.filter(Chapter.project_id == proj.id).filter(Chapter.number == int(d["c"])).one()
-            record.notes = strx(record.notes)+("\n{}".format(d["note"]))
-            session.commit()
-    finally:
-        session.close()
-
-
-@is_worker()
-@bot.command()
-@block_dms()
-async def notes(ctx, *, arg):
-    try:
-        arg = arg[1:]
-        d = dict(x.split('=', 1) for x in arg.split(' -'))
-        session = Session()
-        proj = searchproject(d["p"], session)
-        note = session.query(Chapter).filter(proj.id == Chapter.project_id).filter(Chapter.number == int(d["c"])).one()
-        await ctx.send(note.notes)
-    finally:
-        session.close()
-
-
 @is_admin()
-@bot.command()
-@block_dms()
-async def sql(ctx, *, arg):
-    with engine.connect() as con:
-        rs = con.execute(arg)
-    await ctx.send(rs)
-
-
-@is_admin()
-@bot.command()
+@bot.command(hidden=True)
 @block_dms()
 async def editconfig(ctx, *, arg):
     arg = arg[1:]
@@ -484,7 +427,7 @@ async def editconfig(ctx, *, arg):
 
 
 @is_admin()
-@bot.command()
+@bot.command(hidden=True)
 @block_dms()
 async def displayconfig(ctx):
     with open('src/util/config.json', 'r') as f:

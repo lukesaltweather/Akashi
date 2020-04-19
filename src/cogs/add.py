@@ -28,18 +28,17 @@ class Add(commands.Cog):
     """
         Cog with all of the commands used for adding to the database
     """
-    def __init__(self, client, sessionmaker):
+    def __init__(self, client):
         self.bot = client
-        self.Session = sessionmaker
-        self.config = config
+
 
 
     async def cog_check(self, ctx):
-        admin = ctx.guild.get_role(self.config["neko_herders"])
-        poweruser = ctx.guild.get_role(self.config["power_user"])
+        admin = ctx.guild.get_role(self.bot.config["neko_herders"])
+        poweruser = ctx.guild.get_role(self.bot.config["power_user"])
         ia = admin in ctx.message.author.roles or ctx.message.author.id == 358244935041810443 or poweruser in ctx.message.author.roles
         guild = ctx.guild is not None
-        ic = ctx.channel.id == self.config["command_channel"]
+        ic = ctx.channel.id == self.bot.config["command_channel"]
         if ia and ic and guild:
             return True
         elif ic:
@@ -51,7 +50,7 @@ class Add(commands.Cog):
     @commands.command(description=jsonhelp["addstaff"]["description"], usage=jsonhelp["addstaff"]["usage"], brief=jsonhelp["addstaff"]["brief"], help=jsonhelp["addstaff"]["help"])
     @is_admin()
     async def addstaff(self, ctx, *, arg):
-        session1 = self.Session()
+        session1 = self.bot.Session()
         try:
             arg = arg[1:]
             d = dict(x.split('=', 1) for x in arg.split(' -'))
@@ -70,10 +69,10 @@ class Add(commands.Cog):
         finally:
             session1.close()
 
-    @commands.command()
+    @commands.command(description=jsonhelp["addstaffexp"]["description"], usage=jsonhelp["addstaffexp"]["usage"], brief=jsonhelp["addstaffexp"]["brief"], help=jsonhelp["addstaffexp"]["help"])
     @is_admin()
     async def addstaffexp(self, ctx, *, arg):
-        session1 = self.Session()
+        session1 = self.bot.Session()
         try:
             arg = arg[1:]
             d = dict(x.split('=', 1) for x in arg.split(' -'))
@@ -93,7 +92,7 @@ class Add(commands.Cog):
     @commands.command(aliases=["ap", "addp", "addproj"], description=jsonhelp["addproject"]["description"],
                       usage=jsonhelp["addproject"]["usage"], brief=jsonhelp["addproject"]["brief"], help=jsonhelp["addproject"]["help"])
     async def addproject(self, ctx, *, arg):
-        session1 = self.Session()
+        session1 = self.bot.Session()
         try:
             arg = arg[1:]
             d = dict(x.split('=', 1) for x in arg.split(' -'))
@@ -130,7 +129,7 @@ class Add(commands.Cog):
     @commands.command(aliases=["ac", "addch", "addc"], description=jsonhelp["addchapter"]["description"],
                       usage=jsonhelp["addchapter"]["usage"], brief=jsonhelp["addchapter"]["brief"], help=jsonhelp["addchapter"]["help"])
     async def addchapter(self, ctx, *, arg):
-        session1 = self.Session()
+        session1 = self.bot.Session()
         try:
             arg = arg[1:]
             d = dict(x.split('=', 1) for x in arg.split(' -'))

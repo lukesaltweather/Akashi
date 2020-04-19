@@ -17,8 +17,6 @@ from src.model.chapter import Chapter
 from src.model.project import Project
 from src.model.staff import Staff
 
-with open('src/util/config.json', 'r') as f:
-    config = json.load(f)
 
 with open('src/util/help.json', 'r') as f:
     jsonhelp = json.load(f)
@@ -26,16 +24,14 @@ with open('src/util/help.json', 'r') as f:
 
 class Info(commands.Cog):
 
-    def __init__(self, client, sessionmaker):
+    def __init__(self, client):
         self.bot = client
-        self.Session = sessionmaker
-        self.config = config
 
 
     async def cog_check(self, ctx):
-        worker = ctx.guild.get_role(self.config["neko_workers"])
+        worker = ctx.guild.get_role(self.bot.config["neko_workers"])
         ia = worker in ctx.message.author.roles
-        ic = ctx.channel.id == self.config["command_channel"]
+        ic = ctx.channel.id == self.bot.config["command_channel"]
         guild = ctx.guild is not None
         if ia and ic and guild:
             return True
@@ -47,7 +43,7 @@ class Info(commands.Cog):
     @commands.command(aliases=["infochapters", "ic", "infoc"], description=jsonhelp["infochapter"]["description"],
                       usage=jsonhelp["infochapter"]["usage"], brief=jsonhelp["infochapter"]["brief"], help=jsonhelp["infochapter"]["help"])
     async def infochapter(self, ctx, *, arg):
-        session = self.Session()
+        session = self.bot.Session()
         try:
             async with ctx.channel.typing():
                 arg = arg[1:]
@@ -359,9 +355,10 @@ class Info(commands.Cog):
         finally:
             session.close()
 
-    @commands.command(aliases=["infoproject", "infop", "ip"])
-    async def infoprojects(self, ctx, *, arg):
-        session = self.Session()
+    @commands.command(aliases=["infoprojects", "infop", "ip"], description=jsonhelp["infoproject"]["description"],
+                      usage=jsonhelp["infoproject"]["usage"], brief=jsonhelp["infoproject"]["brief"], help=jsonhelp["infoproject"]["help"])
+    async def infoproject(self, ctx, *, arg):
+        session = self.bot.Session()
         try:
             async with ctx.channel.typing():
                 arg = arg[1:]
@@ -402,6 +399,8 @@ class Info(commands.Cog):
                         query = query.order_by(d["order_by"])
                     except Exception:
                         await ctx.send("Your sorting parameter seems to be off. Use the help command to verify.")
+                if "all" in d:
+                    pass
                 records = query.all()
                 output = "image"
                 if "output" in d:
@@ -495,9 +494,10 @@ class Info(commands.Cog):
             session.close()
 
 
-    @commands.command()
+    @commands.command(description=jsonhelp["allprojects"]["description"],
+                      usage=jsonhelp["allprojects"]["usage"], brief=jsonhelp["allprojects"]["brief"], help=jsonhelp["allprojects"]["help"])
     async def allprojects(self, ctx):
-        session = self.Session()
+        session = self.bot.Session()
         try:
             ts_alias = aliased(Staff)
             rd_alias = aliased(Staff)
@@ -538,9 +538,10 @@ class Info(commands.Cog):
             session.close()
 
     @is_admin()
-    @commands.command()
+    @commands.command(description=jsonhelp["allstaff"]["description"],
+                      usage=jsonhelp["allstaff"]["usage"], brief=jsonhelp["allstaff"]["brief"], help=jsonhelp["allstaff"]["help"])
     async def allstaff(self, ctx):
-        session = self.Session()
+        session = self.bot.Session()
         try:
             staff = session.query(Staff).all()
             embed = discord.Embed(
@@ -551,28 +552,54 @@ class Info(commands.Cog):
             embed.add_field(name="\u200b", value=("**Name\n**" + ("\n".join(person.name for person in staff))),
                             inline=True)
             embed.add_field(name="\u200b",
-                            value=("**Discord ID\n**" + ("\n".join(str(person.discord_id) for person in staff))),
+                            value=("**Discord ID\n**" + ("\n".join(f"{person.discord_id}: {person.status}" for person in staff))),
                             inline=True)
-            # role =
-            # for person in staff:
-            #     tl = discord.utils.find(lambda r: r.id == config["tl_id"], ctx.message.guild.roles)
-            #     rd = discord.utils.find(lambda r: r.id == config["rd_id"], ctx.message.guild.roles)
-            #     ts = discord.utils.find(lambda r: r.id == config["ts_id"], ctx.message.guild.roles)
-            #     pr = discord.utils.find(lambda r: r.id == config["pr_id"], ctx.message.guild.roles)
-            #     mem = ctx.message.guild.get_member(person.discord_id)
-            #     if tl in mem.roles:
-            #         role = role+"TL "
-            #     if rd in mem.roles:
-            #         role = role+"RD "
-            #     if ts in mem.roles:
-            #         role = role+"TS "
-            #     if pr in mem.roles:
-            #         role = role + "PR"
-            #     role = role+"\n"
             await ctx.send(embed=embed)
         finally:
             session.close()
 
-    @commands.command()
-    async def mycurrent(ctx):
-        await ctx.send("MyCurrent")
+    @commands.command(description=jsonhelp["mycurrent"]["description"],
+                      usage=jsonhelp["mycurrent"]["usage"], brief=jsonhelp["mycurrent"]["brief"], help=jsonhelp["mycurrent"]["help"])
+    async def mycurrent(self, ctx):
+        session = self.bot.Session()
+        ts_alias = aliased(Staff)
+        rd_alias = aliased(Staff)
+        tl_alias = aliased(Staff)
+        pr_alias = aliased(Staff)
+        query = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id). \
+            outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id). \
+            outerjoin(tl_alias, Chapter.translator_id == tl_alias.id). \
+            outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id). \
+            join(Project, Chapter.project_id == Project.id)
+        typ = await searchstaff(ctx.message.author.id, ctx, session)
+        to_tl = query.filter(Chapter.translator == typ).filter(Chapter.link_tl.is_(None)).all()
+        to_rd = query.filter(Chapter.redrawer == typ).filter(Chapter.link_rd.is_(None)).all()
+        to_ts = query.filter(Chapter.typesetter == typ).filter(Chapter.link_ts.is_(None)).all()
+        to_pr = query.filter(Chapter.proofreader == typ).filter(Chapter.link_pr.is_(None)).all()
+        to_qcts = query.filter(Chapter.typesetter == typ).filter(Chapter.link_rl.is_(None)).all()
+        desc = ""
+        if len(to_tl) != 0:
+            desc = "`To translate:` "
+            for chapter in to_tl:
+                desc = f"{desc}\n[{chapter.project.title} {chapter.number}]({chapter.link_raw})"
+        if len(to_rd) != 0:
+            desc = f"{desc}\n`To redraw:`"
+            for chapter in to_rd:
+                desc = f"{desc}\n[{chapter.project.title} {chapter.number}]({chapter.link_raw})"
+        if len(to_ts) != 0:
+            desc = f"{desc}\n`To typeset:`"
+            for chapter in to_ts:
+                desc = f"{desc}\n{chapter.project.title} {chapter.number}: [RD]({chapter.link_rd}) [TL]({chapter.link_tl})"
+        if len(to_pr) != 0:
+            desc = f"{desc}\n`To proofread:`"
+            for chapter in to_tl:
+                desc = f"{desc}\n{chapter.project.title} {chapter.number}: [TS]({chapter.link_ts}) [TL]({chapter.link_tl})"
+        if len(to_qcts) != 0:
+            desc = f"{desc}\n`To qcts:`"
+            for chapter in to_tl:
+                desc = f"{desc}\n{chapter.project.title} {chapter.number}: [TS]({chapter.link_ts}) [PR]({chapter.link_pr})"
+        embed = discord.Embed(color=discord.Colour.gold(), description=desc)
+        embed.set_author(name="Current chapters",
+                         icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128")
+        await ctx.send(embed=embed)
+        session.close()

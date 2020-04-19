@@ -1,3 +1,5 @@
+import json
+
 import sqlalchemy
 from discord.ext import commands
 from discord.ext.commands import MissingRequiredArgument
@@ -11,17 +13,18 @@ from src.util.exceptions import MissingRequiredParameter
 from src.util.search import searchproject
 
 
+with open('src/util/help.json', 'r') as f:
+    jsonhelp = json.load(f)
+
 class Assign(commands.Cog):
-    def __init__(self, bot, sessionmaker, config):
+    def __init__(self, bot):
         self.bot = bot
-        self.Session = sessionmaker
-        self.config = config
 
     async def cog_check(self, ctx):
-        admin = ctx.guild.get_role(self.config["neko_herders"])
-        poweruser = ctx.guild.get_role(self.config["power_user"])
+        admin = ctx.guild.get_role(self.bot.config["neko_herders"])
+        poweruser = ctx.guild.get_role(self.bot.config["power_user"])
         ia = admin in ctx.message.author.roles or ctx.message.author.id == 358244935041810443 or poweruser in ctx.message.author.roles
-        ic = ctx.channel.id == self.config["command_channel"]
+        ic = ctx.channel.id == self.bot.config["command_channel"]
         guild = ctx.guild is not None
         if ia and ic and guild:
             return True
@@ -30,10 +33,11 @@ class Assign(commands.Cog):
         elif not guild:
             raise exceptions.MissingRequiredPermission("Missing permission `Server Member`.")
 
-    @commands.command()
+    @commands.command(enabled=False, description=jsonhelp["assign"]["description"],
+                      usage=jsonhelp["assign"]["usage"], brief=jsonhelp["assign"]["brief"], help=jsonhelp["assign"]["help"])
     async def assign(self, ctx, *, arg):
         """Says hello"""
-        session = self.Session()
+        session = self.bot.Session()
         try:
             arg = arg[1:]
             d = dict(x.split('=', 1) for x in arg.split(' -'))

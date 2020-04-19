@@ -1,16 +1,25 @@
 {
     "addstaff":
         {"help": "https://docs.lukesaltweather.de/commands/addstaff",
-        "brief": "Adds staff with given discord ID to DB.",
+        "brief": "Adds staff with given discord ID to DB. Requires role `Neko Herder`.",
         "description": "This command can be used to add new staff to the database. This is required if you want the bot to interact with a newly introduced staffmember.",
         "usage": [
         {"p": "-id=", "e": "Discord ID of the staffmember you want to add."}
         ]
         },
+    "addstaffexp":
+        {"help": "https://docs.lukesaltweather.de/commands/addstaffexp",
+        "brief": "A way to add staff to the DB without an actual discord account existing. Requires role `Neko Herder`.",
+        "description": "This came up during testing, that sometimes you need to add staff that just doesn't exist on the server. Requires role `Neko Herder`.",
+        "usage": [
+        {"p": "-id=", "e": "This is basically the discord ID. - **REQUIRED**"},
+        {"p": "-name=", "e": "Name of the dummy that's going to be displayed. - **REQUIRED**"}
+        ]
+    },
     "addchapter":
         {"help": "https://docs.lukesaltweather.de/commands/addchapter",
-        "brief": "Adds a chapter to the database",
-        "description": "Add a chapter to the database. Requires raws to do so, as well as a project it belongs to.\n Aliases: `addc, addch, ac`",
+        "brief": "Adds a chapter to the database. Requires role `Poweruser`.",
+        "description": "Add a chapter to the database. Requires raws to do so, as well as a project it belongs to. Requires role `Poweruser`.\n Aliases: `addc, addch, ac`",
         "usage": [
             {"p": "-c=" , "e": "Chapter Number - **REQUIRED**"},
             {"p": "-p=" , "e": "Project - **REQUIRED**"},
@@ -23,6 +32,66 @@
             {"p": "-link_rd=" , "e": "Link to redraws"},
             {"p": "-link_ts=" , "e": "Link to typeset"},
             {"p": "-link_pr=" , "e": "Link to proofreader"}
+        ]
+        },
+    "donetl":
+        {"help": "https://docs.lukesaltweather.de/commands/donetl",
+        "brief": "Mark a chapters translation as done. Requires role `Translator`",
+        "description": "Mark a chapters translation as done. Automatically adds the correct date and will mark command executor as new translator, if the position was set to None. Requires role `Neko Worker.`",
+        "usage": [
+            {"p": "-c=" , "e": "Chapter Number - **REQUIRED**"},
+            {"p": "-p=" , "e": "Project - **REQUIRED**"},
+            {"p": "-id=" , "e": "Project - Alternative to `-c=` and `-p=`"},
+            {"p": "-link=" , "e": "Link to step - **REQUIRED**"},
+            {"p": "-msg=" , "e": "True/False. Define whether to ping the next member."}
+        ]
+        },
+    "donerd":
+        {"help": "https://docs.lukesaltweather.de/commands/donerd",
+        "brief": "Mark a chapters redraws as done. Requires role `Redrawer`",
+        "description": "Mark a chapters redraws as done. Automatically adds the correct date and will mark command executor as new redrawer, if the position was set to None. Requires role `Redrawer`",
+        "usage": [
+            {"p": "-c=" , "e": "Chapter Number - **REQUIRED**"},
+            {"p": "-p=" , "e": "Project - **REQUIRED**"},
+            {"p": "-id=" , "e": "Project - Alternative to `-c=` and `-p=`"},
+            {"p": "-link=" , "e": "Link to step - **REQUIRED**"},
+            {"p": "-msg=" , "e": "True/False. Define whether to ping the next member."}
+        ]
+        },
+    "donets":
+        {"help": "https://docs.lukesaltweather.de/commands/donets",
+        "brief": "Mark a chapters typeset as done. Requires role `Typesetter`",
+        "description": "Mark a chapters typeset as done. Automatically adds the correct date and will mark command executor as new typesetter, if the position was set to None. Requires role `Typesetter`",
+        "usage": [
+            {"p": "-c=" , "e": "Chapter Number - **REQUIRED**"},
+            {"p": "-p=" , "e": "Project - **REQUIRED**"},
+            {"p": "-id=" , "e": "Project - Alternative to `-c=` and `-p=`"},
+            {"p": "-link=" , "e": "Link to step - **REQUIRED**"},
+            {"p": "-msg=" , "e": "True/False. Define whether to ping the next member."}
+        ]
+        },
+    "donepr":
+        {"help": "https://docs.lukesaltweather.de/commands/donepr",
+        "brief": "Mark a chapters proofread as done. Requires role `Proofreader`",
+        "description": "Mark a chapters proofread as done. Automatically adds the correct date and will mark command executor as new proofreader, if the position was set to None. Requires role `Proofreader`",
+        "usage": [
+            {"p": "-c=" , "e": "Chapter Number - **REQUIRED**"},
+            {"p": "-p=" , "e": "Project - **REQUIRED**"},
+            {"p": "-id=" , "e": "Project - Alternative to `-c=` and `-p=`"},
+            {"p": "-link=" , "e": "Link to step - **REQUIRED**"},
+            {"p": "-msg=" , "e": "True/False. Define whether to ping the next member."}
+        ]
+        },
+    "doneqcts":
+        {"help": "https://docs.lukesaltweather.de/commands/doneqcts",
+        "brief": "Mark a chapters qctypeset as done. Requires role `Typesetter`",
+        "description": "Mark a chapters qctypeset as done. Automatically adds the correct date. Requires role `Typesetter`",
+        "usage": [
+            {"p": "-c=" , "e": "Chapter Number - **REQUIRED**"},
+            {"p": "-p=" , "e": "Project - **REQUIRED**"},
+            {"p": "-id=" , "e": "Project - Alternative to `-c=` and `-p=`"},
+            {"p": "-link=" , "e": "Link to step - **REQUIRED**"},
+            {"p": "-msg=" , "e": "True/False. Define whether to ping the next member."}
         ]
         },
     "addproject": {
@@ -44,8 +113,8 @@
     },
     "infochapter": {
         "help": "https://docs.lukesaltweather.de/commands/infochapter",
-        "brief": "Retrieve information about one or multiple chapters. Requires role `Neko Herder`.",
-        "description": "Display information about chapters in form of a table,\nwhich is either sent as an image or as plain text. Requires role `Neko Herder`.\n Aliases: `infochapters, infoc, ic`",
+        "brief": "Retrieve information about one or multiple chapters. Requires role `Neko Worker`.",
+        "description": "Display information about projects in form of a table,\nwhich is either sent as an image or as plain text. Requires role `Neko Worker`.\n Aliases: `infochapter, infoc, ic`",
         "usage": [
             {"p": "-p=" , "e": "Project title"},
             {"p": "-c=" , "e": "Chapter number"},
@@ -59,6 +128,169 @@
             {"p": "-tl_on= / -tl_from= / -tl_upto" , "e": "Filter by date. Identical commands exist for `ts, rd, pr, qcts and rl`"},
             {"p": "-output=" , "e": "Can be either `image` or `text`. Defaults to `image`."},
             {"p": "-fields=" , "e": "Possible values: `title, id, link_{step}, tl, rd, ts, pr, d_c (date it was created on), d_{step} (Date)`"}
+        ]
+    },
+    "editchapter": {
+        "help": "https://docs.lukesaltweather.de/commands/editchapter",
+        "brief": "Edits a chapter in the DB. Requires role `Poweruser`.",
+        "description": "Edits a chapter in the DB. Prompts you with a preview, react with one of the two buttons to either confirm or dump the changes. Requires role `Poweruser`.\n Aliases: `editchapter, editc, ec`",
+        "usage": [
+            {"p": "-p=" , "e": "Project title - **REQUIRED**"},
+            {"p": "-c=" , "e": "Chapter number - **REQUIRED**"},
+            {"p": "-id=" , "e": "Chapter ID used to select chapter. - Alternative to using `-p=` and `-c=`"},
+            {"p": "-title=" , "e": "Edit title"},
+            {"p": "-tl= / -ts= / -rd= / -pr=" , "e": "Edit staff"},
+            {"p": "-link_tl= /-link_rd= / -link_ts= / -link_pr= / -link_qcts=" , "e": "Edit links"},
+            {"p": "-date_tl= /-date_rd= / -date_ts= / -date_pr= / -date_qcts=/ -date_rl=" , "e": "Edit date a step finished"},
+            {"p": "-to_project=" , "e": "Change the project of the chapter"},
+            {"p": "-to_chapter=" , "e": "Change chapter number"},
+            {"p": "-notes=" , "e": "Replaces ALL of the notes by the value of this param."}
+        ]
+    },
+    "infoproject": {
+        "help": "https://docs.lukesaltweather.de/commands/infoproject",
+        "brief": "Retrieve information about one or multiple projects. Requires role `Neko Worker`.",
+        "description": "Display information about projects in form of a table,\nwhich is either sent as an image or as plain text. Requires role `Neko Worker`.\n Aliases: `infoprojects, infop, ip`",
+        "usage": [
+            {"p": "-p=" , "e": "Project title"},
+            {"p": "-c=" , "e": "Chapter number"},
+            {"p": "-id=" , "e": "Filter by ID"},
+            {"p": "-tl= / -ts= / -rd= / -pr=" , "e": "Filter by staff"},
+            {"p": "-status=" , "e": "Filter by status, mostly either `inactive` or `active`"},
+            {"p": "-all=" , "e": "When this param is used, all projects will be displayed. (Keep in mind to not apply any filters)"},
+            {"p": "-output=" , "e": "Can be either `image` or `text`. Defaults to `image`."},
+            {"p": "-fields=" , "e": "Possible values: `title, id, tl, rd, ts, pr, link, status, altNames`"}
+        ]
+    },
+    "editproject": {
+        "help": "https://docs.lukesaltweather.de/commands/editproject",
+        "brief": "Edit a project. Requires role `Poweruser`.",
+        "description": "Edit a project. Prompts you with a preview, react with one of the two buttons to either confirm or dump the changes. Requires role `Poweruser`.\n Aliases: `editproj, editp, ep`",
+        "usage": [
+            {"p": "-p=" , "e": "Project title - **REQUIRED**"},
+            {"p": "-id=" , "e": "Project ID, used to select project. - Alternative to using `-p=`"},
+            {"p": "-tl= / -ts= / -rd= / -pr=" , "e": "Edit project's default staff"},
+            {"p": "-title=" , "e": "Edit project's title"},
+            {"p": "-altNames=" , "e": "Replace project's alternative Titles."},
+            {"p": "-thumbnail=" , "e": "Directlink to thumbnail"},
+            {"p": "-icon=" , "e": "Directlink to icon"},
+            {"p": "-status=" , "e": "Edit status of project. Mostly either `active` or `inactive`"}
+        ]
+    },
+    "assign": {
+        "help": "",
+        "brief": "**WIP**.",
+        "description": "",
+        "usage": [
+
+        ]
+    },
+    "clear": {
+        "help": "http://docs.lukesaltweather.de/commands/clear",
+        "brief": "Clears out all tables of a chapter. Requires role `Neko Herder`",
+        "description": "Clears out all tables of a chapter. Requires role `Neko Herder`",
+        "usage": [
+            {"p": "-c=", "e": "Chapter number. - **REQUIRED**"},
+            {"p": "-p=", "e": "Project title. - **REQUIRED**"},
+            {"p": "-id=", "e": "Chapter's id. - alternative to `-p=` and `-c=`"}
+        ]
+    },
+    "editstaff": {
+        "help": "http://docs.lukesaltweather.de/commands/editstaff",
+        "brief": "Edits a staffmember's entry in the database. Requires role `Neko Herder`",
+        "description": "Edits a staffmember's entry in the database. Requires role `Neko Herder`",
+        "usage": [
+            {"p": "-id=", "e": "Internal ID used to select member. - **REQUIRED**"},
+            {"p": "-discord_id=", "e": "New discord id"},
+            {"p": "-name=", "e": "New name, used whenever bot refers to member."},
+            {"p": "-status=", "e": "Active or inactive"}
+        ]
+    },
+    "allprojects": {
+        "help": "https://docs.lukesaltweather.de/commands/allprojects",
+        "brief": "Simple command to display all projects. Requires role `Neko Worker`.",
+        "description": "Simple command to display all projects. Requires role `Neko Worker`.",
+        "usage": [
+            {"p": "No parameters accepted.", "e": ""}
+        ]
+    },
+    "allstaff": {
+        "help": "https://docs.lukesaltweather.de/commands/allstaff",
+        "brief": "Simple command to display all staffmembers. Requires role `Neko Herder`.",
+        "description": "Simple command to display all staffmembers. Requires role `Neko Herder`.",
+        "usage": [
+            {"p": "No parameters accepted.", "e": ""}
+        ]
+    },
+    "release": {
+        "help": "https://docs.lukesaltweather.de/commands/release",
+        "brief": "Simple command to mark a chapter as released. Requires role `Poweruser`.",
+        "description": "Simple command to mark a chapter as released. Requires role `Poweruser`.",
+        "usage": [
+            {"p": "-p=", "e": "The chapter's project - **REQUIRED**"},
+            {"p": "-c=", "e": "The chapter's number - **REQUIRED**"},
+            {"p": "-id=", "e": "The chapter's id - Alternative to using `-c=` and `-p=`"},
+            {"p": "-date=", "e": "Set the chapter's title manually, instead of using the current time."}
+        ]
+    },
+    "mycurrent": {
+        "help": "https://docs.lukesaltweather.de/commands/mycurrent",
+        "brief": "Simple command to display all your currently unfinished chapters. Requires role `Neko Worker`.",
+        "description": "Simple command to display all your currently unfinished chapters. Requires role `Neko Worker`.",
+        "usage": [
+            {"p": "No parameters accepted.", "e": ""}
+        ]
+    },
+     "avatar": {
+        "help": "https://docs.lukesaltweather.de/commands/avatar",
+        "brief": "Retrieve avatar of a server member.",
+        "description": "Retrieve avatar of a server member.",
+        "usage": [
+            {"p": "Name", "e": "Discord ID, Name, Nickname or mention of the user. Doesn't have a dash or anything in front."}
+        ]
+    },
+    "cat": {
+        "help": "https://docs.lukesaltweather.de/commands/cat",
+        "brief": "Retrieve a picture of a cat. (Note: Really slow)",
+        "description": "Retrieve a picture of a cat. (Note: This is really slow)",
+        "usage": [
+            {"p": "-breed=", "e": "Select a breed"},
+            {"p": "-type=", "e": "image type. gif, jpeg or png"}
+        ]
+    },
+    "debugboard": {
+        "help": "https://docs.lukesaltweather.de/commands/debugboard",
+        "brief": "Used to reset the information board. Requires role `Neko Herder`.",
+        "description": "Used to reset the information board. Requires role `Neko Herder`.",
+        "usage": [
+            {"p": "<number>", "e": "Number of messages in the board that are going to get deleted. - **REQUIRED**"}
+        ]
+    },
+    "embed": {
+        "help": "https://docs.lukesaltweather.de/commands/embed",
+        "brief": "Can be used to test hex colors.",
+        "description": "Can be used to test hex colors.",
+        "usage": [
+            {"p": "<hex>", "e": "Color in hex format. Get [here](https://www.google.com/search?q=color+picker). - **REQUIRED**"}
+        ]
+    },
+    "note": {
+        "help": "https://docs.lukesaltweather.de/commands/note",
+        "brief": "Display all notes of a chapter. Requires role `Neko Worker`.\nAliases: `n, notes`",
+        "description": "Display all notes of a chapter. Requires role `Neko Worker`.\nAliases: `n, notes`",
+        "usage": [
+            {"p": "-p=", "e": "The chapter's project - **REQUIRED**"},
+            {"p": "-c=", "e": "The chapter's number - **REQUIRED**"}
+        ]
+    },
+    "addnote": {
+        "help": "https://docs.lukesaltweather.de/commands/addnote",
+        "brief": "Display all notes of a chapter. Requires role `Neko Worker`.\nAliases: `an`",
+        "description": "Display all notes of a chapter. Requires role `Neko Worker`.\nAliases: `an`",
+        "usage": [
+            {"p": "-p=", "e": "The chapter's project - **REQUIRED**"},
+            {"p": "-c=", "e": "The chapter's number - **REQUIRED**"},
+            {"p": "-note=", "e": "The note to add - **REQUIRED**"}
         ]
     }
 }

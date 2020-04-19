@@ -73,6 +73,7 @@ class MyHelpCommand(commands.MinimalHelpCommand):
 
 class MyCog(commands.Cog):
     def __init__(self, bot):
+        self.bot = bot
         self._original_help_command = bot.help_command
         bot.help_command = MyHelpCommand(dm_help=True)
         bot.help_command.cog = self
@@ -94,11 +95,12 @@ class EmbedHelper:
         self.embed.append(discord.Embed(color=discord.Colour.dark_green()))
         emoji = {
             "Info": "🔎",
-            "Add": "🗳",
+            "Add": "📥",
             "Misc": "📎",
             "Edit": "📝",
             "Assign": "🙋",
-            "Done": "👍"
+            "Done": "👍",
+            "Note": "🗒️"
         }.pop(cogname, "")
         self.embed[-1].set_author(name=f"{emoji} {cogname}")
         string = ""

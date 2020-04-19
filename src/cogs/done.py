@@ -1,3 +1,5 @@
+import json
+
 import discord
 from discord.ext import commands
 from sqlalchemy import func
@@ -10,31 +12,33 @@ from src.model.staff import Staff
 from src.util import exceptions
 from src.util.search import searchproject, searchstaff, fakesearch
 from src.util.misc import FakeUser, formatNumber, make_mentionable, toggle_mentionable
+from src.util.checks import is_pr, is_rd, is_tl, is_ts
 
+with open('src/util/help.json', 'r') as f:
+    jsonhelp = json.load(f)
 
 class Done(commands.Cog):
 
-    def __init__(self, bot, sessionmaker, config):
+    def __init__(self, bot):
         self.bot = bot
-        self.Session = sessionmaker
-        self.config = config
-
 
     async def cog_check(self, ctx):
-        worker = ctx.guild.get_role(self.config["neko_workers"])
+        worker = ctx.guild.get_role(self.bot.config["neko_workers"])
         ia = worker in ctx.message.author.roles
-        ic = ctx.channel.id == self.config["command_channel"]
+        ic = ctx.channel.id == self.bot.config["command_channel"]
         guild = ctx.guild is not None
         if ia and ic and guild:
             return True
         elif ic:
-            raise exceptions.MissingRequiredPermission("Missing permission `poweruser`.")
+            raise exceptions.MissingRequiredPermission("Missing permission `Neko Worker`.")
         elif not guild:
             raise exceptions.MissingRequiredPermission("Missing permission `Server Member`.")
 
-    @commands.command()
+    @commands.command(checks=[is_tl], description=jsonhelp["donetl"]["description"],
+                      usage=jsonhelp["donetl"]["usage"], brief=jsonhelp["donetl"]["brief"], help=jsonhelp["donetl"]["help"])
+    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
     async def donetl(self, ctx, *, arg):
-        session = self.Session()
+        session = self.bot.Session()
         try:
             arg = arg[1:]
             d = dict(x.split('=', 1) for x in arg.split(' -'))
@@ -95,13 +99,13 @@ class Done(commands.Cog):
                         await ctx.send("Couldn't find a typesetter. Falling back to project defaults.")
                     await ctx.message.add_reaction("✅")
                 else:
-                    ts = await make_mentionable(ctx.guild.get_role(int(self.config["ts_id"])))
+                    ts = await make_mentionable(ctx.guild.get_role(int(self.bot.config["ts_id"])))
                     msg = await ctx.send(
                         f"{ts}\nTypesetter required for `{chapter.project.title} {formatNumber(chapter.number)}`. React below to assign yourself.")
                     await msg.add_reaction("🙋")
-                    await toggle_mentionable(ctx.guild.get_role(int(self.config["ts_id"])))
+                    await toggle_mentionable(ctx.guild.get_role(int(self.bot.config["ts_id"])))
                     await msg.pin()
-                    msgdb = Message(msg.id, self.config["ts_id"], "🙋")
+                    msgdb = Message(msg.id, self.bot.config["ts_id"], "🙋")
                     msgdb.chapter = chapter.id
                     msgdb.created_on = func.now()
                     session.add(msgdb)
@@ -122,12 +126,12 @@ class Done(commands.Cog):
                         await ctx.send("Couldn't find a redrawer. Falling back to project defaults.")
                     await ctx.message.add_reaction("✅")
                 else:
-                    rd = await make_mentionable(ctx.guild.get_role(int(self.config["rd_id"])))
+                    rd = await make_mentionable(ctx.guild.get_role(int(self.bot.config["rd_id"])))
                     msg = await ctx.send(
                         f"{rd}\nRedrawer required for `{chapter.project.title} {formatNumber(chapter.number)}`. React below to assign yourself.")
                     await msg.add_reaction("🙋")
-                    await toggle_mentionable(ctx.guild.get_role(int(self.config["rd_id"])))
-                    msgdb = Message(msg.id, self.config["rd_id"], "🙋")
+                    await toggle_mentionable(ctx.guild.get_role(int(self.bot.config["rd_id"])))
+                    msgdb = Message(msg.id, self.bot.config["rd_id"], "🙋")
                     await msg.pin()
                     msgdb.chapter = chapter.id
                     msgdb.created_on = func.now()
@@ -137,9 +141,11 @@ class Done(commands.Cog):
             session.close()
 
 
-    @commands.command()
+    @commands.command(checks=[is_ts], description=jsonhelp["donets"]["description"],
+                      usage=jsonhelp["donets"]["usage"], brief=jsonhelp["donets"]["brief"], help=jsonhelp["donets"]["help"])
+    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
     async def donets(self, ctx, *, arg):
-        session = self.Session()
+        session = self.bot.Session()
         try:
             arg = arg[1:]
             d = dict(x.split('=', 1) for x in arg.split(' -'))
@@ -204,13 +210,13 @@ class Done(commands.Cog):
                         await ctx.send(
                             f"`{chapter.project.title} {formatNumber(chapter.number)}` is ready to be proofread.\nTypeset: {chapter.link_ts}\nTranslation:{chapter.link_tl}\nNotes: {chapter.notes}")
                 else:
-                    pr = await make_mentionable(ctx.guild.get_role(int(self.config["pr_id"])))
+                    pr = await make_mentionable(ctx.guild.get_role(int(self.bot.config["pr_id"])))
                     msg = await ctx.send(
                         f"{pr}\nProofreader required for `{chapter.project.title} {formatNumber(chapter.number)}`. React below to assign yourself.")
                     await msg.add_reaction("🙋")
-                    await toggle_mentionable(ctx.guild.get_role(int(self.config["pr_id"])))
+                    await toggle_mentionable(ctx.guild.get_role(int(self.bot.config["pr_id"])))
                     await msg.pin()
-                    msgdb = Message(msg.id, self.config["rd_id"], "🙋")
+                    msgdb = Message(msg.id, self.bot.config["rd_id"], "🙋")
                     msgdb.chapter = chapter.id
                     msgdb.created_on = func.now()
                     session.add(msgdb)
@@ -219,9 +225,11 @@ class Done(commands.Cog):
             session.close()
 
 
-    @commands.command()
+    @commands.command(checks=[is_pr],description=jsonhelp["donepr"]["description"],
+                      usage=jsonhelp["donepr"]["usage"], brief=jsonhelp["donepr"]["brief"], help=jsonhelp["donepr"]["help"])
+    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
     async def donepr(self, ctx, *, arg):
-        session = self.Session()
+        session = self.bot.Session()
         try:
             arg = arg[1:]
             d = dict(x.split('=', 1) for x in arg.split(' -'))
@@ -281,9 +289,11 @@ class Done(commands.Cog):
             session.close()
 
 
-    @commands.command()
+    @commands.command(checks=[is_ts], description=jsonhelp["doneqcts"]["description"],
+                      usage=jsonhelp["doneqcts"]["usage"], brief=jsonhelp["doneqcts"]["brief"], help=jsonhelp["doneqcts"]["help"])
+    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
     async def doneqcts(self, ctx, *, arg):
-        session = self.Session()
+        session = self.bot.Session()
         try:
             arg = arg[1:]
             d = dict(x.split('=', 1) for x in arg.split(' -'))
@@ -341,9 +351,11 @@ class Done(commands.Cog):
             session.close()
 
 
-    @commands.command()
+    @commands.command(checks=[is_rd], description=jsonhelp["donerd"]["description"],
+                      usage=jsonhelp["donerd"]["usage"], brief=jsonhelp["donerd"]["brief"], help=jsonhelp["donerd"]["help"])
+    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
     async def donerd(self, ctx, *, arg):
-        session = self.Session()
+        session = self.bot.Session()
         try:
             arg = arg[1:]
             d = dict(x.split('=', 1) for x in arg.split(' -'))
@@ -413,12 +425,12 @@ class Done(commands.Cog):
                     await ctx.message.add_reaction("✅")
                 else:
                     if message:
-                        ts = await make_mentionable(ctx.guild.get_role(int(self.config["ts_id"])))
+                        ts = await make_mentionable(ctx.guild.get_role(int(self.bot.config["ts_id"])))
                         msg = await ctx.send(
                             f"{ts}\nTypesetter required for `{chapter.project.title} {formatNumber(chapter.number)}`. React below to assign yourself.")
                         await msg.add_reaction("🙋")
-                        await toggle_mentionable(ctx.guild.get_role(int(self.config["ts_id"])))
-                        msgdb = Message(msg.id, self.config["ts_id"], "🙋")
+                        await toggle_mentionable(ctx.guild.get_role(int(self.bot.config["ts_id"])))
+                        msgdb = Message(msg.id, self.bot.config["ts_id"], "🙋")
                         await msg.pin()
                         msgdb.chapter = chapter.id
                         msgdb.created_on = func.now()

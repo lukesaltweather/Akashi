@@ -5,8 +5,9 @@ import aiohttp
 import discord
 from discord.ext import commands
 
+from src.model.staff import Staff
 from src.util import exceptions
-from src.util.checks import is_admin
+from src.util.checks import is_admin, is_worker
 
 with open('src/util/help.json', 'r') as f:
     jsonhelp = json.load(f)
@@ -22,17 +23,36 @@ class Misc(commands.Cog):
     async def cog_check(self, ctx):
         return ctx.guild is not None
 
+
+    @commands.command(hidden=True)
+    @is_admin()
+    async def addall(self, ctx):
+        session = self.bot.Session()
+        members = await ctx.guild.get_role(self.bot.config.get("neko_workers")).members
+        for member in members:
+            st = Staff(member.id, member.name)
+            session.add(st)
+            await ctx.send("Successfully added {} to staff. ".format(member.name))
+        session.commit()
+        session.close()
+
     @commands.command(description=jsonhelp["debugboard"]["description"],
                       usage=jsonhelp["debugboard"]["usage"], brief=jsonhelp["debugboard"]["brief"], help=jsonhelp["debugboard"]["help"])
     @is_admin()
-    async def debugboard(self, ctx, amount: int):
-        ch = self.bot.config["board_channel"]
-        channel = self.bot.get_channel(ch)
-        await channel.purge(limit=amount)
+    async def debugboard(self, ctx):
+        with open('src/util/board.json', 'r') as f:
+            msgs = json.load(f)
+        messages = list()
+        ch = await self.bot.fetch_channel(self.bot.config["board_channel"])
+        for msg in msgs.values():
+            messages.append(await ch.fetch_message(msg))
+        for message in messages:
+            await message.delete()
         messages = {}
         with open('src/util/board.json', 'w') as f:
             json.dump(messages, f, indent=4)
 
+    @is_worker()
     @commands.command(description=jsonhelp["avatar"]["description"],
                       usage=jsonhelp["avatar"]["usage"], brief=jsonhelp["avatar"]["brief"], help=jsonhelp["avatar"]["help"])
     async def avatar(self, ctx, member: discord.Member):
@@ -40,6 +60,7 @@ class Misc(commands.Cog):
 
     @commands.command(description=jsonhelp["cat"]["description"],
                       usage=jsonhelp["cat"]["usage"], brief=jsonhelp["cat"]["brief"], help=jsonhelp["cat"]["help"])
+    @is_worker()
     async def cat(self, ctx, *, arg):
         try:
             arg = arg[1:]
@@ -84,6 +105,7 @@ class Misc(commands.Cog):
 
     @commands.command(description=jsonhelp["embed"]["description"],
                       usage=jsonhelp["embed"]["usage"], brief=jsonhelp["embed"]["brief"], help=jsonhelp["embed"]["help"])
+    @is_worker()
     async def embed(self, ctx, color: str):
         color = color.strip("#")
         eger = int(color, 16)

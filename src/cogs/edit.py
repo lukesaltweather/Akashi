@@ -77,45 +77,73 @@ class Edit(commands.Cog):
                         table.add_column("Title", ["None", d["title"]])
                     record.title = d["title"]
                 if "tl" in d:
-                    tl = await searchstaff(d["tl"], ctx, session)
-                    if tl is not None:
+                    if d["tl"] in ("None", "none"):
                         if record.translator is not None:
-                            table.add_column("Translator", [record.translator.name, d["tl"]])
+                            table.add_column("Translator", [record.translator.name, "None"])
                         else:
                             table.add_column("Translator", ["None", d["tl"]])
-                        record.translator = tl
+                        record.translator = None
                     else:
-                        raise exceptions.StaffNotFoundError
+                        tl = await searchstaff(d["tl"], ctx, session)
+                        if tl is not None:
+                            if record.translator is not None:
+                                table.add_column("Translator", [record.translator.name, d["tl"]])
+                            else:
+                                table.add_column("Translator", ["None", d["tl"]])
+                            record.translator = tl
+                        else:
+                            raise exceptions.StaffNotFoundError
                 if "rd" in d:
-                    rd = await searchstaff(d["rd"], ctx, session)
-                    if rd is not None:
+                    if d["rd"] in ("None", "none"):
                         if record.redrawer is not None:
                             table.add_column("Redrawer", [record.redrawer.name, d["rd"]])
                         else:
                             table.add_column("Redrawer", ["None", d["rd"]])
-                        record.redrawer = rd
+                        record.redrawer = None
                     else:
-                        raise exceptions.StaffNotFoundError
+                        rd = await searchstaff(d["rd"], ctx, session)
+                        if rd is not None:
+                            if record.redrawer is not None:
+                                table.add_column("Redrawer", [record.redrawer.name, d["rd"]])
+                            else:
+                                table.add_column("Redrawer", ["None", d["rd"]])
+                            record.redrawer = rd
+                        else:
+                            raise exceptions.StaffNotFoundError
                 if "ts" in d:
-                    ts = await searchstaff(d["ts"], ctx, session)
-                    if ts is not None:
+                    if d["ts"] in ("None", "none"):
                         if record.typesetter is not None:
                             table.add_column("Typesetter", [record.typesetter.name, d["ts"]])
                         else:
                             table.add_column("Typesetter", ["None", d["ts"]])
-                        record.typesetter = ts
+                        record.typesetter = None
                     else:
-                        raise exceptions.StaffNotFoundError
+                        ts = await searchstaff(d["ts"], ctx, session)
+                        if ts is not None:
+                            if record.typesetter is not None:
+                                table.add_column("Typesetter", [record.typesetter.name, d["ts"]])
+                            else:
+                                table.add_column("Typesetter", ["None", d["ts"]])
+                            record.typesetter = ts
+                        else:
+                            raise exceptions.StaffNotFoundError
                 if "pr" in d:
-                    pr = await searchstaff(d["pr"], ctx, session)
-                    if pr is not None:
+                    if d["pr"] in ("None", "none"):
                         if record.proofreader is not None:
                             table.add_column("Proofreader", [record.proofreader.name, d["pr"]])
                         else:
                             table.add_column("Proofreader", ["None", d["pr"]])
-                        record.proofreader = pr
+                        record.proofreader = None
                     else:
-                        raise exceptions.StaffNotFoundError
+                        pr = await searchstaff(d["pr"], ctx, session)
+                        if pr is not None:
+                            if record.proofreader is not None:
+                                table.add_column("Proofreader", [record.proofreader.name, d["pr"]])
+                            else:
+                                table.add_column("Proofreader", ["None", d["pr"]])
+                            record.proofreader = pr
+                        else:
+                            raise exceptions.StaffNotFoundError
                 if "link_ts" in d:
                     table.add_column("Link TS", [record.link_ts, d["link_ts"]])
                     record.link_ts = d["link_ts"]

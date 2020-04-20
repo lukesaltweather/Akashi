@@ -36,7 +36,7 @@ class Info(commands.Cog):
         if ia and ic and guild:
             return True
         elif ic:
-            raise exceptions.MissingRequiredPermission("Missing permission `poweruser`.")
+            raise exceptions.MissingRequiredPermission("Wrong Channel.")
         elif not guild:
             raise exceptions.MissingRequiredPermission("Missing permission `Server Member`")
 

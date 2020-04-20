@@ -123,7 +123,7 @@
             {"p": "-title=" , "e": "Filter by title"},
             {"p": "-id=" , "e": "Filter by ID"},
             {"p": "-tl= / -ts= / -rd= / -pr=" , "e": "Filter by staff"},
-            {"p": "-link_tl= /-link_rd= / -link_ts= / -link_pr= / -link_qcts=" , "e": "Filter by link, if you ever wanted to"},
+            {"p": "-link_tl= /-link_rd= / -link_ts= / -link_pr= / -link_qcts=" , "e": "Filter by link, also accepts `None` as value."},
             {"p": "-creation_on= / -creation_upto= / -creation_from=" , "e": "Date it was created on"},
             {"p": "-tl_on= / -tl_from= / -tl_upto" , "e": "Filter by date. Identical commands exist for `ts, rd, pr, qcts and rl`"},
             {"p": "-output=" , "e": "Can be either `image` or `text`. Defaults to `image`."},

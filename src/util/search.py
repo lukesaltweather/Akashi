@@ -47,7 +47,7 @@ async def searchstaff(passstr: str, ctx, sessions):
             if staff is not None:
                 return staff
         except ValueError:
-            return None
+            raise StaffNotFoundError
     return await dbstaff(dst.id, sessions)
 
 

@@ -33,19 +33,21 @@ async def has_role(user, role, bot):
     return False
 
 async def toggle_mentionable(role:discord.Role):
-    if not role.mentionable:
+    """if not role.mentionable:
         await role.edit(mentionable=True)
     else:
-        await role.edit(mentionable=False)
+        await role.edit(mentionable=False)"""
+    pass
 
 
 async def make_mentionable(role:discord.Role):
-    await role.edit(mentionable=True)
+    # await role.edit(mentionable=True)
     return role.mention
 
 
 async def disable_mentionable(role:discord.Role):
-    await role.edit(mentionable=False)
+    # await role.edit(mentionable=False)
+    pass
 
 def strx(sti):
     if sti is None:

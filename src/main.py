@@ -62,16 +62,14 @@ else:
     bot = commands.Bot(command_prefix='-')
 
 
-def block_dms():
-    def globally_block_dms(ctx):
-        return ctx.guild is not None
-    return commands.check(globally_block_dms)
-
+@bot.check
+async def globally_block_dms(ctx):
+    return ctx.guild is not None
 
 @bot.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
-    activity = discord.Activity(name='Watashi', type=discord.ActivityType.watching)
+    activity = discord.Activity(name='$help', type=discord.ActivityType.playing)
     await bot.change_presence(activity=activity)
     deletemessages.start()
     refreshembed.start()
@@ -99,30 +97,30 @@ async def on_command_error(ctx, error):
     await ctx.message.add_reaction("❌")
     if isinstance(error, commands.MissingRequiredArgument):
         await ctx.send("Please enter at least one argument.")
-    if isinstance(error, commands.CommandNotFound):
+    elif isinstance(error, commands.CommandNotFound):
         await ctx.send("Command doesn't exist.")
-    if isinstance(error, ValueError):
+    elif isinstance(error, ValueError):
         await ctx.send("Error while parsing parameters.")
-    if isinstance(error, exceptions.NoResultFound):
+    elif isinstance(error, exceptions.NoResultFound):
         await ctx.send(error.message)
-    if isinstance(error, exceptions.StaffNotFoundError):
+    elif isinstance(error, exceptions.StaffNotFoundError):
         await ctx.send("Can't find the staffmember you were searching for.")
-    if isinstance(error, LookupError):
+    elif isinstance(error, LookupError):
         await ctx.send("Sorry, I couldn't find what you were looking for.")
-    if isinstance(error, commands.CheckFailure):
+    elif isinstance(error, commands.CheckFailure):
         await ctx.send("Sorry, but you don't have the required permissions for this command.")
-    if isinstance(error, exceptions.MissingRequiredPermission):
+    elif isinstance(error, exceptions.MissingRequiredPermission):
         await ctx.send(error.message)
-    if isinstance(error, exceptions.MissingRequiredParameter):
+    elif isinstance(error, exceptions.MissingRequiredParameter):
         await ctx.send("Missing %s" % error.param)
-    if isinstance(error, sqlalchemy.orm.exc.NoResultFound):
+    elif isinstance(error, sqlalchemy.orm.exc.NoResultFound):
         await ctx.send("Sorry, I couldn't find what you were looking for.")
-
+    else:
+        await ctx.send(error)
 
 
 @bot.command(hidden=True)
 @is_admin()
-@block_dms()
 async def restart(ctx):
     os.system("systemctl restart akashi")
 
@@ -139,9 +137,6 @@ async def on_raw_reaction_add(payload):
         try:
             session = bot.Session()
             msg = session.query(Message).filter(payload.message_id == Message.message_id).one()
-            ca = await bot.fetch_channel(payload.channel_id)
-            ma = await ca.fetch_message(ca)
-            await ma.unpin()
         except:
             session.close()
         try:
@@ -175,6 +170,7 @@ async def on_raw_reaction_add(payload):
                 session.delete(msg)
                 msg2 = await channel.fetch_message(payload.message_id)
                 await msg2.clear_reactions()
+                await msg2.unpin()
                 await msg2.edit(content=f"Task was taken by {chp.redrawer.name}!")
                 await msg2.add_reaction("✅")
                 session.commit()
@@ -191,6 +187,7 @@ async def on_raw_reaction_add(payload):
                 await channel.send(f'Raws: {chp.link_raw}')
                 session.delete(msg)
                 channel.fetch_message(payload.message_id).clear_reactions()
+                channel.fetch_message(payload.message_id).unpin()
                 channel.fetch_message(payload.message_id).edit(f"Task was taken by {chp.translator.name}!")
                 channel.fetch_message(payload.message_id).add_reaction("✅")
                 session.commit()
@@ -208,6 +205,7 @@ async def on_raw_reaction_add(payload):
                 await channel.send(f'Typeset: {chp.link_ts}')
                 session.delete(msg)
                 channel.fetch_message(payload.message_id).clear_reactions()
+                channel.fetch_message(payload.message_id).unpin()
                 channel.fetch_message(payload.message_id).edit(f"Task was taken by {chp.proofreader.name}!")
                 channel.fetch_message(payload.message_id).add_reaction("✅")
                 session.commit()
@@ -218,7 +216,6 @@ async def on_raw_reaction_add(payload):
 
 @is_admin()
 @bot.command(enable=False, hidden=True)
-@block_dms()
 async def allcommands(ctx):
     list = ""
     for command in bot.commands:
@@ -229,7 +226,6 @@ async def allcommands(ctx):
 
 @is_admin()
 @bot.command(enable=False, hidden=True)
-@block_dms()
 async def createtables(ctx):
     await testdb.createtables()
 
@@ -382,7 +378,6 @@ async def refreshembed():
 
 @bot.command(hidden=True)
 @is_admin()
-@block_dms()
 async def deletechapter(ctx, *, arg):
     arg = arg[1:]
     d = dict(x.split('=', 1) for x in arg.split(' -'))
@@ -400,7 +395,6 @@ async def deletechapter(ctx, *, arg):
 
 @is_admin()
 @bot.command(hidden=True)
-@block_dms()
 async def editconfig(ctx, *, arg):
     arg = arg[1:]
     d = dict(x.split('=', 1) for x in arg.split(' -'))
@@ -428,7 +422,6 @@ async def editconfig(ctx, *, arg):
 
 @is_admin()
 @bot.command(hidden=True)
-@block_dms()
 async def displayconfig(ctx):
     with open('src/util/config.json', 'r') as f:
         r = json.load(f)

@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from prettytable import PrettyTable
 from sqlalchemy import Date, text, or_
 
+from src.helpers.arghelper import arghelper
 from src.util import exceptions
 from src.util.misc import drawimage, formatNumber
 from src.util.search import searchstaff, searchproject
@@ -65,7 +66,12 @@ class Info(commands.Cog):
                     else:
                         pass
                 if "title" in d:
-                    query = query.filter(Chapter.title.match(d["title"]))
+                    if ',' in d["title"]:
+                        helper = arghelper(d.get("title"))
+                        fi = helper.get_title()
+                    else:
+                        fi = Chapter.title.match(d["title"])
+                    query = query.filter(fi)
                 if "chapter_from" in d:
                     query = query.filter(Chapter.number >= int(d["chapter_from"]))
                 if "chapter_upto" in d:

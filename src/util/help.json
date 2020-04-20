@@ -174,7 +174,8 @@
             {"p": "-altNames=" , "e": "Replace project's alternative Titles."},
             {"p": "-thumbnail=" , "e": "Directlink to thumbnail"},
             {"p": "-icon=" , "e": "Directlink to icon"},
-            {"p": "-status=" , "e": "Edit status of project. Mostly either `active` or `inactive`"}
+            {"p": "-status=" , "e": "Edit status of project. Mostly either `active` or `inactive`"},
+            {"p": "-link=" , "e": "Edit link to the project's folder"}
         ]
     },
     "assign": {
@@ -285,7 +286,7 @@
     },
     "addnote": {
         "help": "https://docs.lukesaltweather.de/commands/addnote",
-        "brief": "Display all notes of a chapter. Requires role `Neko Worker`.\nAliases: `an`",
+        "brief": "Add a note to a chapter. Requires role `Neko Worker`.\nAliases: `an`",
         "description": "Display all notes of a chapter. Requires role `Neko Worker`.\nAliases: `an`",
         "usage": [
             {"p": "-p=", "e": "The chapter's project - **REQUIRED**"},

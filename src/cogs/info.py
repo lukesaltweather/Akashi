@@ -77,7 +77,12 @@ class Info(commands.Cog):
                 if "chapter_upto" in d:
                     query = query.filter(Chapter.number <= int(d["chapter_upto"]))
                 if "c" in d:
-                    query = query.filter(Chapter.number == int(d["c"]))
+                    if ',' in d["c"]:
+                        helper = arghelper(d.get("c"))
+                        fi = helper.get_number()
+                    else:
+                        fi = Chapter.number == int(d["c"])
+                    query = query.filter(fi)
                 if "id" in d:
                     query = query.filter(Chapter.id == int(d["id"]))
                 if "ts" in d:

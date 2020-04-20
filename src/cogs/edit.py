@@ -364,6 +364,12 @@ class Edit(commands.Cog):
                 else:
                     table.add_column("icon", ["None", d["icon"]])
                 record.icon = d["icon"]
+            if "link" in d:
+                if record.link is not None:
+                    table.add_column("Link", [record.link, d["link"]])
+                else:
+                    table.add_column("link", ["link", d["link"]])
+                record.link = d["link"]
             t = table.get_string(title=f"{record.title}")
             image = await drawimage(t)
             embed1 = discord.Embed(

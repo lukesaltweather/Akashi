@@ -6,7 +6,7 @@ import discord
 from discord.ext import commands
 
 from src.model.staff import Staff
-from src.util import exceptions
+from src.util import exceptions, checks
 from src.util.checks import is_admin, is_worker
 
 with open('src/util/help.json', 'r') as f:
@@ -23,12 +23,24 @@ class Misc(commands.Cog):
     async def cog_check(self, ctx):
         return ctx.guild is not None
 
+    @commands.command(name='reload', hidden=True)
+    @is_admin()
+    async def _reload(self, *, module: str):
+        """Reloads a module."""
+        try:
+            self.bot.unload_extension(module)
+            self.bot.load_extension(module)
+        except Exception as e:
+            await self.bot.say('\N{PISTOL}')
+            await self.bot.say('{}: {}'.format(type(e).__name__, e))
+        else:
+            await self.bot.say('\N{OK HAND SIGN}')
 
     @commands.command(hidden=True)
     @is_admin()
     async def addall(self, ctx):
         session = self.bot.Session()
-        members = await ctx.guild.get_role(self.bot.config.get("neko_workers")).members
+        members = ctx.guild.get_role(self.bot.config.get("neko_workers")).members
         for member in members:
             st = Staff(member.id, member.name)
             session.add(st)

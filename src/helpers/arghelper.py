@@ -13,5 +13,11 @@ class arghelper:
     def get_title(self):
         conds = list()
         for arg in self.args:
-            conds.append(Chapter.title == arg)
+            conds.append(Chapter.title.ilike(f"%{arg}%"))
+        return or_(*conds)
+
+    def get_number(self):
+        conds = list()
+        for arg in self.args:
+            conds.append(Chapter.number == int(arg))
         return or_(*conds)

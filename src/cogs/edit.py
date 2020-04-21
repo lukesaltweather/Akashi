@@ -146,40 +146,73 @@ class Edit(commands.Cog):
                             raise exceptions.StaffNotFoundError
                 if "link_ts" in d:
                     table.add_column("Link TS", [record.link_ts, d["link_ts"]])
-                    record.link_ts = d["link_ts"]
+                    if d["link_ts"] != "":
+                        record.link_ts = d["link_ts"]
+                    else:
+                        record.link_rd = None
                 if "link_tl" in d:
                     table.add_column("Link TL", [record.link_tl, d["link_tl"]])
-                    record.link_tl = d["link_tl"]
+                    if d["link_tl"] != "":
+                        record.link_tl = d["link_tl"]
+                    else:
+                        record.link_rd = None
                 if "link_rd" in d:
                     table.add_column("Link RD", [record.link_rd, d["link_rd"]])
-                    record.link_rd = d["link_rd"]
+                    if d["link_rd"] != "":
+                        record.link_rd = d["link_rd"]
+                    else:
+                        record.link_rd = None
                 if "link_pr" in d:
                     table.add_column("Link PR", [record.link_pr, d["link_pr"]])
-                    record.link_pr = d["link_pr"]
+                    if d["link_pr"] != "":
+                        record.link_pr = d["link_pr"]
+                    else:
+                        record.link_pr = None
                 if "link_qcts" in d:
                     table.add_column("Link QCTS", [record.link_rl, d["link_qcts"]])
-                    record.link_rl = d["link_qcts"]
+                    if d["link_qcts"] != "":
+                        record.link_rl = d["link_qcts"]
+                    else:
+                        record.link_rl = None
                 if "link_raw" in d:
                     table.add_column("Link Raw", [record.link_raw, d["link_raw"]])
                     record.link_raw = d["link_raw"]
                 if "date_tl" in d:
-                    table.add_column("Date TL", [time.strftime("%Y %m %d", record.date_tl), d["date_tl"]])
-                    record.date_tl = time.strptime(d["date_tl"], "%Y %m %d")
+                    # table.add_column("Date TL", [time.strftime("%Y %m %d", record.date_tl), d["date_tl"]])
+                    if d["date_tl"] != "":
+                        record.date_tl = datetime.strptime(d["date_tl"], "%Y %m %d")
+                    else:
+                        record.date_tl = None
                 if "date_rd" in d:
-                    table.add_column("Date RD", [time.strftime("%Y %m %d", record.date_rd), d["date_rd"]])
-                    record.date_rd = time.strptime(d["date_rd"], "%Y %m %d")
+                    # table.add_column("Date RD", [time.strftime("%Y %m %d", record.date_rd), d["date_rd"]])
+                    if d["date_rd"] != "":
+                        record.date_rd = datetime.strptime(d["date_rd"], "%Y %m %d")
+                    else:
+                        record.date_rd = None
                 if "date_ts" in d:
-                    table.add_column("Date TS", [time.strftime("%Y %m %d", record.date_ts), d["date_ts"]])
-                    record.date_rd = time.strptime(d["date_ts"], "%Y %m %d")
+                    # table.add_column("Date TS", [time.strftime("%Y %m %d", record.date_ts), d["date_ts"]])
+                    if d["date_ts"] != "":
+                        record.date_rd = datetime.strptime(d["date_ts"], "%Y %m %d")
+                    else:
+                        record.date_ts = None
                 if "date_pr" in d:
-                    table.add_column("Date PR", [time.strftime("%Y %m %d", record.date_pr), d["date_pr"]])
-                    record.date_pr = time.strptime(d["date_pr"], "%Y %m %d")
+                    # table.add_column("Date PR", [time.strftime("%Y %m %d", record.date_pr), d["date_pr"]])
+                    if d["date_pr"] != "":
+                        record.date_pr = datetime.strptime(d["date_pr"], "%Y %m %d")
+                    else:
+                        record.date_pr = None
                 if "date_qcts" in d:
-                    table.add_column("Date QCTS", [time.strftime("%Y %m %d", record.date_qcts), d["date_qcts"]])
-                    record.date_qcts = time.strptime(d["date_qcts"], "%Y %m %d")
+                    # table.add_column("Date QCTS", [time.strftime("%Y %m %d", record.date_qcts), d["date_qcts"]])
+                    if d["date_qcts"] != "":
+                        record.date_qcts = datetime.strptime(d["date_qcts"], "%Y %m %d")
+                    else:
+                        record.date_qcts = None
                 if "date_rl" in d:
-                    table.add_column("Date Release", [time.strftime("%Y %m %d", record.date_release), d["date_rl"]])
-                    record.date_release = time.strptime(d["date_rl"], "%Y %m %d")
+                    # table.add_column("Date Release", [time.strftime("%Y %m %d", record.date_release), d["date_rl"]])
+                    if d["date_rl"] != "":
+                        record.date_release = datetime.strptime(d["date_rl"], "%Y %m %d")
+                    else:
+                        record.date_release = None
                 if "to_project" in d:
                     proj = searchproject(d["to_project"], session)
                     record.project = proj
@@ -495,3 +528,6 @@ class Edit(commands.Cog):
             embed.add_field(name="\u200b",
                             value=f"Releasedate of {record.project.title} {record.number} set to {record.date_release.strftime('%Y/%m/%d')}")
             await ctx.send(embed=embed)
+
+def setup(Bot):
+    Bot.add_cog(Edit(Bot))

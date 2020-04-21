@@ -273,7 +273,7 @@ class Done(commands.Cog):
             chapter.link_pr = d["link"]
             chapter.date_pr = func.now()
             if chapter.typesetter is not None:
-                ts = fakesearch(chapter.typesetter.id).mention
+                ts = fakesearch(chapter.typesetter.discord_id, ctx).mention
                 if message:
                     await ctx.send(
                         f"{ts}\nThe proofread for `{chapter.project.title} {formatNumber(chapter.number)}` is ready.\nLink: {chapter.link_pr}\nNotes: {chapter.notes}\nNotes: {chapter.notes}")
@@ -332,10 +332,10 @@ class Done(commands.Cog):
                     message = False
                 else:
                     raise ValueError
-            chapter.link_pr = d["link"]
-            chapter.date_pr = func.now()
+            chapter.link_rl = d["link"]
+            chapter.date_rl = func.now()
             if chapter.proofreader is not None:
-                pr = fakesearch(chapter.proofreader.id, ctx).mention
+                pr = fakesearch(chapter.proofreader.discord_id, ctx).mention
                 if message:
                     await ctx.send(
                         f"{pr} \nThe QCTS for `{chapter.project.title} {formatNumber(chapter.number)}` is ready.\nLink: {chapter.link_rl}\nNotes: {chapter.notes}\nNotes: {chapter.notes}")
@@ -442,3 +442,6 @@ class Done(commands.Cog):
         finally:
             session.commit()
             session.close()
+
+def setup(Bot):
+    Bot.add_cog(Done(Bot))

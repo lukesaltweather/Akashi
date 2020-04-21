@@ -147,28 +147,28 @@ class Add(commands.Cog):
             table.add_column("Raws", [chp.link_raw])
             if "ts" in d:
                 chp.typesetter = await searchstaff(d["ts"], ctx, session1)
-                table.add_column("Typesetter", chp.typesetter)
+                table.add_column(fieldname="Typesetter", column=[chp.typesetter.name])
             if "rd" in d:
                 chp.redrawer = await searchstaff(d["rd"], ctx, session1)
-                table.add_column("Redrawer", chp.redrawer)
+                table.add_column(fieldname="Redrawer", column=[chp.redrawer.name])
             if "pr" in d:
                 chp.proofreader = await searchstaff(d["pr"], ctx, session1)
-                table.add_column("Proofreads", chp.proofreader)
+                table.add_column(fieldname="Proofreads", column=[chp.proofreader.name])
             if "tl" in d:
                 chp.translator = await searchstaff(d["tl"], ctx, session1)
-                table.add_column("Translation", chp.translator)
+                table.add_column(fieldname="Translation", column=[chp.translator.name])
             if "link_ts" in d:
                 chp.link_ts = d["link_ts"]
-                table.add_column("Link TS", chp.link_ts)
+                table.add_column(fieldname="Link TS", column=[chp.link_ts])
             if "link_rd" in d:
                 chp.link_rd = d["link_rd"]
-                table.add_column("Link RD", chp.link_rd)
+                table.add_column(fieldname="Link RD", column=[chp.link_rd])
             if "link_tl" in d:
                 chp.link_tl = d["link_tl"]
-                table.add_column("Link TL", chp.link_tl)
+                table.add_column(fieldname="Link TL", column=[chp.link_tl])
             if "link_pr" in d:
                 chp.link_pr = d["link_pr"]
-                table.add_column("Link PR", chp.link_pr)
+                table.add_column(fieldname="Link PR", column=[chp.link_pr])
             chp.date_created = func.now()
             session1.add(chp)
             t = table.get_string(title="Chapter Preview")
@@ -199,3 +199,6 @@ class Add(commands.Cog):
                     await message.clear_reactions()
         finally:
             session1.close()
+
+def setup(Bot):
+    Bot.add_cog(Add(Bot))

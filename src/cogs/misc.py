@@ -25,16 +25,16 @@ class Misc(commands.Cog):
 
     @commands.command(name='reload', hidden=True)
     @is_admin()
-    async def _reload(self, *, module: str):
+    async def _reload(self, ctx, module: str):
         """Reloads a module."""
         try:
             self.bot.unload_extension(module)
             self.bot.load_extension(module)
         except Exception as e:
-            await self.bot.say('\N{PISTOL}')
-            await self.bot.say('{}: {}'.format(type(e).__name__, e))
+            await ctx.send('\N{PISTOL}')
+            await ctx.send('{}: {}'.format(type(e).__name__, e))
         else:
-            await self.bot.say('\N{OK HAND SIGN}')
+            await ctx.send('\N{OK HAND SIGN}')
 
     @commands.command(hidden=True)
     @is_admin()
@@ -124,3 +124,6 @@ class Misc(commands.Cog):
         color = discord.Colour(eger)
         embed = discord.Embed(color=color)
         await ctx.send(embed=embed)
+
+def setup(Bot):
+    Bot.add_cog(Misc(Bot))

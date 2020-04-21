@@ -61,3 +61,5 @@ class Assign(commands.Cog):
         finally:
             session.close()
 
+def setup(Bot):
+    Bot.add_cog(Assign(Bot))

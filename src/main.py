@@ -73,14 +73,13 @@ async def on_ready():
     await bot.change_presence(activity=activity)
     deletemessages.start()
     refreshembed.start()
-    bot.add_cog(Assign(bot))
-    bot.add_cog(Edit(bot))
-    bot.add_cog(Misc(bot))
-    bot.add_cog(Info(bot))
-    bot.add_cog(Add(bot))
-    bot.add_cog(Done(bot))
-    bot.add_cog(Note(bot))
-    bot.add_cog(MyCog(bot))
+    bot.load_extension('src.cogs.edit')
+    bot.load_extension('src.cogs.misc')
+    bot.load_extension('src.cogs.info')
+    bot.load_extension('src.cogs.add')
+    bot.load_extension('src.cogs.done')
+    bot.load_extension('src.cogs.note')
+    bot.load_extension('src.cogs.help')
     bot.config = config
     bot.Session = sessionmaker(bind=engine)
     print(discord.version_info)
@@ -228,46 +227,6 @@ async def allcommands(ctx):
 @bot.command(enable=False, hidden=True)
 async def createtables(ctx):
     await testdb.createtables()
-
-
-@tasks.loop(hours=2)
-async def deletemessages():
-    session = bot.Session()
-    messages = session.query(Message).all()
-    for message in messages:
-        if message.created_on < (datetime.utcnow() - timedelta(hours=48)) and message.reminder:
-            channel = bot.get_channel(config["command_channel"])
-            m = await channel.fetch_message(message.message_id)
-            await m.clear_reactions()
-            await m.unpin()
-            await m.add_reaction("❌")
-            msg = m.jump_url
-            embed = discord.Embed(color=discord.Colour.red())
-            embed.set_author(name="Assignment", icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128")
-            chapter = session.query(Chapter).filter(Chapter.id == message.chapter).one()
-            wordy = (await bot.fetch_user(345845639663583252)).mention
-            embed.description = f"*{chapter.project.title}* {formatNumber(chapter.number)}\nNo staffmember assigned themselves to Chapter.\n[Jump!]({msg})\n"
-            await channel.send(message={wordy}, embed=embed)
-            session.delete(message)
-        elif message.created_on < (datetime.utcnow() - timedelta(hours=24)) and not message.reminder:
-            channel = bot.get_channel(config["command_channel"])
-            m = await channel.fetch_message(message.message_id)
-            msg = m.jump_url
-            embed = discord.Embed(color=discord.Colour.red())
-            embed.set_author(name="Assignment Reminder", icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128")
-            chapter = session.query(Chapter).filter(Chapter.id == message.chapter).one()
-            who = {    config["ts_id"]: "Typesetter",
-                        config["rd_id"]: "Redrawer",
-                        config["tl_id"]: "Translator",
-                        config["pr_id"]: "Proofreader",
-            }
-            embed.description = f"*{chapter.project.title}* {formatNumber(chapter.number)}\nStill requires a {who.get(int(message.awaiting))}!\n[Jump!]({msg})\n"
-            await channel.send(embed=embed)
-            message.reminder = True
-        else:
-            pass
-    session.commit()
-    session.close()
 
 
 @tasks.loop(seconds=60)

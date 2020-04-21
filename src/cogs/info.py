@@ -614,3 +614,6 @@ class Info(commands.Cog):
                          icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128")
         await ctx.send(embed=embed)
         session.close()
+
+def setup(Bot):
+    Bot.add_cog(Info(Bot))

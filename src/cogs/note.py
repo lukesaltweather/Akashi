@@ -66,3 +66,6 @@ class Note(commands.Cog):
             await ctx.send(note.notes)
         finally:
             session.close()
+
+def setup(Bot):
+    Bot.add_cog(Note(Bot))

@@ -153,3 +153,6 @@ class EmbedHelper:
 
     def allembeds(self):
         return self.embed
+
+def setup(Bot):
+    Bot.add_cog(MyCog(Bot))

@@ -188,3 +188,61 @@ class FakeUser(discord.Object):
 
     def __str__(self):
         return str(self.id)
+
+
+def divide_chunks(l, n):
+    # looping till length l
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
+
+class BoardPaginator:
+    def __init__(self, color, title=None, url=None):
+        self.color = color
+        self.title = title
+        self.url = url
+        self.current_length = 0
+        self.embeds = list()
+        self.thumbnail = ""
+
+    async def send_all(self, channel):
+        for e in self.embeds:
+            await channel.send(embed=e)
+
+    def title(self, title):
+        self.title = title
+
+    def url(self, url):
+        self.url = url
+
+    @property
+    def embed(self):
+        return self.embeds
+
+    def set_author(self, name, url, icon_url):
+        self.name = name
+        self.icon_url = icon_url
+
+    def set_thumbnail(self, tn):
+        self.thumbnail = tn
+
+    def add_field(self, name: str, value: str, inline: bool):
+        print(self.current_length)
+        if self.current_length + len(value)+len(name) >= 5000:
+            self.embeds.append(discord.Embed(color=self.color))
+            self.embeds[-1].add_field(name=name, value=value, inline=inline)
+            self.current_length = (len(value)+len(name))
+        else:
+            if len(self.embeds) == 0:
+                self.embeds.append(discord.Embed(color=self.color))
+                self.embeds[-1].url = self.url
+                self.embeds[-1].title = self.title
+                self.embeds[-1].set_author(name=self.name, icon_url=self.icon_url, url=self.url)
+                self.embeds[-1].set_thumbnail(url=self.thumbnail)
+                self.embeds[-1].add_field(name=name, value=value, inline=inline)
+                self.current_length += (len(value)+len(name))
+            else:
+                self.embeds[-1].add_field(name=name, value=value, inline=inline)
+                self.current_length += (len(value)+len(name))
+
+
+

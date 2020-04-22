@@ -2,6 +2,7 @@ sqlalchemy
 psycopg2-binary
 pillow
 requests
+python-dateutil
 
 aiohttp==3.6.2
 astroid==2.3.3

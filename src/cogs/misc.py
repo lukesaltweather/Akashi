@@ -48,6 +48,15 @@ class Misc(commands.Cog):
         session.commit()
         session.close()
 
+    @is_admin()
+    @commands.command(hidden=True)
+    async def toggledebug(self, ctx):
+        if self.bot.debug == False:
+            self.bot.debug = True
+        else:
+            self.bot.debug = False
+        await ctx.send(f"Debugmode is now {self.bot.debug}")
+
     @commands.command(description=jsonhelp["debugboard"]["description"],
                       usage=jsonhelp["debugboard"]["usage"], brief=jsonhelp["debugboard"]["brief"], help=jsonhelp["debugboard"]["help"])
     @is_admin()
@@ -57,7 +66,8 @@ class Misc(commands.Cog):
         messages = list()
         ch = await self.bot.fetch_channel(self.bot.config["board_channel"])
         for msg in msgs.values():
-            messages.append(await ch.fetch_message(msg))
+            for me in msg:
+                messages.append(await ch.fetch_message(me))
         for message in messages:
             await message.delete()
         messages = {}

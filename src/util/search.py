@@ -1,3 +1,5 @@
+import json
+
 import discord
 import discord.ext
 from sqlalchemy.orm.exc import MultipleResultsFound
@@ -7,13 +9,32 @@ from src.model.staff import Staff
 from src.util import exceptions, misc
 from src.util.exceptions import StaffNotFoundError
 
+with open('src/util/config.json', 'r') as f:
+    config = json.load(f)
 
 async def discordstaff(sti: str, ctx):
     try:
-        conv = discord.ext.commands.MemberConverter()
-        user = await conv.convert(ctx=ctx, argument=sti)
-        if user is not None:
-            return user
+        member = discord.utils.find(lambda m: m.id == int(sti), ctx.guild.members)
+        if member is not None:
+            return member
+    except:
+        pass
+    try:
+        member = discord.utils.find(lambda m: m.name.like(sti), ctx.guild.members)
+        if member is not None:
+            return member
+    except:
+        pass
+    try:
+        member = discord.utils.find(lambda m: m.mention == sti, ctx.guild.members)
+        if member is not None:
+            return member
+    except:
+        pass
+    try:
+        member = discord.utils.find(lambda m: m.nick.like(sti), ctx.guild.members)
+        if member is not None:
+            return member
     except:
         pass
     return None
@@ -41,6 +62,9 @@ async def searchstaff(passstr: str, ctx, sessions):
     if passstr in ("None", "none"):
         return None
     dst = await discordstaff(passstr, ctx)
+    worker = ctx.guild.get_role(config["neko_workers"])
+    if worker not in dst.roles:
+        raise StaffNotFoundError
     if dst is None:
         try:
             staff = await dbstaff(int(passstr), sessions)

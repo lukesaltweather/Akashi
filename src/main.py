@@ -3,6 +3,7 @@ import os
 import random
 import sys
 import time
+import traceback
 from datetime import datetime, timedelta
 from io import BytesIO
 
@@ -50,7 +51,7 @@ with open('src/util/help.json', 'r') as f:
 
 engine = loadDB(config["db_uri"])
 logger = logging.getLogger('discord')
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
@@ -71,8 +72,8 @@ async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
     activity = discord.Activity(name='$help', type=discord.ActivityType.playing)
     await bot.change_presence(activity=activity)
-    deletemessages.start()
-    refreshembed.start()
+    bot.Session = sessionmaker(bind=engine)
+    bot.load_extension('src.cogs.loops')
     bot.load_extension('src.cogs.edit')
     bot.load_extension('src.cogs.misc')
     bot.load_extension('src.cogs.info')
@@ -80,8 +81,9 @@ async def on_ready():
     bot.load_extension('src.cogs.done')
     bot.load_extension('src.cogs.note')
     bot.load_extension('src.cogs.help')
+    # bot.load_extension('src.cogs.reminder')
+    bot.debug = False
     bot.config = config
-    bot.Session = sessionmaker(bind=engine)
     print(discord.version_info)
     # Set-up the engine here.
     # Create a session
@@ -227,112 +229,6 @@ async def allcommands(ctx):
 @bot.command(enable=False, hidden=True)
 async def createtables(ctx):
     await testdb.createtables()
-
-
-@tasks.loop(seconds=60)
-async def refreshembed():
-    with open('src/util/board.json', 'r') as f:
-        messages = json.load(f)
-    ch = bot.get_channel(config['board_channel'])
-    session = bot.Session()
-    projects = session.query(Project).filter\
-        (Project.status == "active").order_by(Project.position.asc()).all()
-    for x in projects:
-        chapters = session.query(Chapter).options(
-            joinedload(Chapter.translator),
-            joinedload(Chapter.typesetter),
-            joinedload(Chapter.redrawer),
-            joinedload(Chapter.proofreader)).\
-            filter(Chapter.project_id == x.id).order_by(Chapter.number.asc()).all()
-        list_in_progress_project = []
-        list_done_project = []
-        for y in chapters:
-            done = 0
-            chapter = f" [Raws]({y.link_raw}) |"
-            if y.translator is None and y.link_tl is None:
-                chapter = chapter + " ~~TL~~ |"
-            elif y.translator is not None and y.link_tl is None:
-                chapter = chapter + f" **TL**({y.translator.name}) |"
-            elif y.link_tl is not None:
-                chapter = "{} [TL ({})]({}) |".format(chapter, y.translator.name if y.translator is not None else "None", y.link_tl)
-                done += 1
-            if y.redrawer is None and y.link_rd is None:
-                chapter = chapter + " ~~RD~~ |"
-            elif y.redrawer is not None and y.link_rd is None:
-                chapter = chapter + f" **RD**({y.redrawer.name}) |"
-            elif y.link_rd is not None:
-                chapter = chapter + f" [RD ({y.redrawer.name if y.redrawer is not None else 'None'})]({y.link_rd}) |"
-                done += 1
-            if y.typesetter is None and y.link_ts is None:
-                chapter = chapter + " ~~TS~~ |"
-            elif y.typesetter is not None and y.link_ts is None:
-                chapter = chapter + f" **TS**({y.typesetter.name}) |"
-            elif y.link_ts is not None:
-                chapter = chapter + f" [TS ({y.typesetter.name if y.typesetter is not None else 'None'})]({y.link_ts}) |"
-                done += 1
-            if y.proofreader is None and y.link_pr is None:
-                chapter = chapter + " ~~PR~~ |"
-            elif y.proofreader is not None and y.link_pr is None:
-                chapter = chapter + f" **PR**({y.proofreader.name}) |"
-            elif y.link_pr is not None:
-                chapter = chapter + f" [PR ({y.proofreader.name  if y.proofreader is not None else 'None'})]({y.link_pr}) |"
-            if y.link_rl is not None:
-                chapter = chapter + f" [QCTS]({y.link_rl})"
-                done += 1
-            done += 1
-            if chapter != "" and done != 5 and y.date_release is None:
-                num = misc.formatNumber(y.number)
-                chapter = "Chapter {}:{}".format(num, chapter)
-                list_in_progress_project.append(f"{chapter}\n")
-            elif chapter != "" and done == 5 and y.date_release is None:
-                num = misc.formatNumber(y.number)
-                chapter = "Chapter {}:{}".format(num, chapter)
-                list_done_project.append(f"{chapter}\n")
-        if f"{x.id}" in messages:
-            msg = await ch.fetch_message(messages[f"{x.id}"])
-            if x.color is None:
-                color = random.choice([discord.Colour.blue(), discord.Colour.green(), discord.Colour.purple(), discord.Colour.dark_red(), discord.Colour.dark_teal()])
-            else:
-                color = discord.Colour(int(x.color, 16))
-            embed = discord.Embed(
-                colour=color
-            )
-            embed.set_author(name=x.title, icon_url=x.icon, url=x.link)
-            embed.set_thumbnail(url=x.thumbnail)
-            embed.title = "Link to project"
-            embed.url = x.link
-            if len(list_in_progress_project) != 0:
-                c = " ".join(b for b in list_in_progress_project)
-                embed.add_field(name="Chapters in Progress", value=""+c, inline=False)
-            if len(list_done_project) != 0:
-                c = " ".join(b for b in list_done_project)
-                embed.add_field(name="Chapters ready for release", value=""+c, inline=False)
-            await msg.edit(embed=embed)
-        else:
-            if x.color is None:
-                color = random.choice([discord.Colour.blue(), discord.Colour.green(), discord.Colour.purple(), discord.Colour.dark_red(), discord.Colour.dark_teal()])
-            else:
-                color = discord.Colour(int(x.color, 16))
-            embed = discord.Embed(
-                colour=color
-            )
-            embed.title = "Link to project"
-            embed.url = x.link
-            embed.set_author(name=x.title, icon_url=x.icon, url=x.link)
-            embed.set_thumbnail(url=x.thumbnail)
-            if len(list_in_progress_project) != 0:
-                c = " ".join(b for b in list_in_progress_project)
-                embed.add_field(name="Chapters in Progress", value=""+c, inline=False)
-            if len(list_done_project) != 0:
-                c = " ".join(b for b in list_done_project)
-                embed.add_field(name="Chapters ready for release", value=""+c, inline=False)
-            message = await ch.send(embed=embed)
-            messages[f"{x.id}"] = message.id
-            with open('src/util/board.json', 'w') as f:
-                json.dump(messages, f, indent=4)
-
-    session.commit()
-    session.close()
 
 
 @bot.command(hidden=True)

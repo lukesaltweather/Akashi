@@ -88,7 +88,6 @@ async def on_ready():
     # Set-up the engine here.
     # Create a session
 
-
 @bot.event
 async def on_command_error(ctx, error):
     # This prevents any commands with local handlers being handled here in on_command_error.

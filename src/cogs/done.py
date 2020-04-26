@@ -70,8 +70,8 @@ class General_helper:
     def get_session(self):
         return self.session
 
-    def get_channel(self):
-        return await self.bot.fetch_channel(jsonhelp.get("file_room", self.ctx.channel.id))
+    async def get_channel(self):
+        return await self.bot.fetch_channel(self.ctx.channel.id)
 
     def get_context(self):
         return self.ctx
@@ -80,15 +80,15 @@ class General_helper:
         return self.link
 
 class TL_helper:
-    def __init__(self, helper: General_helper):
+    def __init__(self, helper: General_helper, channel):
         self.helper = helper
         self.ctx = helper.get_context()
-        self.channel = helper.get_channel()
+        self.channel = channel
         self.message = helper.get_message()
         self.chapter = helper.get_chapter()
         self.session = helper.get_session()
 
-    def help(self):
+    async def help(self):
         """
         Checks and execute action here.
         """
@@ -125,7 +125,7 @@ class TL_helper:
         if self.message:
             await self._no_redraws_msg()
         else:
-            await self._no_redrawer_no_msg()
+            await self._no_redraws_no_msg()
 
     async def _no_redrawer(self):
         if self.message:
@@ -140,14 +140,14 @@ class TL_helper:
             await self._no_typesetter_no_msg()
 
 
-    def _typesetter_msg(self):
+    async def _typesetter_msg(self):
         """
         Called when the redraws are finished, and a typesetter is assigned to the chapter.
         Will ping typesetter.
         @return: None
         """
         ts = fakesearch(self.chapter.typesetter.discord_id, self.ctx).mention
-        await self.ctx.send(
+        await self.channel.send(
             f'{ts}\nThe translation and redraws for `{self.chapter.project.title} {formatNumber(self.chapter.number)}` are done.\nTranslation: {self.chapter.link_tl}\nRedraws:{self.chapter.link_rd}\nNotes: {self.chapter.notes}')
         await self.ctx.message.add_reaction("✅")
 
@@ -158,7 +158,7 @@ class TL_helper:
         @return: None
         """
         ts = fakesearch(self.chapter.typesetter.discord_id, self.ctx).display_name
-        await self.ctx.send(
+        await self.channel.send(
             f'{ts}\nThe translation and redraws for `{self.chapter.project.title} {formatNumber(self.chapter.number)}` are done.\nTranslation: {self.chapter.link_tl}\nRedraws:{self.chapter.link_rd}\nNotes: {self.chapter.notes}')
         await self.ctx.message.add_reaction("✅")
 
@@ -170,7 +170,7 @@ class TL_helper:
         """
         await self.ctx.message.add_reaction("✅")
         ts = fakesearch(self.chapter.redrawer.discord_id, self.ctx).mention
-        await self.ctx.send(
+        await self.channel.send(
             f'{ts}\nThe translation `{self.chapter.project.title} {formatNumber(self.chapter.number)}` is done.\nRaws: {self.chapter.link_raw}\nNotes: {self.chapter.notes}')
 
     async def _no_redraws_no_msg(self):
@@ -181,7 +181,7 @@ class TL_helper:
         """
         await self.ctx.message.add_reaction("✅")
         ts = fakesearch(self.chapter.redrawer.discord_id, self.ctx).display_name
-        await self.ctx.send(
+        await self.channel.send(
             f'{ts}\nThe translation `{self.chapter.project.title} {formatNumber(self.chapter.number)}` is done.\nRaws: {self.chapter.link_raw}\nNotes: {self.chapter.notes}')
 
     async def _no_redrawer_msg(self):
@@ -192,7 +192,7 @@ class TL_helper:
         """
         if self.chapter.project.redrawer is None:
             rd = await make_mentionable(self.ctx.guild.get_role(int(self.bot.config["rd_id"])))
-            msg = await self.ctx.send(
+            msg = await self.channel.send(
                 f"{rd}\nRedrawer required for `{self.chapter.project.title} {formatNumber(self.chapter.number)}`. React below to assign yourself.")
             await msg.add_reaction("🙋")
             msgdb = Message(msg.id, self.bot.config["rd_id"], "🙋")
@@ -202,11 +202,12 @@ class TL_helper:
             self.session.add(msgdb)
         else:
             rd = fakesearch(self.chapter.project.redrawer.discord_id, self.ctx).mention
-            await self.ctx.send("Couldn't find a redrawer. Falling back to project defaults.")
-            await self.ctx.send(
+            await self.channel.send("Couldn't find a redrawer. Falling back to project defaults.")
+            await self.channel.send(
                 f'{rd}\nThe translation for `{self.chapter.project.title} {formatNumber(self.chapter.number)}` is done.\nRaws: {self.chapter.link_raw}\nNotes: {self.chapter.notes}')
             await self.ctx.message.add_reaction("✅")
             self.chapter.redrawer = self.chapter.project.redrawer
+            self.session.commit()
 
     async def _no_redrawer_no_msg(self):
         """
@@ -216,7 +217,7 @@ class TL_helper:
         """
         if self.chapter.project.redrawer is None:
             rd = await make_mentionable(self.ctx.guild.get_role(int(self.bot.config["rd_id"])))
-            msg = await self.ctx.send(
+            msg = await self.channel.send(
                 f"{rd}\nRedrawer required for `{self.chapter.project.title} {formatNumber(self.chapter.number)}`. React below to assign yourself.")
             await msg.add_reaction("🙋")
             await toggle_mentionable(self.ctx.guild.get_role(int(self.bot.config["rd_id"])))
@@ -227,11 +228,12 @@ class TL_helper:
             self.session.add(msgdb)
         else:
             rd = fakesearch(self.chapter.project.redrawer.discord_id, self.ctx).display_name
-            await self.ctx.send("Couldn't find a redrawer. Falling back to project defaults.")
-            await self.ctx.send(
+            await self.channel.send("Couldn't find a redrawer. Falling back to project defaults.")
+            await self.channel.send(
                 f'{rd}\nThe translation for `{self.chapter.project.title} {formatNumber(self.chapter.number)}` is done.\nRaws: {self.chapter.link_raw}\nNotes: {self.chapter.notes}')
             await self.ctx.message.add_reaction("✅")
             self.chapter.redrawer = self.chapter.project.redrawer
+            self.session.commit()
 
     async def _no_typesetter_msg(self):
         """
@@ -240,7 +242,7 @@ class TL_helper:
         """
         if self.chapter.project.typesetter is None:
             ts = await make_mentionable(self.ctx.guild.get_role(int(self.helper.bot.config["ts_id"])))
-            msg = await self.ctx.send(
+            msg = await self.channel.send(
                 f"{ts}\nTypesetter required for `{self.chapter.project.title} {formatNumber(self.chapter.number)}`. React below to assign yourself.")
             await msg.add_reaction("🙋")
             await msg.pin()
@@ -250,8 +252,8 @@ class TL_helper:
             self.session.add(msgdb)
         else:
             ts = fakesearch(self.chapter.project.typesetter.discord_id, self.ctx).mention
-            await self.ctx.send("Couldn't find a typesetter. Falling back to project defaults.")
-            await self.ctx.send(
+            await self.channel.send("Couldn't find a typesetter. Falling back to project defaults.")
+            await self.channel.send(
                 f'{ts}\nThe translation and redraws for `{self.chapter.project.title} {formatNumber(self.chapter.number)}` are done.\nTranslation: {self.chapter.link_tl}\nRedraws:{self.chapter.link_rd}\nNotes: {self.chapter.notes}')
             await self.ctx.message.add_reaction("✅")
             self.chapter.typesetter = self.chapter.project.typesetter
@@ -264,7 +266,7 @@ class TL_helper:
         """
         if self.chapter.project.typesetter is None:
             ts = await make_mentionable(self.ctx.guild.get_role(int(self.helper.bot.config["ts_id"])))
-            msg = await self.ctx.send(
+            msg = await self.channel.send(
                 f"{ts}\nTypesetter required for `{self.chapter.project.title} {formatNumber(self.chapter.number)}`. React below to assign yourself.")
             await msg.add_reaction("🙋")
             await msg.pin()
@@ -274,8 +276,8 @@ class TL_helper:
             self.session.add(msgdb)
         else:
             ts = fakesearch(self.chapter.project.typesetter.discord_id, self.ctx).display_name
-            await self.ctx.send("Couldn't find a typesetter. Falling back to project defaults.")
-            await self.ctx.send(
+            await self.channel.send("Couldn't find a typesetter. Falling back to project defaults.")
+            await self.channel.send(
                 f'{ts}\nThe translation and redraws for `{self.chapter.project.title} {formatNumber(self.chapter.number)}` are done.\nTranslation: {self.chapter.link_tl}\nRedraws:{self.chapter.link_rd}\nNotes: {self.chapter.notes}')
             await self.ctx.message.add_reaction("✅")
             self.chapter.typesetter = self.chapter.project.typesetter
@@ -306,7 +308,9 @@ class Done(commands.Cog):
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
     async def donetl(self, ctx, *, arg):
         general = General_helper(self.bot, ctx, arg)
-        TL = TL_helper(general)
+        channel = await general.get_channel()
+        TL = TL_helper(general, channel)
+        await TL.help()
 
 
     @commands.command(checks=[is_ts], description=jsonhelp["donets"]["description"],

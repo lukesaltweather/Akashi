@@ -61,7 +61,7 @@ class Loops(commands.Cog):
                 await channel.send(message={wordy}, embed=embed)
                 session.delete(message)
             elif message.created_on < (datetime.datetime.utcnow() - datetime.timedelta(hours=24)) and not message.reminder:
-                channel = self.bot.get_channel(self.bot.configconfig["command_channel"])
+                channel = self.bot.get_channel(self.bot.config["command_channel"])
                 m = await channel.fetch_message(message.message_id)
                 msg = m.jump_url
                 embed = discord.Embed(color=discord.Colour.red())

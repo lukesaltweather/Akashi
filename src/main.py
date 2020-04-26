@@ -83,6 +83,7 @@ async def on_ready():
     bot.load_extension('src.cogs.note')
     bot.load_extension('src.cogs.help')
     bot.load_extension('src.cogs.reminder')
+    bot.load_extension('src.cogs.stats')
     bot.debug = False
     print(discord.version_info)
     # Set-up the engine here.

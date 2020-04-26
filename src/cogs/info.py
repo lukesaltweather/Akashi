@@ -9,7 +9,7 @@ from sqlalchemy import Date, text, or_
 
 from src.helpers.arghelper import arghelper
 from src.util import exceptions
-from src.util.misc import drawimage, formatNumber
+from src.util.misc import drawimage, formatNumber, async_drawimage
 from src.util.search import searchstaff, searchproject
 from src.util.checks import is_admin
 from sqlalchemy.orm import aliased
@@ -60,9 +60,13 @@ class Info(commands.Cog):
                                                     join(Project, Chapter.project_id == Project.id)
                 # joinen geschieht in zukunft hier. damit wird vermieden dass beim sortieren kacke passiert
                 if "p" in d:
-                    pro = searchproject(d["p"], session)
+                    if ',' in d["p"]:
+                        helper = arghelper(d.get("p"))
+                        pro = helper.get_project(session)
+                    else:
+                        pro = searchproject(d["p"], session).id == Chapter.project_id
                     if pro is not None:
-                        query = query.filter(Chapter.project_id == pro.id)
+                        query = query.filter(pro)
                     else:
                         pass
                 if "title" in d:
@@ -86,21 +90,36 @@ class Info(commands.Cog):
                 if "id" in d:
                     query = query.filter(Chapter.id == int(d["id"]))
                 if "ts" in d:
-                    typ = await searchstaff(d["ts"], ctx, session)
+                    if ',' in d["ts"]:
+                        helper = arghelper(d.get("ts"))
+                        ts = await helper.get_typesetter(ctx, session)
+                    else:
+                        ts = await searchstaff(d["ts"], ctx, session) == Chapter.typesetter
                     # typ = typ.id
-                    query = query.filter(Chapter.typesetter == typ)
+                    query = query.filter(ts)
                 if "rd" in d:
-                    typ = await searchstaff(d["rd"], ctx, session)
+                    if ',' in d["rd"]:
+                        helper = arghelper(d.get("rd"))
+                        rd = await helper.get_redrawer(ctx, session)
+                    else:
+                        rd = await searchstaff(d["rd"], ctx, session) == Chapter.redrawer
                     # typ = typ.id
-                    query = query.filter(Chapter.redrawer == typ)
+                    query = query.filter(rd)
                 if "tl" in d:
-                    typ = await searchstaff(d["tl"], ctx, session)
+                    if ',' in d["tl"]:
+                        helper = arghelper(d.get("tl"))
+                        tl = await helper.get_translator(ctx, session)
+                    else:
+                        tl = await searchstaff(d["tl"], ctx, session) == Chapter.translator
                     # typ = typ.id
-                    query = query.filter(Chapter.translator == typ)
+                    query = query.filter(tl)
                 if "pr" in d:
-                    typ = await searchstaff(d["pr"], ctx, session)
-                    # typ = typ.id
-                    query = query.filter(Chapter.proofreader == typ)
+                    if ',' in d["pr"]:
+                        helper = arghelper(d.get("pr"))
+                        pr = await helper.get_proofreader(ctx, session)
+                    else:
+                        pr = await searchstaff(d["pr"], ctx, session) == Chapter.proofreader
+                    query = query.filter(pr)
                 if "link_pr" in d:
                     if d["link_pr"] == "None" or d["link_pr"] == "none":
                         query = query.filter(Chapter.link_pr == None)
@@ -210,18 +229,18 @@ class Info(commands.Cog):
                 if "rl_upto" in d:
                     date = datetime.strptime(d["rl_upto"], "%Y %m %d").date()
                     query = query.filter(Chapter.date_release.cast(Date) <= date)
-                if "order_by" in d:
-                    try:
-                        query = query.order_by(text(d["order_by"]))
-                    except Exception:
-                        await ctx.send("Your sorting parameter seems to be off. Use the help command to verify.")
+                # if "order_by" in d:
+                #     try:
+                #         query = query.order_by(text(d["order_by"]))
+                #     except Exception:
+                #         await ctx.send("Your sorting parameter seems to be off. Use the help command to verify.")
                 output = "image"
                 if "output" in d:
                     if d["output"] == "text":
                         output = "text"
                     else:
                         output = "image"
-                records = query.all()
+                records = query.order_by(Project.title).order_by(Chapter.number).all()
                 embed = discord.Embed(colour=discord.Colour.blue())
                 embed.set_author(name="Links", icon_url='https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128')
                 if "fields" in d:
@@ -324,24 +343,24 @@ class Info(commands.Cog):
                     for chapter in records:
                         if chapter.link_tl is not None:
                             links_tl.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_tl})")
-                        if len(links_tl) != 0:
-                            embed.add_field(name="Translations", value="\n".join(links_tl), inline=False)
                         if chapter.link_rd is not None:
                             links_rd.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_rd})")
-                        if len(links_rd) != 0:
-                            embed.add_field(name="Redraws", value="\n".join(links_rd), inline=False)
                         if chapter.link_ts is not None:
                             links_ts.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_ts})")
-                        if len(links_ts) != 0:
-                            embed.add_field(name="Typesets", value="\n".join(links_ts), inline=False)
                         if chapter.link_pr is not None:
                             links_pr.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_pr})")
-                        if len(links_pr) != 0:
-                            embed.add_field(name="Proofreads", value="\n".join(links_pr), inline=False)
                         if chapter.link_rl is not None:
                             links_qcts.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_rl})")
-                        if len(links_qcts) != 0:
-                            embed.add_field(name="QC Typesets", value="\n".join(links_qcts), inline=False)
+                    if len(links_tl) != 0:
+                        embed.add_field(name="Translations", value="\n".join(links_tl), inline=False)
+                    if len(links_rd) != 0:
+                        embed.add_field(name="Redraws", value="\n".join(links_rd), inline=False)
+                    if len(links_ts) != 0:
+                        embed.add_field(name="Typesets", value="\n".join(links_ts), inline=False)
+                    if len(links_pr) != 0:
+                        embed.add_field(name="Proofreads", value="\n".join(links_pr), inline=False)
+                    if len(links_qcts) != 0:
+                        embed.add_field(name="QC Typesets", value="\n".join(links_qcts), inline=False)
                     tl = [chapter.translator.name if chapter.translator is not None else "None" for chapter in records]
                     table.add_column("Translator", tl)
                     ts = [chapter.typesetter.name if chapter.typesetter is not None else "None" for chapter in records]
@@ -406,6 +425,7 @@ class Info(commands.Cog):
                     typ = typ.id
                     query = query.filter(pr_alias.id == typ)
                 if "order_by" in d:
+
                     try:
                         query = query.order_by(d["order_by"])
                     except Exception:
@@ -582,7 +602,7 @@ class Info(commands.Cog):
             outerjoin(tl_alias, Chapter.translator_id == tl_alias.id). \
             outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id). \
             join(Project, Chapter.project_id == Project.id)
-        typ = await searchstaff(ctx.message.author.id, ctx, session)
+        typ = await searchstaff(str(ctx.message.author.id), ctx, session)
         to_tl = query.filter(Chapter.translator == typ).filter(Chapter.link_tl.is_(None)).all()
         to_rd = query.filter(Chapter.redrawer == typ).filter(Chapter.link_rd.is_(None)).all()
         to_ts = query.filter(Chapter.typesetter == typ).filter(Chapter.link_ts.is_(None)).all()
@@ -617,3 +637,11 @@ class Info(commands.Cog):
 
 def setup(Bot):
     Bot.add_cog(Info(Bot))
+"""
+class order_parser:
+    def __init__(self, user_input):
+        self.input = user_input
+
+    def parse(self):
+        if self.input.like("p"):
+            return"""

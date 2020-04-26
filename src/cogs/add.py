@@ -34,17 +34,16 @@ class Add(commands.Cog):
 
 
     async def cog_check(self, ctx):
-        admin = ctx.guild.get_role(self.bot.config["neko_herders"])
-        poweruser = ctx.guild.get_role(self.bot.config["power_user"])
-        ia = admin in ctx.message.author.roles or ctx.message.author.id == 358244935041810443 or poweruser in ctx.message.author.roles
-        guild = ctx.guild is not None
+        worker = ctx.guild.get_role(self.bot.config["neko_workers"])
+        ia = worker in ctx.message.author.roles
         ic = ctx.channel.id == self.bot.config["command_channel"]
+        guild = ctx.guild is not None
         if ia and ic and guild:
             return True
         elif ic:
-            raise exceptions.MissingRequiredPermission("Missing permission `poweruser`.")
-        elif guild is None:
-            raise exceptions.MissingRequiredPermission("SERVER MEMBER")
+            raise exceptions.MissingRequiredPermission("Wrong Channel.")
+        elif not guild:
+            raise exceptions.MissingRequiredPermission("Missing permission `Server Member`")
 
 
     @commands.command(description=jsonhelp["addstaff"]["description"], usage=jsonhelp["addstaff"]["usage"], brief=jsonhelp["addstaff"]["brief"], help=jsonhelp["addstaff"]["help"])

@@ -14,27 +14,10 @@ with open('src/util/config.json', 'r') as f:
 
 async def discordstaff(sti: str, ctx):
     try:
-        member = discord.utils.find(lambda m: m.id == int(sti), ctx.guild.members)
-        if member is not None:
-            return member
-    except:
-        pass
-    try:
-        member = discord.utils.find(lambda m: m.name.like(sti), ctx.guild.members)
-        if member is not None:
-            return member
-    except:
-        pass
-    try:
-        member = discord.utils.find(lambda m: m.mention == sti, ctx.guild.members)
-        if member is not None:
-            return member
-    except:
-        pass
-    try:
-        member = discord.utils.find(lambda m: m.nick.like(sti), ctx.guild.members)
-        if member is not None:
-            return member
+        conv = discord.ext.commands.MemberConverter()
+        user = await conv.convert(ctx=ctx, argument=sti)
+        if user is not None:
+            return user
     except:
         pass
     return None
@@ -63,8 +46,6 @@ async def searchstaff(passstr: str, ctx, sessions):
         return None
     dst = await discordstaff(passstr, ctx)
     worker = ctx.guild.get_role(config["neko_workers"])
-    if worker not in dst.roles:
-        raise StaffNotFoundError
     if dst is None:
         try:
             staff = await dbstaff(int(passstr), sessions)
@@ -72,6 +53,8 @@ async def searchstaff(passstr: str, ctx, sessions):
                 return staff
         except ValueError:
             raise StaffNotFoundError
+    if worker not in dst.roles:
+        raise StaffNotFoundError
     return await dbstaff(dst.id, sessions)
 
 

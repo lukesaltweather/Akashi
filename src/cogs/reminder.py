@@ -1,17 +1,17 @@
 import asyncio
+import json
 
 import discord
-from dateutil.tz import tzstr, gettz
-from dateutil.zoneinfo import get_zonefile_instance
+from dateutil import *
 from discord.ext import commands
 
 from src.util import exceptions
 from src.model.timer import Reminder
 from datetime import *
-from dateutil import *
+from src.util.search import searchstaff, discordstaff
 
-from src.util.search import searchstaff
-
+with open('src/util/help.json', 'r') as f:
+    jsonhelp = json.load(f)
 
 class ReminderCog(commands.Cog):
 
@@ -31,7 +31,8 @@ class ReminderCog(commands.Cog):
         elif not guild:
             raise exceptions.MissingRequiredPermission("Missing permission `Server Member`.")
 
-    @commands.command()
+    @commands.command(aliases=["r"],description=jsonhelp["remind"]["description"],
+                      usage=jsonhelp["remind"]["usage"], brief=jsonhelp["remind"]["brief"], help=jsonhelp["remind"]["help"])
     async def remind(self, ctx, *, arg):
         session = self.Session()
         try:
@@ -43,20 +44,21 @@ class ReminderCog(commands.Cog):
             date = date.astimezone(tz.UTC)
             print(date)
             if "u" in d:
-                u = await searchstaff(d.get("u"), ctx, session)
+                u = await discordstaff(d.get("u"), ctx)
             else:
                 u = ctx.author
-            r = Reminder(ctx.author.id, d.get("message"), date, u.id)
+            r = Reminder(ctx.author.id, d.get("msg"), date, u.id)
             def check(message: discord.Message) -> bool:
                 return message.author == ctx.author
             try:
-                await ctx.send(f"Do you really want to add this reminder on {date.strftime('%Y/%B/%d %H:%M TZ: %Z')}")
+                await ctx.send(f"Do you really want to add this reminder on {date.strftime('`%Y-%b-%d` | `%H:%M` `TZ: %Z`')}. Type Y/y/Yes/yes in chat to confirm, N/n/No/no to cancel.")
                 self.message = await self.bot.wait_for('message', timeout=30.5, check=check)
             except asyncio.TimeoutError:
                 await ctx.send("The author didn't respond.")
             if self.message.content in("yes", "Yes", "y", "Y"):
                 await ctx.message.add_reaction("👍")
                 session.add(r)
+                print("commited")
                 session.commit()
             else:
                 await ctx.send("Reminder wasn't added.")

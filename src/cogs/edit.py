@@ -30,17 +30,16 @@ class Edit(commands.Cog):
 
 
     async def cog_check(self, ctx):
-        admin = ctx.guild.get_role(self.bot.config["neko_herders"])
-        poweruser = ctx.guild.get_role(self.bot.config["power_user"])
-        ia = admin in ctx.message.author.roles or ctx.message.author.id == 358244935041810443 or poweruser in ctx.message.author.roles
+        worker = ctx.guild.get_role(self.bot.config["neko_workers"])
+        ia = worker in ctx.message.author.roles
         ic = ctx.channel.id == self.bot.config["command_channel"]
         guild = ctx.guild is not None
         if ia and ic and guild:
             return True
         elif ic:
-            raise exceptions.MissingRequiredPermission("Missing permission `poweruser`.")
+            raise exceptions.MissingRequiredPermission("Wrong Channel.")
         elif not guild:
-            raise exceptions.MissingRequiredPermission("Missing permission `Server Member`.")
+            raise exceptions.MissingRequiredPermission("Missing permission `Server Member`")
 
 
     @commands.command(aliases=["editch", "editc", "ec"], description=jsonhelp["editchapter"]["description"],
@@ -149,13 +148,13 @@ class Edit(commands.Cog):
                     if d["link_ts"] != "":
                         record.link_ts = d["link_ts"]
                     else:
-                        record.link_rd = None
+                        record.link_ts = None
                 if "link_tl" in d:
                     table.add_column("Link TL", [record.link_tl, d["link_tl"]])
                     if d["link_tl"] != "":
                         record.link_tl = d["link_tl"]
                     else:
-                        record.link_rd = None
+                        record.link_tl = None
                 if "link_rd" in d:
                     table.add_column("Link RD", [record.link_rd, d["link_rd"]])
                     if d["link_rd"] != "":
@@ -245,7 +244,7 @@ class Edit(commands.Cog):
                 else:
                     if str(reaction.emoji) == "✅":
                         num = formatNumber(float(record.number))
-                        await ctx.channel.send('Sucessfully edited chapter.'.format(record.project.title, num))
+                        await ctx.channel.send('Successfully edited chapter.'.format(record.project.title, num))
                         await ctx.message.add_reaction("✅")
                         session.commit()
                     else:
@@ -528,6 +527,8 @@ class Edit(commands.Cog):
             embed.add_field(name="\u200b",
                             value=f"Releasedate of {record.project.title} {record.number} set to {record.date_release.strftime('%Y/%m/%d')}")
             await ctx.send(embed=embed)
+            session.commit()
+            session.close()
 
 def setup(Bot):
     Bot.add_cog(Edit(Bot))

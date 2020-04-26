@@ -25,7 +25,7 @@ from src.cogs.help import MyCog
 from src.cogs.info import Info
 from src.cogs.misc import Misc
 from src.cogs.note import Note
-from src.util.checks import is_admin, is_worker, is_power_user
+from src.util.checks import is_admin, is_worker
 from src.model.message import Message
 from src.model.staff import Staff
 from src.model.chapter import Chapter
@@ -73,6 +73,7 @@ async def on_ready():
     activity = discord.Activity(name='$help', type=discord.ActivityType.playing)
     await bot.change_presence(activity=activity)
     bot.Session = sessionmaker(bind=engine)
+    bot.config = config
     bot.load_extension('src.cogs.loops')
     bot.load_extension('src.cogs.edit')
     bot.load_extension('src.cogs.misc')
@@ -81,9 +82,8 @@ async def on_ready():
     bot.load_extension('src.cogs.done')
     bot.load_extension('src.cogs.note')
     bot.load_extension('src.cogs.help')
-    # bot.load_extension('src.cogs.reminder')
+    bot.load_extension('src.cogs.reminder')
     bot.debug = False
-    bot.config = config
     print(discord.version_info)
     # Set-up the engine here.
     # Create a session
@@ -135,8 +135,8 @@ async def on_raw_reaction_add(payload):
     user = await guild.fetch_member(payload.user_id)
     if payload.user_id != 603216263484801039 and has_role:
         msg = None
+        session = bot.Session()
         try:
-            session = bot.Session()
             msg = session.query(Message).filter(payload.message_id == Message.message_id).one()
         except:
             session.close()
@@ -145,71 +145,79 @@ async def on_raw_reaction_add(payload):
                 ts = (await bot.fetch_guild(payload.guild_id)).get_role(config["ts_id"])
                 if ts not in await get_roles(user):
                     raise ReactionInvalidRoleError
-                ts_alias = aliased(Staff)
-                chp = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id).filter(Chapter.id == msg.chapter).one()
-                chp.typesetter = await dbstaff(payload.user_id, session)
-                await channel.send(f'{chp.typesetter.name} was assigned `{chp.project.title} {chp.number}`')
-                await channel.send(f'Translation: {chp.link_tl}')
-                await channel.send(f'Redraws: {chp.link_rd}')
-                session.delete(msg)
-                channel.fetch_message(payload.message_id).clear_reactions()
-                channel.fetch_message(payload.message_id).edit(f"Task was taken by {chp.typesetter.name}!")
-                channel.fetch_message(payload.message_id).add_reaction("✅")
-                session.commit()
+                else:
+                    ts_alias = aliased(Staff)
+                    chp = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id).filter(Chapter.id == msg.chapter).one()
+                    chp.typesetter = await dbstaff(payload.user_id, session)
+                    await channel.send(f'{chp.typesetter.name} was assigned `{chp.project.title} {chp.number}`')
+                    await channel.send(f'Translation: {chp.link_tl}')
+                    await channel.send(f'Redraws: {chp.link_rd}')
+                    session.delete(msg)
+                    msg2 = await channel.fetch_message(payload.message_id)
+                    await msg2.clear_reactions()
+                    await msg2.unpin()
+                    await msg2.edit(content=f"Task was taken by {chp.typesetter.name}!")
+                    await msg2.add_reaction("✅")
+                    session.commit()
                 session.close()
             elif int(msg.awaiting) == config["rd_id"]:
                 rd = (await bot.fetch_guild(payload.guild_id)).get_role(config["rd_id"])
                 if rd not in await get_roles(user):
                     raise ReactionInvalidRoleError
-                rd_alias = aliased(Staff)
-                chp = session.query(Chapter).outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id).filter(
-                    Chapter.id == msg.chapter).one()
-                chp.redrawer = await dbstaff(payload.user_id, session)
-                await channel.send(f'{chp.redrawer.name} was assigned `{chp.project.title} {chp.number}`')
-                await channel.send(f'Translation: {chp.link_tl}')
-                await channel.send(f'Raws: {chp.link_raw}')
-                session.delete(msg)
-                msg2 = await channel.fetch_message(payload.message_id)
-                await msg2.clear_reactions()
-                await msg2.unpin()
-                await msg2.edit(content=f"Task was taken by {chp.redrawer.name}!")
-                await msg2.add_reaction("✅")
-                session.commit()
+                else:
+                    rd_alias = aliased(Staff)
+                    chp = session.query(Chapter).outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id).filter(
+                        Chapter.id == msg.chapter).one()
+                    chp.redrawer = await dbstaff(payload.user_id, session)
+                    await channel.send(f'{chp.redrawer.name} was assigned `{chp.project.title} {chp.number}`')
+                    await channel.send(f'Translation: {chp.link_tl}')
+                    await channel.send(f'Raws: {chp.link_raw}')
+                    session.delete(msg)
+                    msg2 = await channel.fetch_message(payload.message_id)
+                    await msg2.clear_reactions()
+                    await msg2.unpin()
+                    await msg2.edit(content=f"Task was taken by {chp.redrawer.name}!")
+                    await msg2.add_reaction("✅")
+                    session.commit()
                 session.close()
             elif int(msg.awaiting) == config["tl_id"]:
                 tl = (await bot.fetch_guild(payload.guild_id)).get_role(config["tl_id"])
                 if tl not in await get_roles(user):
                     raise ReactionInvalidRoleError
-                ts_alias = aliased(Staff)
-                chp = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id).filter(
-                    Chapter.id == msg.chapter).one()
-                chp.typesetter = await dbstaff(payload.user_id, session)
-                await channel.send(f'{chp.typesetter.name} was assigned `{chp.project.title} {chp.number}`')
-                await channel.send(f'Raws: {chp.link_raw}')
-                session.delete(msg)
-                channel.fetch_message(payload.message_id).clear_reactions()
-                channel.fetch_message(payload.message_id).unpin()
-                channel.fetch_message(payload.message_id).edit(f"Task was taken by {chp.translator.name}!")
-                channel.fetch_message(payload.message_id).add_reaction("✅")
-                session.commit()
+                else:
+                    ts_alias = aliased(Staff)
+                    chp = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id).filter(
+                        Chapter.id == msg.chapter).one()
+                    chp.typesetter = await dbstaff(payload.user_id, session)
+                    await channel.send(f'{chp.typesetter.name} was assigned `{chp.project.title} {chp.number}`')
+                    await channel.send(f'Raws: {chp.link_raw}')
+                    session.delete(msg)
+                    msg2 = await channel.fetch_message(payload.message_id)
+                    await msg2.clear_reactions()
+                    await msg2.unpin()
+                    await msg2.edit(content=f"Task was taken by {chp.translator.name}!")
+                    await msg2.add_reaction("✅")
+                    session.commit()
                 session.close()
             elif int(msg.awaiting) == config["pr_id"]:
                 pr = (await bot.fetch_guild(payload.guild_id)).get_role(config["pr_id"])
                 if pr not in await get_roles(user):
                     raise ReactionInvalidRoleError
-                pr_alias = aliased(Staff)
-                chp = session.query(Chapter).outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id).filter(
-                    Chapter.id == msg.chapter).one()
-                chp.proofreader = await dbstaff(payload.user_id, session)
-                await channel.send(f'{chp.proofreader.name} was assigned `{chp.project.title} {chp.number}`')
-                await channel.send(f'Translation: {chp.link_tl}')
-                await channel.send(f'Typeset: {chp.link_ts}')
-                session.delete(msg)
-                channel.fetch_message(payload.message_id).clear_reactions()
-                channel.fetch_message(payload.message_id).unpin()
-                channel.fetch_message(payload.message_id).edit(f"Task was taken by {chp.proofreader.name}!")
-                channel.fetch_message(payload.message_id).add_reaction("✅")
-                session.commit()
+                else:
+                    pr_alias = aliased(Staff)
+                    chp = session.query(Chapter).outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id).filter(
+                        Chapter.id == msg.chapter).one()
+                    chp.proofreader = await dbstaff(payload.user_id, session)
+                    await channel.send(f'{chp.proofreader.name} was assigned `{chp.project.title} {chp.number}`')
+                    await channel.send(f'Translation: {chp.link_tl}')
+                    await channel.send(f'Typeset: {chp.link_ts}')
+                    session.delete(msg)
+                    msg2 = await channel.fetch_message(payload.message_id)
+                    await msg2.clear_reactions()
+                    await msg2.unpin()
+                    await msg2.edit(content=f"Task was taken by {chp.proofreader.name}!")
+                    await msg2.add_reaction("✅")
+                    session.commit()
                 session.close()
         except Exception:
             pass
@@ -257,8 +265,6 @@ async def editconfig(ctx, *, arg):
         config["neko_workers"] = d["neko_workers"]
     if "neko_herders" in d:
         config["neko_herders"] = d["neko_herders"]
-    if "power_user" in d:
-        config["power_user"] = d["power_user"]
     if "board_channel" in d:
         config["board_channel"] = d["board_channel"]
     if "command_channel" in d:

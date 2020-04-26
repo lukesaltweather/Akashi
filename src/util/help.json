@@ -18,8 +18,8 @@
     },
     "addchapter":
         {"help": "https://docs.lukesaltweather.de/commands/addchapter",
-        "brief": "Adds a chapter to the database. Requires role `Poweruser`.",
-        "description": "Add a chapter to the database. Requires raws to do so, as well as a project it belongs to. Requires role `Poweruser`.\n Aliases: `addc, addch, ac`",
+        "brief": "Adds a chapter to the database. ",
+        "description": "Add a chapter to the database. Requires raws to do so, as well as a project it belongs to. \n Aliases: `addc, addch, ac`",
         "usage": [
             {"p": "-c=" , "e": "Chapter Number - **REQUIRED**"},
             {"p": "-p=" , "e": "Project - **REQUIRED**"},
@@ -132,8 +132,8 @@
     },
     "editchapter": {
         "help": "https://docs.lukesaltweather.de/commands/editchapter",
-        "brief": "Edits a chapter in the DB. Requires role `Poweruser`.",
-        "description": "Edits a chapter in the DB. Prompts you with a preview, react with one of the two buttons to either confirm or dump the changes. Requires role `Poweruser`.\n Aliases: `editchapter, editc, ec`",
+        "brief": "Edits a chapter in the DB. ",
+        "description": "Edits a chapter in the DB. Prompts you with a preview, react with one of the two buttons to either confirm or dump the changes.\n Aliases: `editchapter, editc, ec`",
         "usage": [
             {"p": "-p=" , "e": "Project title - **REQUIRED**"},
             {"p": "-c=" , "e": "Chapter number - **REQUIRED**"},
@@ -164,8 +164,8 @@
     },
     "editproject": {
         "help": "https://docs.lukesaltweather.de/commands/editproject",
-        "brief": "Edit a project. Requires role `Poweruser`.",
-        "description": "Edit a project. Prompts you with a preview, react with one of the two buttons to either confirm or dump the changes. Requires role `Poweruser`.\n Aliases: `editproj, editp, ep`",
+        "brief": "Edit a project. ",
+        "description": "Edit a project. Prompts you with a preview, react with one of the two buttons to either confirm or dump the changes. \n Aliases: `editproj, editp, ep`",
         "usage": [
             {"p": "-p=" , "e": "Project title - **REQUIRED**"},
             {"p": "-id=" , "e": "Project ID, used to select project. - Alternative to using `-p=`"},
@@ -225,8 +225,8 @@
     },
     "release": {
         "help": "https://docs.lukesaltweather.de/commands/release",
-        "brief": "Simple command to mark a chapter as released. Requires role `Poweruser`.",
-        "description": "Simple command to mark a chapter as released. Requires role `Poweruser`.",
+        "brief": "Simple command to mark a chapter as released.",
+        "description": "Simple command to mark a chapter as released. ",
         "usage": [
             {"p": "-p=", "e": "The chapter's project - **REQUIRED**"},
             {"p": "-c=", "e": "The chapter's number - **REQUIRED**"},
@@ -292,6 +292,17 @@
             {"p": "-p=", "e": "The chapter's project - **REQUIRED**"},
             {"p": "-c=", "e": "The chapter's number - **REQUIRED**"},
             {"p": "-note=", "e": "The note to add - **REQUIRED**"}
+        ]
+    },
+    "remind": {
+        "help": "https://docs.lukesaltweather.de/commands/remind",
+        "brief": "Setup a reminder. Requires role `Neko Worker`.\nAliases: `r`",
+        "description": "Will remind a staffmember on the specified time. If no tz is passed, GMT will be assumed.\nAliases: `r`",
+        "usage": [
+            {"p": "-msg=", "e": "The reminder message- **REQUIRED**"},
+            {"p": "-date=", "e": "The datetime to remind on. Can be in any format (that is not ambiguous), since it uses a different parser. - **REQUIRED**"},
+            {"p": "-tz=", "e": "Timezone you assumed while typing out the datetime. - Optional, if not given, GMT is assumed."},
+            {"p": "-u=", "e": "Serveruser you wish to remind. If not given, message author will be reminded. - Optional"}
         ]
     }
 }

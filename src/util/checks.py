@@ -15,19 +15,6 @@ def is_worker():
         return ia and ic
     return commands.check(predicate)
 
-def is_power_user():
-    def predicate(ctx):
-        admin = ctx.guild.get_role(config["neko_herders"])
-        pu = ctx.guild.get_role(config["power_user"])
-        ia = admin in ctx.message.author.roles or ctx.message.author.id == 358244935041810443
-        ip = pu in ctx.message.author.roles
-        ic = ctx.channel.id == config["command_channel"]
-        if (ia or ip) and ic:
-            return True
-        elif ic:
-            raise exceptions.MissingRequiredPermission("Missing permission `poweruser`.")
-    return commands.check(predicate)
-
 def is_admin():
     def predicate(ctx):
         admin = ctx.guild.get_role(config["neko_herders"])

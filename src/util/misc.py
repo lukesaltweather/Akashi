@@ -1,3 +1,4 @@
+import functools
 import io
 import json
 from time import strftime
@@ -105,6 +106,27 @@ async def webhook(string):
         embed.add_field(name="\u200b", value=f"```{string}```")
         await webhook.send(embed=embed, username="Akashi")
 
+
+async def async_drawimage(string, bot):
+    thing = functools.partial(async_drawimage1, string)
+    return await bot.loop.run_in_executor(None, thing)
+
+async def async_drawimage1(string):
+    fontsize = 10  # starting font size
+    font = ImageFont.truetype('src/util/fonts/DroidSansMono.ttf', fontsize)
+    lines = string.split("\n")
+    img = Image.new('RGB', (font.getsize(lines[0])[0]+50, len(lines)*15+100), color=(255, 255, 255))
+    offset = 30
+    margin = 40
+    d = ImageDraw.Draw(img)
+    for line in lines:
+        d.text((margin, offset), line, font=font, fill="black")
+        offset+=font.getsize(line)[1]
+    arr = io.BytesIO()
+    img.save(arr, format='PNG')
+    arr.seek(0)
+    file = discord.File(arr, "image.png")
+    return file
 
 async def drawimage(string):
     fontsize = 100  # starting font size

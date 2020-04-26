@@ -10,6 +10,7 @@ from sqlalchemy.orm import joinedload
 from src.model.chapter import Chapter
 from src.model.message import Message
 from src.model.project import Project
+from src.model.timer import Reminder
 from src.util.misc import formatNumber, divide_chunks, BoardPaginator
 
 
@@ -19,10 +20,25 @@ class Loops(commands.Cog):
         self.bot = bot
         self.refreshembed.start()
         self.deletemessages.start()
+        self.reminder.start()
 
     def cog_unload(self):
         self.refreshembed.cancel()
         self.deletemessages.cancel()
+        self.reminder.cancel()
+
+    @tasks.loop(minutes=1)
+    async def reminder(self):
+        session = self.bot.Session()
+        reminders = session.query(Reminder).all()
+        for reminder in reminders:
+            if reminder.date - datetime.datetime.utcnow() <= datetime.timedelta(seconds=30):
+                author = await self.bot.fetch_user(reminder.author)
+                await (await self.bot.fetch_user(reminder.to_remind)).send(f"Hey! {author.name} tasked me with reminding you of:\n```{reminder.msg}```")
+                session.delete(reminder)
+                session.commit()
+        session.close()
+
 
     @tasks.loop(hours=2)
     async def deletemessages(self):
@@ -227,7 +243,6 @@ class Loops(commands.Cog):
                 messages[f"{x.id}"] = m
                 with open('src/util/board.json', 'w') as f:
                     json.dump(messages, f, indent=4)
-
         session.commit()
         session.close()
 

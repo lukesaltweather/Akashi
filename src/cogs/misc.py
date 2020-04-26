@@ -36,7 +36,7 @@ class Misc(commands.Cog):
         else:
             await ctx.send('\N{OK HAND SIGN}')
 
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, enabled=False)
     @is_admin()
     async def addall(self, ctx):
         session = self.bot.Session()

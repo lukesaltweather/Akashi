@@ -17,8 +17,86 @@ from src.util.checks import is_pr, is_rd, is_tl, is_ts
 with open('src/util/help.json', 'r') as f:
     jsonhelp = json.load(f)
 
-class Done(commands.Cog):
+class TL_helper:
+    def __init__(self, chapter: Chapter, ctx: discord.ext.commands.Context, channel: discord.TextChannel, message: bool):
+        self.chapter = chapter
+        self.ctx = ctx
+        self.channel = channel
+        self.message = message
 
+    def help(self):
+        """
+        Checks and execute action here.
+        """
+        pass
+
+    def _no_translator(self, msg: bool):
+        pass
+
+    def _default_translator(self, msg: bool):
+        pass
+
+    def _set_translator(self, msg: bool):
+        pass
+
+class General_helper:
+    def __init__(self, bot: discord.ext.commands.Bot, ctx: discord.ext.commands.Context, arg: str):
+        self.bot = bot
+        self.ctx = ctx
+        session = self.bot.Session()
+        arg = arg[1:]
+        d = dict(x.split('=', 1) for x in arg.split(' -'))
+        if "link" not in d:
+            raise MissingRequiredParameter("Link")
+        if "id" not in d and "p" in d and "c" in d:
+            ts_alias = aliased(Staff)
+            rd_alias = aliased(Staff)
+            tl_alias = aliased(Staff)
+            pr_alias = aliased(Staff)
+            query = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id). \
+                outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id). \
+                outerjoin(tl_alias, Chapter.translator_id == tl_alias.id). \
+                outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id). \
+                join(Project, Chapter.project_id == Project.id)
+            proj = searchproject(d["p"], session)
+            self.chapter = query.filter(Chapter.project_id == proj.id).filter(int(d["c"]) == Chapter.number).one()
+        elif "id" in d:
+            ts_alias = aliased(Staff)
+            rd_alias = aliased(Staff)
+            tl_alias = aliased(Staff)
+            pr_alias = aliased(Staff)
+            query = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id). \
+                outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id). \
+                outerjoin(tl_alias, Chapter.translator_id == tl_alias.id). \
+                outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id). \
+                join(Project, Chapter.project_id == Project.id)
+            self.chapter = query.filter(int(d["id"]) == Chapter.id).one()
+        else:
+            raise MissingRequiredParameter("Project and Chapter or ID")
+        self.message = True
+        if "msg" in d:
+            if d["msg"] in ("True", "true", "t", "yes", "Yes", "y", "Y"):
+                self.message = True
+            elif d["msg"] in ("False", "false", "n", "f", "N", "F", "no", "No"):
+                self.message = False
+            else:
+                raise ValueError
+
+    def get_chapter(self):
+        return self.chapter
+
+    def get_message(self):
+        return self.message
+
+    def get_session(self):
+        return self.message
+
+    def get_channel(self):
+        return await self.bot.fetch_channel(jsonhelp.get("file_room", self.ctx.channel.id))
+
+
+
+class Done(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -421,13 +499,13 @@ class Done(commands.Cog):
                     else:
                         await ctx.send(
                             f'The translation and redraws for `{chapter.project.title} {formatNumber(chapter.number)}` are done.\nRedraws: {chapter.link_rd}\nTranslation: {chapter.link_tl}\nNotes: {chapter.notes}')
-                        await ctx.send("Couldn't find a redrawer. Falling back to project defaults.")
+                        await ctx.send("Couldn't find a typesetter. Falling back to project defaults.")
                     await ctx.message.add_reaction("✅")
                 else:
                     if message:
                         ts = await make_mentionable(ctx.guild.get_role(int(self.bot.config["ts_id"])))
                         msg = await ctx.send(
-                            f"{ts}\nTypesetter required for `{chapter.project.title} {formatNumber(chapter.number)}`. React below to assign yourself.")
+                            f"{ts}\nTypesetter required for `{chapter.project.title} {formatNumber(chapter.number)}`.\nReact below to assign yourself.")
                         await msg.add_reaction("🙋")
                         await toggle_mentionable(ctx.guild.get_role(int(self.bot.config["ts_id"])))
                         msgdb = Message(msg.id, self.bot.config["ts_id"], "🙋")
@@ -438,7 +516,14 @@ class Done(commands.Cog):
                     else:
                         await ctx.send("No typesetter assigned to this chapter.")
             else:
-                await ctx.say(f"Typesetter required for `{chapter.project.title} {formatNumber(chapter.number)}`")
+                msg = await ctx.send(f"Typesetter required for `{chapter.project.title} {formatNumber(chapter.number)}`")
+                await msg.add_reaction("🙋")
+                await toggle_mentionable(ctx.guild.get_role(int(self.bot.config["ts_id"])))
+                await msg.pin()
+                msgdb = Message(msg.id, self.bot.config["ts_id"], "🙋")
+                msgdb.chapter = chapter.id
+                msgdb.created_on = func.now()
+                session.add(msgdb)
         finally:
             session.commit()
             session.close()

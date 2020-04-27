@@ -37,7 +37,7 @@ class General_helper:
                 outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id). \
                 join(Project, Chapter.project_id == Project.id)
             proj = searchproject(d["p"], self.session)
-            self.chapter = query.filter(Chapter.project_id == proj.id).filter(int(d["c"]) == Chapter.number).one()
+            self.chapter = query.filter(Chapter.project_id == proj.id).filter(float(d["c"]) == Chapter.number).one()
         elif "id" in d:
             ts_alias = aliased(Staff)
             rd_alias = aliased(Staff)
@@ -80,8 +80,9 @@ class General_helper:
         return self.link
 
 class TL_helper:
-    def __init__(self, helper: General_helper, channel):
+    def __init__(self, helper: General_helper, channel, bot):
         self.helper = helper
+        self.bot = bot
         self.ctx = helper.get_context()
         self.channel = channel
         self.message = helper.get_message()
@@ -92,7 +93,7 @@ class TL_helper:
         """
         Checks and execute action here.
         """
-        self._set_translator()
+        await self._set_translator()
         self.chapter.link_tl = self.helper.get_link()
         self.chapter.date_tl = func.now()
         if self.chapter.link_rd is None or self.chapter.link_rd == "":
@@ -282,9 +283,9 @@ class TL_helper:
             await self.ctx.message.add_reaction("✅")
             self.chapter.typesetter = self.chapter.project.typesetter
 
-    def _set_translator(self):
+    async def _set_translator(self):
         if self.chapter.translator is None:
-            translator = dbstaff(self.ctx.author.id, self.helper.get_session())
+            translator = await dbstaff(self.ctx.author.id, self.helper.get_session())
             self.chapter.translator = translator
 
 class Done(commands.Cog):
@@ -309,7 +310,7 @@ class Done(commands.Cog):
     async def donetl(self, ctx, *, arg):
         general = General_helper(self.bot, ctx, arg)
         channel = await general.get_channel()
-        TL = TL_helper(general, channel)
+        TL = TL_helper(general, channel, self.bot)
         await TL.help()
 
 
@@ -334,7 +335,7 @@ class Done(commands.Cog):
                     outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id). \
                     join(Project, Chapter.project_id == Project.id)
                 proj = searchproject(d["p"], session)
-                chapter = query.filter(Chapter.project_id == proj.id).filter(int(d["c"]) == Chapter.number).one()
+                chapter = query.filter(Chapter.project_id == proj.id).filter(float(d["c"]) == Chapter.number).one()
             elif "id" in d:
                 ts_alias = aliased(Staff)
                 rd_alias = aliased(Staff)
@@ -418,7 +419,7 @@ class Done(commands.Cog):
                     outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id). \
                     join(Project, Chapter.project_id == Project.id)
                 proj = searchproject(d["p"], session)
-                chapter = query.filter(Chapter.project_id == proj.id).filter(int(d["c"]) == Chapter.number).one()
+                chapter = query.filter(Chapter.project_id == proj.id).filter(float(d["c"]) == Chapter.number).one()
             elif "id" in d:
                 ts_alias = aliased(Staff)
                 rd_alias = aliased(Staff)
@@ -482,7 +483,7 @@ class Done(commands.Cog):
                     outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id). \
                     join(Project, Chapter.project_id == Project.id)
                 proj = searchproject(d["p"], session)
-                chapter = query.filter(Chapter.project_id == proj.id).filter(int(d["c"]) == Chapter.number).one()
+                chapter = query.filter(Chapter.project_id == proj.id).filter(float(d["c"]) == Chapter.number).one()
             elif "id" in d:
                 ts_alias = aliased(Staff)
                 rd_alias = aliased(Staff)
@@ -544,7 +545,7 @@ class Done(commands.Cog):
                     outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id). \
                     join(Project, Chapter.project_id == Project.id)
                 proj = searchproject(d["p"], session)
-                chapter = query.filter(Chapter.project_id == proj.id).filter(int(d["c"]) == Chapter.number).one()
+                chapter = query.filter(Chapter.project_id == proj.id).filter(float(d["c"]) == Chapter.number).one()
             elif "id" in d:
                 ts_alias = aliased(Staff)
                 rd_alias = aliased(Staff)

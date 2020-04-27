@@ -58,7 +58,8 @@ class Loops(commands.Cog):
                 chapter = session.query(Chapter).filter(Chapter.id == message.chapter).one()
                 wordy = (await self.bot.fetch_user(345845639663583252)).mention
                 embed.description = f"*{chapter.project.title}* {formatNumber(chapter.number)}\nNo staffmember assigned themselves to Chapter.\n[Jump!]({msg})\n"
-                await channel.send(message={wordy}, embed=embed)
+                await channel.send(wordy)
+                await channel.send(embed=embed)
                 session.delete(message)
             elif message.created_on < (datetime.datetime.utcnow() - datetime.timedelta(hours=24)) and not message.reminder:
                 channel = self.bot.get_channel(self.bot.config["command_channel"])
@@ -81,15 +82,20 @@ class Loops(commands.Cog):
         session.commit()
         session.close()
 
-
     @tasks.loop(seconds=60)
     async def refreshembed(self):
         with open('src/util/board.json', 'r') as f:
             messages = json.load(f)
         ch = self.bot.get_channel(self.bot.config['board_channel'])
+        mes = list()
+        for value in messages.get("0", list()):
+            msg = await ch.fetch_message(value)
+            mes.append(msg)
+            print(msg.id)
         session = self.bot.Session()
         projects = session.query(Project).filter \
             (Project.status == "active").order_by(Project.position.asc()).all()
+        embeds = list()
         for x in projects:
             chapters = session.query(Chapter).options(
                 joinedload(Chapter.translator),
@@ -143,106 +149,56 @@ class Loops(commands.Cog):
                     num = formatNumber(y.number)
                     chapter = "Chapter {}:{}".format(num, chapter)
                     list_done_project.append(f"{chapter}\n")
-            if f"{x.id}" in messages:
-                m = list()
-                mes = list()
-                for msg in messages[f"{x.id}"]:
-                    msg = await ch.fetch_message(msg)
-                    mes.append(msg)
-                if x.color is None:
-                    color = random.choice([discord.Colour.blue(), discord.Colour.green(), discord.Colour.purple(),
-                                           discord.Colour.dark_red(), discord.Colour.dark_teal()])
-                else:
-                    color = discord.Colour(int(x.color, 16))
-                embed = BoardPaginator(color)
-                embed.set_author(name=x.title, icon_url=x.icon, url=x.link)
-                embed.set_thumbnail(x.thumbnail)
-                embed.title = "Link to project"
-                embed.url = x.link
-                if len(list_in_progress_project) != 0:
-                    lists = list(divide_chunks(list_in_progress_project, 2))
-                    first = True
-                    for lis in lists:
-                        if first:
-                            c = " ".join(b for b in lis)
-                            embed.add_field(name="Chapters in Progress", value="" + c, inline=False)
-                            first = False
-                        else:
-                            c = " ".join(b for b in lis)
-                            embed.add_field(name="\u200b", value="" + c, inline=False)
-                if len(list_done_project) != 0:
-                    lists = list(divide_chunks(list_done_project, 2))
-                    first = True
-                    for lis in lists:
-                        if first:
-                            c = " ".join(b for b in lis)
-                            embed.add_field(name="Chapters ready for release", value="" + c, inline=False)
-                            first = False
-                        else:
-                            c = " ".join(b for b in lis)
-                            embed.add_field(name="\u200b", value="" + c, inline=False)
-                if len(mes) == len(embed.embed):
-                    for i in range(0, len(embed.embed)):
-                        await mes[i].edit(embed=embed.embed[i])
-                        m.append(mes[i].id)
-                elif len(mes) > len(embed.embed):
-                    for i in range(0, len(mes[:len(embed.embed)+1])):
-                        await mes[i].edit(embed=embed.embed[i])
-                        m.append(mes[i].id)
-                    for msg in mes[len(embed.embed)+1:]:
-                        await msg.delete()
-                elif len(mes) < len(embed.embed):
-                    for i in range(0, len(embed.embed[:len(mes)+1])):
-                        await mes[i].edit(embed=embed.embed[i])
-                        m.append(mes[i].id)
-                    for e in embed.embed[len(mes):]:
-                        a = await ch.send(embed = e)
-                        m.append(a.id)
-                messages[f"{x.id}"] = m
-                with open('src/util/board.json', 'w') as f:
-                    json.dump(messages, f, indent=4)
+            if x.color is None:
+                color = random.choice([discord.Colour.blue(), discord.Colour.green(), discord.Colour.purple(),
+                                       discord.Colour.dark_red(), discord.Colour.dark_teal()])
             else:
-                m = list()
-                print(x.title)
-                if x.color is None:
-                    color = random.choice([discord.Colour.blue(), discord.Colour.green(), discord.Colour.purple(),
-                                           discord.Colour.dark_red(), discord.Colour.dark_teal()])
-                else:
-                    color = discord.Colour(int(x.color, 16))
-
-                embed = BoardPaginator(color)
-                embed.title = "Link to project"
-                embed.url = x.link
-                embed.set_author(name=x.title, icon_url=x.icon, url=x.link)
-                embed.set_thumbnail(x.thumbnail)
-                if len(list_in_progress_project) != 0:
-                    lists = list(divide_chunks(list_in_progress_project, 2))
-                    first = True
-                    for lis in lists:
-                        if first:
-                            c = " ".join(b for b in lis)
-                            embed.add_field(name="Chapters in Progress", value="" + c, inline=False)
-                            first = False
-                        else:
-                            c = " ".join(b for b in lis)
-                            embed.add_field(name="\u200b", value="" + c, inline=False)
-                if len(list_done_project) != 0:
-                    lists = list(divide_chunks(list_done_project, 2))
-                    first = True
-                    for lis in lists:
-                        if first:
-                            c = " ".join(b for b in lis)
-                            embed.add_field(name="Chapters ready for release", value="" + c, inline=False)
-                            first = False
-                        else:
-                            c = " ".join(b for b in lis)
-                            embed.add_field(name="\u200b", value="" + c, inline=False)
-                for e in embed.embed:
-                    message = await ch.send(embed=e)
-                    m.append(message.id)
-                messages[f"{x.id}"] = m
-                with open('src/util/board.json', 'w') as f:
-                    json.dump(messages, f, indent=4)
+                color = discord.Colour(int(x.color, 16))
+            embed = BoardPaginator(color)
+            embed.set_author(name=x.title, icon_url=x.icon, url=x.link)
+            embed.set_thumbnail(x.thumbnail)
+            embed.title = "Link to project"
+            embed.url = x.link
+            if len(list_in_progress_project) != 0:
+                lists = list(divide_chunks(list_in_progress_project, 2))
+                first = True
+                for lis in lists:
+                    if first:
+                        c = " ".join(b for b in lis)
+                        embed.add_field(name="Chapters in Progress", value="" + c, inline=False)
+                        first = False
+                    else:
+                        c = " ".join(b for b in lis)
+                        embed.add_field(name="\u200b", value="" + c, inline=False)
+            if len(list_done_project) != 0:
+                lists = list(divide_chunks(list_done_project, 2))
+                first = True
+                for lis in lists:
+                    if first:
+                        c = " ".join(b for b in lis)
+                        embed.add_field(name="Chapters ready for release", value="" + c, inline=False)
+                        first = False
+                    else:
+                        c = " ".join(b for b in lis)
+                        embed.add_field(name="\u200b", value="" + c, inline=False)
+            for e in embed.embed():
+                embeds.append(e)
+        new_messages = list()
+        for embed in embeds:
+            if len(mes) > 0:
+                m = mes.pop(0)
+                await m.edit(embed=embed)
+                new_messages.append(m.id)
+            else:
+                message = await ch.send(embed=embed)
+                new_messages.append(message.id)
+        for i in range(0, len(mes)):
+            m = mes.pop(-1)
+            print(f"Deleted: {m.id}")
+            await m.delete()
+        messages = {"0":new_messages}
+        with open('src/util/board.json', 'w') as f:
+            json.dump(messages, f, indent=4)
         session.commit()
         session.close()
 

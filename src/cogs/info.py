@@ -9,7 +9,7 @@ from sqlalchemy import Date, text, or_
 
 from src.helpers.arghelper import arghelper
 from src.util import exceptions
-from src.util.misc import drawimage, formatNumber, async_drawimage
+from src.util.misc import drawimage, formatNumber, async_drawimage, BoardPaginator
 from src.util.search import searchstaff, searchproject
 from src.util.checks import is_admin
 from sqlalchemy.orm import aliased
@@ -241,8 +241,8 @@ class Info(commands.Cog):
                     else:
                         output = "image"
                 records = query.order_by(Project.title).order_by(Chapter.number).all()
-                embed = discord.Embed(colour=discord.Colour.blue())
-                embed.set_author(name="Links", icon_url='https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128')
+                embed = BoardPaginator(color=discord.Colour.blue(), title="Infochapter")
+                embed.set_author(name="Links", icon_url='https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128', url=None)
                 if "fields" in d:
                     fields = d["fields"].replace("\u0020", "").split(",")
                     table = PrettyTable()
@@ -267,31 +267,31 @@ class Info(commands.Cog):
                                 if chapter.link_tl is not None:
                                     links_tl.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_tl})")
                             if len(links_tl) != 0:
-                                embed.add_field(name="Translations", value="\n".join(links_tl), inline=False)
+                                embed.add_category(title="Translations", l="\n".join(links_tl))
                         elif field == "link_rd":
                             for chapter in records:
                                 if chapter.link_rd is not None:
                                     links_rd.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_rd})")
                             if len(links_rd) != 0:
-                                embed.add_field(name="Redraws", value="\n".join(links_rd), inline=False)
+                                embed.add_category(title="Redraws", l="\n".join(links_rd))
                         elif field == "link_ts":
                             for chapter in records:
                                 if chapter.link_ts is not None:
                                     links_ts.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_ts})")
                             if len(links_ts) != 0:
-                                embed.add_field(name="Typesets", value="\n".join(links_ts), inline=False)
+                                embed.add_category(title="Typesets", l="\n".join(links_ts))
                         elif field == "link_pr":
                             for chapter in records:
                                 if chapter.link_pr is not None:
                                     links_pr.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_pr})")
                             if len(links_pr) != 0:
-                                embed.add_field(name="Proofreads", value="\n".join(links_pr), inline=False)
+                                embed.add_category(title="Proofreads", l="\n".join(links_pr))
                         elif field == "link_qcts":
                             for chapter in records:
                                 if chapter.link_qcts is not None:
                                     links_qcts.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_qcts})")
                             if len(links_qcts) != 0:
-                                embed.add_field(name="QC Typesets", value="\n".join(links_qcts), inline=False)
+                                embed.add_category(title="QC Typesets", l="\n".join(links_qcts))
                         elif field == "ts":
                             ts = [chapter.typesetter.name if chapter.typesetter is not None else "None" for chapter in records]
                             table.add_column("Typesetter", ts)
@@ -352,15 +352,15 @@ class Info(commands.Cog):
                         if chapter.link_rl is not None:
                             links_qcts.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_rl})")
                     if len(links_tl) != 0:
-                        embed.add_field(name="Translations", value="\n".join(links_tl), inline=False)
+                        embed.add_category(title="Translations", l="\n".join(links_tl))
                     if len(links_rd) != 0:
-                        embed.add_field(name="Redraws", value="\n".join(links_rd), inline=False)
+                        embed.add_category(title="Redraws", l="\n".join(links_rd))
                     if len(links_ts) != 0:
-                        embed.add_field(name="Typesets", value="\n".join(links_ts), inline=False)
+                        embed.add_category(title="Typesets", l="\n".join(links_ts))
                     if len(links_pr) != 0:
-                        embed.add_field(name="Proofreads", value="\n".join(links_pr), inline=False)
+                        embed.add_category(title="Proofreads", l="\n".join(links_pr))
                     if len(links_qcts) != 0:
-                        embed.add_field(name="QC Typesets", value="\n".join(links_qcts), inline=False)
+                        embed.add_category(title="QC Typesets", l="\n".join(links_qcts))
                     tl = [chapter.translator.name if chapter.translator is not None else "None" for chapter in records]
                     table.add_column("Translator", tl)
                     ts = [chapter.typesetter.name if chapter.typesetter is not None else "None" for chapter in records]
@@ -380,8 +380,8 @@ class Info(commands.Cog):
                                      icon_url='https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128')
                     embed1.set_image(url="attachment://image.png")
                     await ctx.send(file=file, embed=embed1)
-                if len(embed.fields) != 0:
-                    await ctx.send(embed=embed)
+                for e in embed.embeds:
+                    await ctx.send(embed=e)
         finally:
             session.close()
 

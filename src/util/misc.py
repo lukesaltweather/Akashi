@@ -206,7 +206,7 @@ def divide_chunks(l, n):
         yield l[i:i + n]
 
 class BoardPaginator:
-    def __init__(self, color, title=None, url=None):
+    def __init__(self, color, title=None, url="https://nekyou.com"):
         self.color = color
         self.title = title
         self.url = url
@@ -224,8 +224,8 @@ class BoardPaginator:
     def url(self, url):
         self.url = url
 
-    @property
     def embed(self):
+        print(f"Amount embeds{len(self.embeds)}")
         return self.embeds
 
     def set_author(self, name, url, icon_url):
@@ -253,6 +253,30 @@ class BoardPaginator:
             else:
                 self.embeds[-1].add_field(name=name, value=value, inline=inline)
                 self.current_length += (len(value)+len(name))
+
+    def add_category(self, l, title):
+        if len(l) > 800:
+            chunks = list()
+            chunks.append("")
+            lines = l.split("/n")
+            length = 0
+            for line in lines:
+                if length+len(line) > 800:
+                    chunks.append("")
+                    chunks[-1] = f"{chunks[-1]}\n{line}"
+                    length = len(chunks[-1])
+                else:
+                    chunks[-1] = f"{chunks[-1]}\n{line}"
+                    length = len(chunks[-1])
+            first = True
+            for chunk in chunks:
+                if first:
+                    self.add_field(name=title, value=chunk, inline=False)
+                else:
+                    self.add_field(name="\u200b", value=chunk, inline=False)
+
+
+
 
 
 

@@ -102,6 +102,7 @@ async def on_command_error(ctx, error):
         await ctx.send("Command doesn't exist.")
     elif isinstance(error, ValueError):
         await ctx.send("Error while parsing parameters.")
+        await ctx.send(error)
     elif isinstance(error, exceptions.NoResultFound):
         await ctx.send(error.message)
     elif isinstance(error, exceptions.StaffNotFoundError):

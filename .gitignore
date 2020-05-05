@@ -37,3 +37,12 @@ f6a196be-a2b0-4ec5-9f6f-adcb6ae0da3f.csv
 test.csv
 test.txt
 test.xls
+/src/cogs/__pycache__/help.cpython-38.pyc
+/src/cogs/__pycache__/info.cpython-38.pyc
+/src/cogs/__pycache__/reminder.cpython-38.pyc
+/src/util/__pycache__/exceptions.cpython-38.pyc
+/src/util/__pycache__/misc.cpython-38.pyc
+/.idea/discord.xml
+/.idea/sshConfigs.xml
+/files/b3a145f3-366f-46a8-b328-27d649594fa5.csv
+/src/cogs/__pycache__/tags.cpython-38.pyc

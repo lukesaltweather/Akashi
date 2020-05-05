@@ -225,7 +225,6 @@ class BoardPaginator:
         self.url = url
 
     def embed(self):
-        print(f"Amount embeds{len(self.embeds)}")
         return self.embeds
 
     def set_author(self, name, url, icon_url):
@@ -233,10 +232,14 @@ class BoardPaginator:
         self.icon_url = icon_url
 
     def set_thumbnail(self, tn):
+        """
+
+        :param tn:
+        :return:
+        """
         self.thumbnail = tn
 
-    def add_field(self, name: str, value: str, inline: bool):
-        print(self.current_length)
+    def add_field(self, name: str, value: str, inline: bool=False):
         if self.current_length + len(value)+len(name) >= 5000:
             self.embeds.append(discord.Embed(color=self.color))
             self.embeds[-1].add_field(name=name, value=value, inline=inline)
@@ -255,13 +258,13 @@ class BoardPaginator:
                 self.current_length += (len(value)+len(name))
 
     def add_category(self, l, title):
-        if len(l) > 800:
+        if len(l) > 1000:
             chunks = list()
-            chunks.append("")
-            lines = l.split("/n")
+            lines = l.split("\n")
             length = 0
+            chunks.append("")
             for line in lines:
-                if length+len(line) > 800:
+                if length+len(line) > 1000:
                     chunks.append("")
                     chunks[-1] = f"{chunks[-1]}\n{line}"
                     length = len(chunks[-1])
@@ -272,8 +275,11 @@ class BoardPaginator:
             for chunk in chunks:
                 if first:
                     self.add_field(name=title, value=chunk, inline=False)
+                    first = False
                 else:
                     self.add_field(name="\u200b", value=chunk, inline=False)
+        else:
+            self.add_field(name=title, value=l)
 
 
 

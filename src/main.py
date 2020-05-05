@@ -2,14 +2,17 @@ import asyncio
 import os
 import random
 import sys
+import threading
 import time
 import traceback
 from datetime import datetime, timedelta
 from io import BytesIO
 
 import aiohttp
+import asyncpg
 import discord
 import sqlalchemy
+from aiohttp import web
 from discord import Embed, AsyncWebhookAdapter
 from discord.ext import commands, tasks
 from discord.ext.commands import MissingRequiredArgument
@@ -38,7 +41,7 @@ import requests
 from discord import Webhook, RequestsWebhookAdapter
 from prettytable import PrettyTable
 
-from src.util.exceptions import ReactionInvalidRoleError
+from src.util.exceptions import ReactionInvalidRoleError, TagAlreadyExists
 from src.util.search import *
 from src.util.misc import *
 import logging
@@ -74,6 +77,7 @@ async def on_ready():
     await bot.change_presence(activity=activity)
     bot.Session = sessionmaker(bind=engine)
     bot.config = config
+    bot.pool = await asyncpg.create_pool(bot.config.get("db_uri"), min_size=5, max_size=10)
     bot.load_extension('src.cogs.loops')
     bot.load_extension('src.cogs.edit')
     bot.load_extension('src.cogs.misc')
@@ -84,6 +88,8 @@ async def on_ready():
     bot.load_extension('src.cogs.help')
     bot.load_extension('src.cogs.reminder')
     bot.load_extension('src.cogs.stats')
+    bot.load_extension("jishaku")
+    bot.load_extension('src.cogs.tags')
     bot.debug = False
     print(discord.version_info)
     # Set-up the engine here.
@@ -117,6 +123,8 @@ async def on_command_error(ctx, error):
         await ctx.send("Missing %s" % error.param)
     elif isinstance(error, sqlalchemy.orm.exc.NoResultFound):
         await ctx.send("Sorry, I couldn't find what you were looking for.")
+    if isinstance(error, TagAlreadyExists):
+        await ctx.send(f"{error.message} Tag already exists.")
     else:
         await ctx.send(error)
 
@@ -296,3 +304,4 @@ if config["online"]:
     bot.run(config["heroku_key"])
 else:
     bot.run(config["offline_key"])
+

@@ -81,14 +81,14 @@ class MyCog(commands.Cog):
         bot.help_command.cog = self
 
     async def cog_check(self, ctx):
-        worker = ctx.guild.get_role(self.bot.config["neko_workers"])
-        ia = worker in ctx.message.author.roles
-        ic = ctx.channel.id == self.bot.config["command_channel"]
+        # worker = ctx.guild.get_role(self.bot.config["neko_workers"])
+        # ia = worker in ctx.message.author.roles
+        # ic = ctx.channel.id == self.bot.config["command_channel"]
         guild = ctx.guild is not None
-        if ia and ic and guild:
+        if guild:
             return True
-        elif ic:
-            raise exceptions.MissingRequiredPermission("Wrong Channel.")
+        # elif ic:
+        #     raise exceptions.MissingRequiredPermission("Wrong Channel.")
         elif not guild:
             raise exceptions.MissingRequiredPermission("Missing permission `Server Member`")
 
@@ -142,7 +142,6 @@ class EmbedHelper:
         self.embed[0].set_author(name="Help",
                                  icon_url="https://rei.animecharactersdatabase.com/uploads/chars/9225-1377974027.png")
         self.embed[0].title = "Akashi Help"
-        self.embed[0].url = "https://docs.lukesaltweather.de"
         self.embed[
             0].description = "Bot created by lukesaltweather@Nekyou.\nIf this help command doesn't help you with a problem, try visiting the docs first.\n" \
                              "All commands are described in detail on there, as well as how to write commands in general."

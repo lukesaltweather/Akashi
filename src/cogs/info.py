@@ -607,7 +607,7 @@ class Info(commands.Cog):
         to_rd = query.filter(Chapter.redrawer == typ).filter(Chapter.link_rd.is_(None)).all()
         to_ts = query.filter(Chapter.typesetter == typ).filter(Chapter.link_ts.is_(None)).all()
         to_pr = query.filter(Chapter.proofreader == typ).filter(Chapter.link_pr.is_(None)).all()
-        to_qcts = query.filter(Chapter.typesetter == typ).filter(Chapter.link_rl.is_(None)).all()
+        to_qcts = query.filter(Chapter.typesetter == typ).filter(or_(Chapter.link_rl == None, Chapter.link_rl == "")).filter(Chapter.link_pr != None, Chapter.link_pr != "").filter(Chapter.link_ts != None, Chapter.link_ts != "").all()
         desc = ""
         if len(to_tl) != 0:
             desc = "`To translate:` "
@@ -623,15 +623,61 @@ class Info(commands.Cog):
                 desc = f"{desc}\n{chapter.project.title} {chapter.number}: [RD]({chapter.link_rd}) [TL]({chapter.link_tl})"
         if len(to_pr) != 0:
             desc = f"{desc}\n`To proofread:`"
-            for chapter in to_tl:
+            for chapter in to_pr:
                 desc = f"{desc}\n{chapter.project.title} {chapter.number}: [TS]({chapter.link_ts}) [TL]({chapter.link_tl})"
         if len(to_qcts) != 0:
             desc = f"{desc}\n`To qcts:`"
-            for chapter in to_tl:
+            for chapter in to_qcts:
                 desc = f"{desc}\n{chapter.project.title} {chapter.number}: [TS]({chapter.link_ts}) [PR]({chapter.link_pr})"
         embed = discord.Embed(color=discord.Colour.gold(), description=desc)
         embed.set_author(name="Current chapters",
                          icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128")
+        await ctx.send(embed=embed)
+        session.close()
+
+    @commands.command(description=jsonhelp["current"]["description"],
+                      usage=jsonhelp["current"]["usage"], brief=jsonhelp["current"]["brief"], help=jsonhelp["current"]["help"])
+    async def current(self, ctx, member: discord.Member):
+        session = self.bot.Session()
+        ts_alias = aliased(Staff)
+        rd_alias = aliased(Staff)
+        tl_alias = aliased(Staff)
+        pr_alias = aliased(Staff)
+        query = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id). \
+            outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id). \
+            outerjoin(tl_alias, Chapter.translator_id == tl_alias.id). \
+            outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id). \
+            join(Project, Chapter.project_id == Project.id)
+        typ = await searchstaff(str(member.id), ctx, session)
+        to_tl = query.filter(Chapter.translator == typ).filter(Chapter.link_tl.is_(None)).all()
+        to_rd = query.filter(Chapter.redrawer == typ).filter(Chapter.link_rd.is_(None)).all()
+        to_ts = query.filter(Chapter.typesetter == typ).filter(Chapter.link_ts.is_(None)).all()
+        to_pr = query.filter(Chapter.proofreader == typ).filter(Chapter.link_pr.is_(None)).all()
+        to_qcts = query.filter(Chapter.typesetter == typ).filter(or_(Chapter.link_rl == None, Chapter.link_rl == "")).filter(Chapter.link_pr != None, Chapter.link_pr != "").filter(Chapter.link_ts != None, Chapter.link_ts != "").all()
+        desc = ""
+        if len(to_tl) != 0:
+            desc = "`To translate:` "
+            for chapter in to_tl:
+                desc = f"{desc}\n[{chapter.project.title} {formatNumber(chapter.number)}]({chapter.link_raw})"
+        if len(to_rd) != 0:
+            desc = f"{desc}\n`To redraw:`"
+            for chapter in to_rd:
+                desc = f"{desc}\n[{chapter.project.title} {formatNumber(chapter.number)}]({chapter.link_raw})"
+        if len(to_ts) != 0:
+            desc = f"{desc}\n`To typeset:`"
+            for chapter in to_ts:
+                desc = f"{desc}\n{chapter.project.title} {formatNumber(chapter.number)}: [RD]({chapter.link_rd}) [TL]({chapter.link_tl})"
+        if len(to_pr) != 0:
+            desc = f"{desc}\n`To proofread:`"
+            for chapter in to_pr:
+                desc = f"{desc}\n{chapter.project.title} {formatNumber(chapter.number)}: [TS]({chapter.link_ts}) [TL]({chapter.link_tl})"
+        if len(to_qcts) != 0:
+            desc = f"{desc}\n`To qcts:`"
+            for chapter in to_qcts:
+                desc = f"{desc}\n{chapter.project.title} {chapter.number}: [TS]({chapter.link_ts}) [PR]({chapter.link_pr})"
+        embed = discord.Embed(color=discord.Colour.gold(), description=desc)
+        embed.set_author(name=f"{member.display_name}'s current chapters",
+                         icon_url=member.avatar_url)
         await ctx.send(embed=embed)
         session.close()
 

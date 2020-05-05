@@ -2,7 +2,7 @@ import asyncio
 import json
 
 import discord
-from dateutil import *
+from dateutil import tz, parser
 from discord.ext import commands
 
 from src.util import exceptions

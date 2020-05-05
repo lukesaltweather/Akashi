@@ -12,3 +12,6 @@ class MissingRequiredParameter(discord.ext.commands.CommandError):
 class NoResultFound(discord.ext.commands.CommandError):
     def __init__(self, message=None):
         self.message=message
+class TagAlreadyExists(discord.ext.commands.CommandError):
+    def __init__(self, message=None):
+        self.message=message

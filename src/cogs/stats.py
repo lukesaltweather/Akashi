@@ -1,17 +1,14 @@
-from botocore.signers import generate_presigned_url
 from discord.ext import commands
 import asyncpg
 from uuid import uuid4
 import boto3
-from botocore.exceptions import ClientError
-from s3transfer import S3Transfer
 
 
 class Stats(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.command(enabled=False)
     async def get_csv(self, ctx):
         query = """                   SELECT
                     chapters.id, projects.title, chapters.number as chapternumber, chapters.title, translator.name as translator, redrawer.name as redrawer, typesetter.name as typesetter, proofreader.name as proofreader, date_created, date_tl, date_rd, date_ts, date_pr, date_qcts, date_release
@@ -24,12 +21,12 @@ class Stats(commands.Cog):
         con = await asyncpg.connect(self.bot.config["db_uri"])
         i = uuid4()
         await con.copy_from_query(query, output=f'files/{i}.csv', format='csv', delimiter=',', header=True)
-        s3 = boto3.resource('s3', aws_access_key_id="AKIA3AAZKTIAVEVR43QY", aws_secret_access_key="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")
         object = f"public/{str(i)}.csv"
         s3.Bucket('akashi-csvs').upload_file(f"files/{str(i)}.csv", object)
         url = f"http://s3-eu-central-1.amazonaws.com/akashi-csvs/{object}"
-        await ctx.send(url)
+        await ctx.author.send(url)
 
+    @commands.command(enabled=False)
     async def read_only_user(self, ctx):
         pass
 

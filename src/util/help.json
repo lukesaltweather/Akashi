@@ -304,5 +304,54 @@
             {"p": "-tz=", "e": "Timezone you assumed while typing out the datetime. - Optional, if not given, GMT is assumed."},
             {"p": "-u=", "e": "Serveruser you wish to remind. If not given, message author will be reminded. - Optional"}
         ]
+    },
+       "current": {
+        "help": "https://docs.lukesaltweather.de/commands/current",
+        "brief": "See another staffmember's current chapters. Requires role `Neko Worker`.",
+        "description": "See another staffmember's current chapters. Requires role `Neko Worker`",
+        "usage": [
+            {"p": "$current <staffmember>", "e": "Staffmember's name."}
+        ]
+    },
+        "tag": {
+        "help": "https://docs.lukesaltweather.de/commands/tag",
+        "brief": "Search command for tags. Will return a list of similar tags if no tag could be found.",
+        "description": "Search command for tags. Will return a list of similar tags if no tag could be found.",
+        "usage": [
+            {"p": "$tag <tag>", "e": "Tagged text. Will throw error if tag is private."}
+        ]
+    },
+        "tagcreate": {
+        "help": "https://docs.lukesaltweather.de/commands/tagcreate",
+        "brief": "command for tag creation. Will guide you through the steps.",
+        "description": "command for tag creation. Will guide you through the steps. If executed in akashis-room, tag will be set to private automatically",
+        "usage": [
+            {"p": "$tagcreate", "e": "Will guide you through steps."}
+        ]
+    },
+            "tagedit": {
+        "help": "https://docs.lukesaltweather.de/commands/tagedit",
+        "brief": "Edit your own tag, or, with admin permissions, edit someone else's tag.",
+        "description": "Edit your own tag, or, with admin permissions, edit someone else's tag.",
+        "usage": [
+            {"p": "-tag=", "e": "Name of the Tag"},
+            {"p": "-content=", "e": "New Content"}
+        ]
+    },
+        "tagdelete": {
+        "help": "https://docs.lukesaltweather.de/commands/tagdelete",
+        "brief": "Delete your own tag, or, with admin permissions, delete someone else's tag.",
+        "description": "Delete your own tag, or, with admin permissions, delete someone else's tag.",
+        "usage": [
+            {"p": "$tagdelete <tag>", "e": "Replace <tag> with Name of the Tag"}
+        ]
+    },
+            "tagtoggleprivate": {
+        "help": "https://docs.lukesaltweather.de/commands/tagtoggleprivate",
+        "brief": "Toggle Tag accessability between Neko only and General.",
+        "description": "Toggle Tag accessability between Neko only and General.",
+        "usage": [
+            {"p": "$tagtoggleprivate <tag>", "e": "Replace <tag> with Name of the Tag"}
+        ]
     }
 }

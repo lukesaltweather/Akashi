@@ -3,6 +3,7 @@ psycopg2-binary
 pillow
 requests
 python-dateutil
+jishaku
 
 aiohttp==3.6.2
 astroid==2.3.3

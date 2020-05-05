@@ -13,6 +13,7 @@ from src.util import exceptions
 from src.util.search import searchproject, searchstaff, fakesearch, dbstaff
 from src.util.misc import FakeUser, formatNumber, make_mentionable, toggle_mentionable
 from src.util.checks import is_pr, is_rd, is_tl, is_ts
+from abc import abstractmethod
 
 with open('src/util/help.json', 'r') as f:
     jsonhelp = json.load(f)
@@ -70,8 +71,8 @@ class General_helper:
     def get_session(self):
         return self.session
 
-    async def get_channel(self):
-        return await self.bot.fetch_channel(self.ctx.channel.id)
+    def get_channel(self):
+        return self.ctx.guild.get_channel(self.ctx.channel.id)
 
     def get_context(self):
         return self.ctx
@@ -79,17 +80,30 @@ class General_helper:
     def get_link(self):
         return self.link
 
-class TL_helper:
-    def __init__(self, helper: General_helper, channel, bot):
+    def get_bot(self):
+        return self.bot
+
+class command_helper:
+    def __init__(self, helper: General_helper):
         self.helper = helper
-        self.bot = bot
+        self.bot = helper.get_bot()
         self.ctx = helper.get_context()
-        self.channel = channel
+        self.channel = helper.get_channel()
         self.message = helper.get_message()
         self.chapter = helper.get_chapter()
         self.session = helper.get_session()
 
-    async def help(self):
+    @abstractmethod
+    async def execute(self):
+        pass
+
+class TL_helper(command_helper):
+    def __init__(self, helper: General_helper):
+        super().__init__(helper)
+        self.helper = super().helper
+        self.channel = super().channel
+
+    async def execute(self):
         """
         Checks and execute action here.
         """
@@ -193,8 +207,7 @@ class TL_helper:
         """
         if self.chapter.project.redrawer is None:
             rd = await make_mentionable(self.ctx.guild.get_role(int(self.bot.config["rd_id"])))
-            msg = await self.channel.send(
-                f"{rd}\nRedrawer required for `{self.chapter.project.title} {formatNumber(self.chapter.number)}`. React below to assign yourself.")
+            msg = await self.channel.send(f"{rd}\nRedrawer required for `{self.chapter.project.title} {formatNumber(self.chapter.number)}`. React below to assign yourself.")
             await msg.add_reaction("🙋")
             msgdb = Message(msg.id, self.bot.config["rd_id"], "🙋")
             await msg.pin()
@@ -288,6 +301,203 @@ class TL_helper:
             translator = await dbstaff(self.ctx.author.id, self.helper.get_session())
             self.chapter.translator = translator
 
+class TS_helper(command_helper):
+    def __init__(self, helper: General_helper):
+        self.helper = helper
+        super().__init__(helper)
+
+    async def execute(self):
+        await self.__set_typesetter()
+        self.chapter.link_ts = self.helper.get_link()
+        self.chapter.date_ts = func.now()
+        if self.chapter.proofreader is None:
+            await self.__no_proofreader()
+        else:
+            await self.__proofreader()
+        self.session.commit()
+        self.session.close()
+
+    async def __set_typesetter(self):
+        if self.chapter.typesetter is None:
+            typesetter = await dbstaff(self.ctx.author.id, self.helper.get_session())
+            self.chapter.typesetter = typesetter
+
+    async def __no_proofreader(self):
+        if self.message:
+            await self.__no_proofreader_msg()
+        else:
+            await self.__no_proofreader_no_msg()
+
+    async def __no_proofreader_msg(self):
+        if self.chapter.project.proofreader is None:
+            pr = await make_mentionable(self.ctx.guild.get_role(int(self.bot.config["pr_id"])))
+            msg = await self.ctx.send(
+                f"{pr}\nProofreader required for `{self.chapter.project.title} {formatNumber(self.chapter.number)}`. React below to assign yourself.")
+            await msg.add_reaction("🙋")
+            await toggle_mentionable(self.ctx.guild.get_role(int(self.bot.config["pr_id"])))
+            await msg.pin()
+            msgdb = Message(msg.id, self.bot.config["rd_id"], "🙋")
+            msgdb.chapter = self.chapter.id
+            msgdb.created_on = func.now()
+            self.session.add(msgdb)
+        else:
+            self.chapter.proofreader = self.chapter.project.proofreader
+            await self.ctx.send("Couldn't find a proofreader. Falling back to project defaults.")
+            await self.ctx.message.add_reaction("✅")
+            ts = fakesearch(self.chapter.project.proofreader.discord_id, self.ctx).mention
+            await self.ctx.send(
+                f"{ts}\n`{self.chapter.project.title} {formatNumber(self.chapter.number)}` is ready to be proofread.\nTypeset: {self.chapter.link_ts}\nTranslation:{self.chapter.link_tl}\nNotes: {self.chapter.notes}")
+
+    async def __no_proofreader_no_msg(self):
+        if self.chapter.project.proofreader is None:
+            pr = await make_mentionable(self.ctx.guild.get_role(int(self.bot.config["pr_id"])))
+            msg = await self.ctx.send(
+                f"{pr}\nProofreader required for `{self.chapter.project.title} {formatNumber(self.chapter.number)}`. React below to assign yourself.")
+            await msg.add_reaction("🙋")
+            await toggle_mentionable(self.ctx.guild.get_role(int(self.bot.config["pr_id"])))
+            await msg.pin()
+            msgdb = Message(msg.id, self.bot.config["rd_id"], "🙋")
+            msgdb.chapter = self.chapter.id
+            msgdb.created_on = func.now()
+            self.session.add(msgdb)
+        else:
+            self.chapter.proofreader = self.chapter.project.proofreader
+            await self.ctx.send("Couldn't find a proofreader. Falling back to project defaults.")
+            await self.ctx.message.add_reaction("✅")
+            ts = fakesearch(self.chapter.project.proofreader.discord_id, self.ctx).display_name
+            await self.ctx.send(
+                f"{ts}\n`{self.chapter.project.title} {formatNumber(self.chapter.number)}` is ready to be proofread.\nTypeset: {self.chapter.link_ts}\nTranslation:{self.chapter.link_tl}\nNotes: {self.chapter.notes}")
+
+    async def __proofreader(self):
+        if self.message:
+            await self.__proofreader_msg()
+        else:
+            await self.__proofreader_no_msg()
+
+    async def __proofreader_msg(self):
+        ts = fakesearch(self.chapter.proofreader.discord_id, self.ctx).mention
+        await self.ctx.send(
+            f"{ts}\n`{self.chapter.project.title} {formatNumber(self.chapter.number)}` is ready to be proofread.\nTypeset: {self.chapter.link_ts}\nTranslation:{self.chapter.link_tl}\nNotes: {self.chapter.notes}")
+
+    async def __proofreader_no_msg(self):
+        ts = fakesearch(self.chapter.proofreader.discord_id, self.ctx).display_name
+        await self.ctx.send(
+            f"{ts}\n`{self.chapter.project.title} {formatNumber(self.chapter.number)}` is ready to be proofread.\nTypeset: {self.chapter.link_ts}\nTranslation:{self.chapter.link_tl}\nNotes: {self.chapter.notes}")
+
+class PR_helper(command_helper):
+    def __init__(self, helper: General_helper):
+        super().__init__(helper)
+
+    async def execute(self):
+        await self.__set_proofreader()
+        self.chapter.link_pr = self.helper.get_link()
+        self.chapter.date_pr = func.now()
+        if self.chapter.typesetter is not None:
+            await self.__typesetter()
+        else:
+            await self.__no_typesetter()
+        self.session.commit()
+        self.session.close()
+
+    async def __set_proofreader(self):
+        if self.chapter.proofreader is None:
+            proofreader = await dbstaff(self.ctx.author.id, self.helper.get_session())
+            self.chapter.proofreader = proofreader
+
+    async def __typesetter(self):
+        if self.message:
+            await self.__typesetter_msg()
+        else:
+            await self.__typesetter_no_msg()
+
+    async def __no_typesetter(self):
+        await self.ctx.send(f"Something is wrong. Couldn't determine a typesetter. Updated chapter data anyway.")
+        await self.ctx.message.add_reaction("❓")
+
+    async def __typesetter_msg(self):
+        ts = fakesearch(self.chapter.typesetter.discord_id, self.ctx).mention
+        await self.ctx.send(
+            f"{ts}\nThe proofread for `{self.chapter.project.title} {formatNumber(self.chapter.number)}` is ready.\nLink: {self.chapter.link_pr}\nNotes: {self.chapter.notes}\nNotes: {self.chapter.notes}")
+        await self.ctx.message.add_reaction("✅")
+
+    async def __typesetter_no_msg(self):
+        ts = fakesearch(self.chapter.typesetter.discord_id, self.ctx).display_name
+        await self.ctx.send(
+            f"{ts}\nThe proofread for `{self.chapter.project.title} {formatNumber(self.chapter.number)}` is ready.\nLink: {self.chapter.link_pr}\nNotes: {self.chapter.notes}\nNotes: {self.chapter.notes}")
+        await self.ctx.message.add_reaction("✅")
+
+class QCTS_helper(command_helper):
+    def __init__(self, helper):
+        self.helper = helper
+        super().__init__(helper)
+
+    async def execute(self):
+        self.chapter.link_rl = self.helper.get_link()
+        self.chapter.date_rl = func.now()
+        if self.chapter.proofreader is not None:
+            await self.__proofreader()
+        else:
+            await self.__no_proofreader()
+        self.session.commit()
+        self.session.close()
+
+    async def __proofreader(self):
+        if self.message:
+            await self.__proofreader_msg()
+        else:
+            await self.__proofreader_no_msg()
+
+    async def __proofreader_msg(self):
+        pr = fakesearch(self.chapter.proofreader.discord_id, self.ctx).mention
+        await self.ctx.send(
+            f"{pr} \nThe QCTS for `{self.chapter.project.title} {formatNumber(self.chapter.number)}` is ready.\nLink: {self.chapter.link_rl}\nNotes: {self.chapter.notes}\nNotes: {self.chapter.notes}")
+        await self.ctx.message.add_reaction("✅")
+
+    async def __proofreader_no_msg(self):
+        pr = fakesearch(self.chapter.proofreader.discord_id, self.ctx).display_name
+        await self.ctx.send(
+            f"{pr} \nThe QCTS for `{self.chapter.project.title} {formatNumber(self.chapter.number)}` is ready.\nLink: {self.chapter.link_rl}\nNotes: {self.chapter.notes}\nNotes: {self.chapter.notes}")
+        await self.ctx.message.add_reaction("✅")
+
+    async def __no_proofreader(self):
+        await self.ctx.send(f"Something is wrong. Couldn't determine a Proofreader. Updated chapter data anyway.")
+        await self.ctx.message.add_reaction("✅")
+
+class RD_helper(command_helper):
+    def __init__(self, helper):
+        self.helper = helper
+        super().__init__(self.helper)
+        self.channel = super().channel
+
+    async def execute(self):
+        self.chapter.link_rd = self.helper.get_link()
+        self.chapter.date_rd = func.now()
+        await self.__set_redrawer()
+        if self.chapter.link_tl in (None, ""):
+            await self.__no_translation()
+        else:
+            await self.__typesetter()
+        self.session.commit()
+        self.session.close()
+
+    async def __set_redrawer(self):
+        if self.chapter.redrawer is None:
+            self.chapter.redrawer = await dbstaff(self.ctx.author.id, self.session)
+
+    async def __no_translation(self):
+        await self.ctx.message.add_reaction("✅")
+        await self.ctx.send(
+            f'\nThe redraws for `{self.chapter.project.title} {formatNumber(self.chapter.number)}` are done but the translation isnt ready.{fakesearch(self.chapter.translator.discord_id, self.ctx).mention}\nRedraws: {self.chapter.link_raw}\nNotes: {self.chapter.notes}')
+
+    async def __typesetter(self):
+        if self.chapter.typesetter is None:
+            if self.chapter.project.typesetter is not None:
+                pass
+            else:
+                pass
+        else:
+            pass
+
 class Done(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -309,219 +519,35 @@ class Done(commands.Cog):
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
     async def donetl(self, ctx, *, arg):
         general = General_helper(self.bot, ctx, arg)
-        channel = await general.get_channel()
-        TL = TL_helper(general, channel, self.bot)
-        await TL.help()
+        TL = TL_helper(general)
+        await TL.execute()
 
 
     @commands.command(checks=[is_ts], description=jsonhelp["donets"]["description"],
                       usage=jsonhelp["donets"]["usage"], brief=jsonhelp["donets"]["brief"], help=jsonhelp["donets"]["help"])
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
     async def donets(self, ctx, *, arg):
-        session = self.bot.Session()
-        try:
-            arg = arg[1:]
-            d = dict(x.split('=', 1) for x in arg.split(' -'))
-            if "link" not in d:
-                raise MissingRequiredParameter("Link")
-            if "id" not in d and "p" in d and "c" in d:
-                ts_alias = aliased(Staff)
-                rd_alias = aliased(Staff)
-                tl_alias = aliased(Staff)
-                pr_alias = aliased(Staff)
-                query = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id). \
-                    outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id). \
-                    outerjoin(tl_alias, Chapter.translator_id == tl_alias.id). \
-                    outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id). \
-                    join(Project, Chapter.project_id == Project.id)
-                proj = searchproject(d["p"], session)
-                chapter = query.filter(Chapter.project_id == proj.id).filter(float(d["c"]) == Chapter.number).one()
-            elif "id" in d:
-                ts_alias = aliased(Staff)
-                rd_alias = aliased(Staff)
-                tl_alias = aliased(Staff)
-                pr_alias = aliased(Staff)
-                query = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id). \
-                    outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id). \
-                    outerjoin(tl_alias, Chapter.translator_id == tl_alias.id). \
-                    outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id). \
-                    join(Project, Chapter.project_id == Project.id)
-                chapter = query.filter(int(d["id"]) == Chapter.id).one()
-            else:
-                raise MissingRequiredParameter("Project and Chapter or ID")
-            if chapter.typesetter is None:
-                chapter.typesetter = await searchstaff(ctx.author.id, ctx, session)
-            message = True
-            if "msg" in d:
-                if d["msg"] in ("True", "true", "t", "yes", "Yes", "y", "Y"):
-                    message = True
-                elif d["msg"] in ("False", "false", "n", "f", "N", "F", "no", "No"):
-                    message = False
-                else:
-                    raise ValueError
-            chapter.link_ts = d["link"]
-            chapter.date_ts = func.now()
-            if chapter.proofreader is not None:
-                if message:
-                    ts = fakesearch(chapter.proofreader.discord_id, ctx).mention
-                    await ctx.send(
-                        f"{ts}\n`{chapter.project.title} {formatNumber(chapter.number)}` is ready to be proofread.\nTypeset: {chapter.link_ts}\nTranslation:{chapter.link_tl}\nNotes: {chapter.notes}")
-                else:
-                    await ctx.send(
-                        f"`{chapter.project.title} {formatNumber(chapter.number)}` is ready to be proofread.\nTypeset: {chapter.link_ts}\nTranslation:{chapter.link_tl}\nNotes: {chapter.notes}")
-                await ctx.message.add_reaction("✅")
-            else:
-                if chapter.project.proofreader is not None:
-                    chapter.proofreader = chapter.project.proofreader
-                    await ctx.send("Couldn't find a proofreader. Falling back to project defaults.")
-                    await ctx.message.add_reaction("✅")
-                    if message:
-                        ts = fakesearch(chapter.project.proofreader.discord_id, ctx).mention
-                        await ctx.send(
-                            f"{ts}\n`{chapter.project.title} {formatNumber(chapter.number)}` is ready to be proofread.\nTypeset: {chapter.link_ts}\nTranslation:{chapter.link_tl}\nNotes: {chapter.notes}")
-                    else:
-                        await ctx.send(
-                            f"`{chapter.project.title} {formatNumber(chapter.number)}` is ready to be proofread.\nTypeset: {chapter.link_ts}\nTranslation:{chapter.link_tl}\nNotes: {chapter.notes}")
-                else:
-                    pr = await make_mentionable(ctx.guild.get_role(int(self.bot.config["pr_id"])))
-                    msg = await ctx.send(
-                        f"{pr}\nProofreader required for `{chapter.project.title} {formatNumber(chapter.number)}`. React below to assign yourself.")
-                    await msg.add_reaction("🙋")
-                    await toggle_mentionable(ctx.guild.get_role(int(self.bot.config["pr_id"])))
-                    await msg.pin()
-                    msgdb = Message(msg.id, self.bot.config["rd_id"], "🙋")
-                    msgdb.chapter = chapter.id
-                    msgdb.created_on = func.now()
-                    session.add(msgdb)
-        finally:
-            session.commit()
-            session.close()
+        general = General_helper(self.bot, ctx, arg)
+        channel = await general.get_channel()
+        TS = TS_helper(general)
+        await TS.execute()
 
 
     @commands.command(checks=[is_pr],description=jsonhelp["donepr"]["description"],
                       usage=jsonhelp["donepr"]["usage"], brief=jsonhelp["donepr"]["brief"], help=jsonhelp["donepr"]["help"])
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
     async def donepr(self, ctx, *, arg):
-        session = self.bot.Session()
-        try:
-            arg = arg[1:]
-            d = dict(x.split('=', 1) for x in arg.split(' -'))
-            if "link" not in d:
-                raise MissingRequiredParameter("Link")
-            if "id" not in d and "p" in d and "c" in d:
-                ts_alias = aliased(Staff)
-                rd_alias = aliased(Staff)
-                tl_alias = aliased(Staff)
-                pr_alias = aliased(Staff)
-                query = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id). \
-                    outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id). \
-                    outerjoin(tl_alias, Chapter.translator_id == tl_alias.id). \
-                    outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id). \
-                    join(Project, Chapter.project_id == Project.id)
-                proj = searchproject(d["p"], session)
-                chapter = query.filter(Chapter.project_id == proj.id).filter(float(d["c"]) == Chapter.number).one()
-            elif "id" in d:
-                ts_alias = aliased(Staff)
-                rd_alias = aliased(Staff)
-                tl_alias = aliased(Staff)
-                pr_alias = aliased(Staff)
-                query = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id). \
-                    outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id). \
-                    outerjoin(tl_alias, Chapter.translator_id == tl_alias.id). \
-                    outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id). \
-                    join(Project, Chapter.project_id == Project.id)
-                chapter = query.filter(int(d["id"]) == Chapter.id).one()
-            else:
-                raise MissingRequiredParameter("Project and Chapter and ID")
-            if chapter.proofreader is None:
-                chapter.proofreader = await searchstaff(ctx.author.id, ctx, session)
-            message = True
-            if "msg" in d:
-                if d["msg"] in ("True", "true", "t", "yes", "Yes", "y", "Y"):
-                    message = True
-                elif d["msg"] in ("False", "false", "n", "f", "N", "F", "no", "No"):
-                    message = False
-                else:
-                    raise ValueError
-            chapter.link_pr = d["link"]
-            chapter.date_pr = func.now()
-            if chapter.typesetter is not None:
-                ts = fakesearch(chapter.typesetter.discord_id, ctx).mention
-                if message:
-                    await ctx.send(
-                        f"{ts}\nThe proofread for `{chapter.project.title} {formatNumber(chapter.number)}` is ready.\nLink: {chapter.link_pr}\nNotes: {chapter.notes}\nNotes: {chapter.notes}")
-                else:
-                    await ctx.send(
-                        f"The proofread for `{chapter.project.title} {formatNumber(chapter.number)}` is ready.\nLink: {chapter.link_pr}\nNotes: {chapter.notes}\nNotes: {chapter.notes}")
-                await ctx.message.add_reaction("✅")
-            else:
-                await ctx.send(f"Something is wrong. Couldn't determine a typesetter. Updated chapter data anyway.")
-                await ctx.message.add_reaction("✅")
-        finally:
-            session.commit()
-            session.close()
-
+        helper = General_helper(self.bot, ctx, arg)
+        PR = PR_helper(helper)
+        await PR.execute()
 
     @commands.command(checks=[is_ts], description=jsonhelp["doneqcts"]["description"],
                       usage=jsonhelp["doneqcts"]["usage"], brief=jsonhelp["doneqcts"]["brief"], help=jsonhelp["doneqcts"]["help"])
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
     async def doneqcts(self, ctx, *, arg):
-        session = self.bot.Session()
-        try:
-            arg = arg[1:]
-            d = dict(x.split('=', 1) for x in arg.split(' -'))
-            if "link" not in d:
-                raise MissingRequiredParameter("Link")
-            if "id" not in d and "p" in d and "c" in d:
-                ts_alias = aliased(Staff)
-                rd_alias = aliased(Staff)
-                tl_alias = aliased(Staff)
-                pr_alias = aliased(Staff)
-                query = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id). \
-                    outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id). \
-                    outerjoin(tl_alias, Chapter.translator_id == tl_alias.id). \
-                    outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id). \
-                    join(Project, Chapter.project_id == Project.id)
-                proj = searchproject(d["p"], session)
-                chapter = query.filter(Chapter.project_id == proj.id).filter(float(d["c"]) == Chapter.number).one()
-            elif "id" in d:
-                ts_alias = aliased(Staff)
-                rd_alias = aliased(Staff)
-                tl_alias = aliased(Staff)
-                pr_alias = aliased(Staff)
-                query = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id). \
-                    outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id). \
-                    outerjoin(tl_alias, Chapter.translator_id == tl_alias.id). \
-                    outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id). \
-                    join(Project, Chapter.project_id == Project.id)
-                chapter = query.filter(int(d["id"]) == Chapter.id).one()
-            else:
-                raise MissingRequiredParameter("Project and Chapter or ID")
-            message = True
-            if "msg" in d:
-                if d["msg"] in ("True", "true", "t", "yes", "Yes", "y", "Y"):
-                    message = True
-                elif d["msg"] in ("False", "false", "n", "f", "N", "F", "no", "No"):
-                    message = False
-                else:
-                    raise ValueError
-            chapter.link_rl = d["link"]
-            chapter.date_rl = func.now()
-            if chapter.proofreader is not None:
-                pr = fakesearch(chapter.proofreader.discord_id, ctx).mention
-                if message:
-                    await ctx.send(
-                        f"{pr} \nThe QCTS for `{chapter.project.title} {formatNumber(chapter.number)}` is ready.\nLink: {chapter.link_rl}\nNotes: {chapter.notes}\nNotes: {chapter.notes}")
-                else:
-                    await ctx.send(
-                        f"The QCTS for `{chapter.project.title} {formatNumber(chapter.number)}` is ready.\nLink: {chapter.link_rl}\nNotes: {chapter.notes}\nNotes: {chapter.notes}")
-                await ctx.message.add_reaction("✅")
-            else:
-                await ctx.send(f"Something is wrong. Couldn't determine a Proofreader. Updated chapter data anyway.")
-                await ctx.message.add_reaction("✅")
-        finally:
-            session.commit()
-            session.close()
+        helper = General_helper(self.bot, ctx, arg)
+        QCTS = QCTS_helper(helper)
+        await QCTS.execute()
 
 
     @commands.command(checks=[is_rd], description=jsonhelp["donerd"]["description"],

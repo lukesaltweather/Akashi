@@ -40,45 +40,56 @@ class Loops(commands.Cog):
         session.close()
 
 
-    @tasks.loop(hours=2)
+    @tasks.loop(minutes=5)
     async def deletemessages(self):
         session = self.bot.Session()
+        channel = self.bot.get_channel(self.bot.config["command_channel"])
         messages = session.query(Message).all()
         for message in messages:
-            if message.created_on < (datetime.datetime.utcnow() - datetime.timedelta(hours=48)) and message.reminder:
-                channel = self.bot.get_channel(self.bot.config["command_channel"])
-                m = await channel.fetch_message(message.message_id)
-                await m.clear_reactions()
-                await m.unpin()
-                await m.add_reaction("❌")
-                msg = m.jump_url
-                embed = discord.Embed(color=discord.Colour.red())
-                embed.set_author(name="Assignment",
-                                 icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128")
-                chapter = session.query(Chapter).filter(Chapter.id == message.chapter).one()
-                wordy = (await self.bot.fetch_user(345845639663583252)).mention
-                embed.description = f"*{chapter.project.title}* {formatNumber(chapter.number)}\nNo staffmember assigned themselves to Chapter.\n[Jump!]({msg})\n"
-                await channel.send(wordy)
-                await channel.send(embed=embed)
+            chapter = session.query(Chapter).filter(Chapter.id == message.chapter).one()
+            if message.awaiting == self.bot.config.get("tl_id") and chapter.translator is not None:
                 session.delete(message)
-            elif message.created_on < (datetime.datetime.utcnow() - datetime.timedelta(hours=24)) and not message.reminder:
-                channel = self.bot.get_channel(self.bot.config["command_channel"])
-                m = await channel.fetch_message(message.message_id)
-                msg = m.jump_url
-                embed = discord.Embed(color=discord.Colour.red())
-                embed.set_author(name="Assignment Reminder",
-                                 icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128")
-                chapter = session.query(Chapter).filter(Chapter.id == message.chapter).one()
-                who = {self.bot.config["ts_id"]: "Typesetter",
-                       self.bot.config["rd_id"]: "Redrawer",
-                       self.bot.config["tl_id"]: "Translator",
-                       self.bot.config["pr_id"]: "Proofreader",
-                       }
-                embed.description = f"*{chapter.project.title}* {formatNumber(chapter.number)}\nStill requires a {who.get(int(message.awaiting))}!\n[Jump!]({msg})\n"
-                await channel.send(embed=embed)
-                message.reminder = True
+                await self.foundStaff(channel, chapter.translator.name, await self.bot.fetch_message(message.message_id), chapter)
+            elif message.awaiting == self.bot.config.get("rd_id") and chapter.redrawer is not None:
+                session.delete(message)
+                await self.foundStaff(channel, chapter.redrawer.name, await self.bot.fetch_message(message.message_id), chapter)
+            elif message.awaiting == self.bot.config.get("ts_id") and chapter.typesetter is not None:
+                session.delete(message)
+                await self.foundStaff(channel, chapter.typesetter.name, await self.bot.fetch_message(message.message_id), chapter)
+            elif message.awaiting == self.bot.config.get("pr_id") and chapter.proofreader is not None:
+                session.delete(message)
+                await self.foundStaff(channel, chapter.proofreader.name, await self.bot.fetch_message(message.message_id), chapter)
             else:
-                pass
+                if message.created_on < (datetime.datetime.utcnow() - datetime.timedelta(hours=48)) and message.reminder:
+                    m = await channel.fetch_message(message.message_id)
+                    await m.clear_reactions()
+                    await m.unpin()
+                    await m.add_reaction("❌")
+                    msg = m.jump_url
+                    embed = discord.Embed(color=discord.Colour.red())
+                    embed.set_author(name="Assignment",
+                                     icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128")
+                    wordy = (await self.bot.fetch_user(345845639663583252)).mention
+                    embed.description = f"*{chapter.project.title}* {formatNumber(chapter.number)}\nNo staffmember assigned themselves to Chapter.\n[Jump!]({msg})\n"
+                    await channel.send(wordy)
+                    await channel.send(embed=embed)
+                    session.delete(message)
+                elif message.created_on < (datetime.datetime.utcnow() - datetime.timedelta(hours=24)) and not message.reminder:
+                    m = await channel.fetch_message(message.message_id)
+                    msg = m.jump_url
+                    embed = discord.Embed(color=discord.Colour.red())
+                    embed.set_author(name="Assignment Reminder",
+                                     icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128")
+                    who = {self.bot.config["ts_id"]: "Typesetter",
+                           self.bot.config["rd_id"]: "Redrawer",
+                           self.bot.config["tl_id"]: "Translator",
+                           self.bot.config["pr_id"]: "Proofreader",
+                           }
+                    embed.description = f"*{chapter.project.title}* {formatNumber(chapter.number)}\nStill requires a {who.get(int(message.awaiting))}!\n[Jump!]({msg})\n"
+                    await channel.send(embed=embed)
+                    message.reminder = True
+                else:
+                    pass
         session.commit()
         session.close()
 
@@ -201,6 +212,20 @@ class Loops(commands.Cog):
             json.dump(messages, f, indent=4)
         session.commit()
         session.close()
+
+    @staticmethod
+    async def foundStaff(channel: discord.TextChannel, member: str, m: discord.Message, chapter):
+        await m.clear_reactions()
+        await m.unpin()
+        await m.add_reaction("✅")
+        msg = f"`{chapter.project.title} {formatNumber(chapter.number)}` was assigned to {member}."
+        await m.edit(content=msg)
+        msg = m.jump_url
+        embed = discord.Embed(color=discord.Colour.green())
+        embed.set_author(name="Assignment",
+                         icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128")
+        embed.description = f"*{chapter.project.title}* {formatNumber(chapter.number)}\nA staffmember has already been assigned!\n[Jump!]({msg})\n"
+        await channel.send(embed=embed)
 
 def setup(bot):
     bot.add_cog(Loops(bot))

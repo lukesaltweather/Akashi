@@ -300,6 +300,31 @@ async def displayconfig(ctx):
         j = json.dumps(r, indent=4, sort_keys=True)
         await ctx.author.send(j)
 
+def aiohttp_server():
+    async def say_hello(request):
+        json = await request.post()
+        print(json.get("hello"))
+        return web.Response(text='Hello, world')
+
+    app = web.Application()
+    app.add_routes([web.post('/', say_hello)])
+    runner = web.AppRunner(app)
+    return runner
+
+
+def run_server(runner):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(runner.setup())
+    site = web.TCPSite(runner, 'localhost', 8080)
+    loop.run_until_complete(site.start())
+    loop.run_forever()
+
+
+t = threading.Thread(target=run_server, args=(aiohttp_server(),))
+t.start()
+
+
 if config["online"]:
     bot.run(config["heroku_key"])
 else:

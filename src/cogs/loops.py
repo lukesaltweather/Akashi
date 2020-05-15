@@ -43,22 +43,22 @@ class Loops(commands.Cog):
     @tasks.loop(minutes=5)
     async def deletemessages(self):
         session = self.bot.Session()
-        channel = self.bot.get_channel(self.bot.config["command_channel"])
+        channel = self.bot.get_channel(self.bot.config["file_room"])
         messages = session.query(Message).all()
         for message in messages:
             chapter = session.query(Chapter).filter(Chapter.id == message.chapter).one()
             if message.awaiting == self.bot.config.get("tl_id") and chapter.translator is not None:
                 session.delete(message)
-                await self.foundStaff(channel, chapter.translator.name, await self.bot.fetch_message(message.message_id), chapter)
+                await self.foundStaff(channel, chapter.translator.name, await channel.fetch_message(message.message_id), chapter)
             elif message.awaiting == self.bot.config.get("rd_id") and chapter.redrawer is not None:
                 session.delete(message)
-                await self.foundStaff(channel, chapter.redrawer.name, await self.bot.fetch_message(message.message_id), chapter)
+                await self.foundStaff(channel, chapter.redrawer.name, await channel.fetch_message(message.message_id), chapter)
             elif message.awaiting == self.bot.config.get("ts_id") and chapter.typesetter is not None:
                 session.delete(message)
-                await self.foundStaff(channel, chapter.typesetter.name, await self.bot.fetch_message(message.message_id), chapter)
+                await self.foundStaff(channel, chapter.typesetter.name, await channel.fetch_message(message.message_id), chapter)
             elif message.awaiting == self.bot.config.get("pr_id") and chapter.proofreader is not None:
                 session.delete(message)
-                await self.foundStaff(channel, chapter.proofreader.name, await self.bot.fetch_message(message.message_id), chapter)
+                await self.foundStaff(channel, chapter.proofreader.name, await channel.fetch_message(message.message_id), chapter)
             else:
                 if message.created_on < (datetime.datetime.utcnow() - datetime.timedelta(hours=48)) and message.reminder:
                     m = await channel.fetch_message(message.message_id)

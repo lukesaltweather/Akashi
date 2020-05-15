@@ -16,7 +16,8 @@ from aiohttp import web
 from discord import Embed, AsyncWebhookAdapter
 from discord.ext import commands, tasks
 from discord.ext.commands import MissingRequiredArgument
-from sqlalchemy import or_, text, func, Date
+from sqlalchemy import or_, text, func, Date, event
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker, joinedload, aliased
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 
@@ -58,6 +59,23 @@ logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
+
+"""logging.basicConfig(filename="sqlalchemy.log")
+logger2 = logging.getLogger("myapp.sqltime")
+logger2.setLevel(logging.DEBUG)
+
+@event.listens_for(Engine, "before_cursor_execute")
+def before_cursor_execute(conn, cursor, statement,
+                        parameters, context, executemany):
+    conn.info.setdefault('query_start_time', []).append(time.time())
+    logger2.debug("Start Query: %s" % statement)
+
+@event.listens_for(Engine, "after_cursor_execute")
+def after_cursor_execute(conn, cursor, statement,
+                        parameters, context, executemany):
+    total = time.time() - conn.info['query_start_time'].pop(-1)
+    logger2.debug("Query Complete!")
+    logger2.debug("Total Time: %f" % total)"""
 
 
 if config["online"]:
@@ -122,8 +140,8 @@ async def on_command_error(ctx, error):
     elif isinstance(error, exceptions.MissingRequiredParameter):
         await ctx.send("Missing %s" % error.param)
     elif isinstance(error, sqlalchemy.orm.exc.NoResultFound):
-        await ctx.send("Sorry, I couldn't find what you were looking for.")
-    if isinstance(error, TagAlreadyExists):
+        await ctx.send("Sorry, I couldn't find what you were looking for. Does this chapter/project exist?")
+    elif isinstance(error, TagAlreadyExists):
         await ctx.send(f"{error.message} Tag already exists.")
     else:
         await ctx.send(error)
@@ -300,29 +318,29 @@ async def displayconfig(ctx):
         j = json.dumps(r, indent=4, sort_keys=True)
         await ctx.author.send(j)
 
-def aiohttp_server():
-    async def say_hello(request):
-        json = await request.post()
-        print(json.get("hello"))
-        return web.Response(text='Hello, world')
-
-    app = web.Application()
-    app.add_routes([web.post('/', say_hello)])
-    runner = web.AppRunner(app)
-    return runner
-
-
-def run_server(runner):
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(runner.setup())
-    site = web.TCPSite(runner, 'localhost', 8080)
-    loop.run_until_complete(site.start())
-    loop.run_forever()
-
-
-t = threading.Thread(target=run_server, args=(aiohttp_server(),))
-t.start()
+# def aiohttp_server():
+#     async def say_hello(request):
+#         json = await request.post()
+#         print(json.get("hello"))
+#         return web.Response(text='Hello, world')
+#
+#     app = web.Application()
+#     app.add_routes([web.post('/', say_hello)])
+#     runner = web.AppRunner(app)
+#     return runner
+#
+#
+# def run_server(runner):
+#     loop = asyncio.new_event_loop()
+#     asyncio.set_event_loop(loop)
+#     loop.run_until_complete(runner.setup())
+#     site = web.TCPSite(runner, 'localhost', 8080)
+#     loop.run_until_complete(site.start())
+#     loop.run_forever()
+#
+#
+# t = threading.Thread(target=run_server, args=(aiohttp_server(),))
+# t.start()
 
 
 if config["online"]:

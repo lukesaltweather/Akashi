@@ -165,7 +165,7 @@ class Tags(commands.Cog):
 
     @commands.command(description=jsonhelp["tagtoggleprivate"]["description"],
                       usage=jsonhelp["tagtoggleprivate"]["usage"], brief=jsonhelp["tagtoggleprivate"]["brief"], help=jsonhelp["tagtoggleprivate"]["help"])
-    async def tagtoggleprivate(self, ctx, tag:str):
+    async def tagtoggleprivate(self, ctx, *, tag:str):
         con = await self.pool.acquire()
         try:
             tag = tag

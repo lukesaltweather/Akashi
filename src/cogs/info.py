@@ -5,7 +5,7 @@ from discord.ext import commands
 from datetime import datetime, timedelta
 
 from prettytable import PrettyTable
-from sqlalchemy import Date, text, or_
+from sqlalchemy import Date, text, or_, and_
 
 from src.helpers.arghelper import arghelper
 from src.util import exceptions
@@ -59,6 +59,7 @@ class Info(commands.Cog):
                                                     outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id).\
                                                     join(Project, Chapter.project_id == Project.id)
                 # joinen geschieht in zukunft hier. damit wird vermieden dass beim sortieren kacke passiert
+                links = False
                 if "p" in d:
                     if ',' in d["p"]:
                         helper = arghelper(d.get("p"))
@@ -229,6 +230,49 @@ class Info(commands.Cog):
                 if "rl_upto" in d:
                     date = datetime.strptime(d["rl_upto"], "%Y %m %d").date()
                     query = query.filter(Chapter.date_release.cast(Date) <= date)
+                if "links" in d:
+                    if d.get("links").lower() in ("yes", "y", "true"):
+                        links = True
+                    else:
+                        links = False
+                if "status" in d:
+                    status = d.get("status").lower()
+                    if status == "active":
+                        query = query.filter(or_(Chapter.link_rl == None, Chapter.date_release is None))
+                    elif status == "tl":
+                        query = query.filter(Chapter.link_tl == None)
+                    elif status == "rd":
+                        query = query.filter(Chapter.link_tl != None)
+                        query = query.filter(Chapter.link_tl != "")
+                        query = query.filter(or_(Chapter.link_rd == None,Chapter.link_rd == ""))
+                    elif status == "ts":
+                        query = query.filter(Chapter.link_tl != None)
+                        query = query.filter(Chapter.link_tl != "")
+                        query = query.filter(Chapter.link_rd != None)
+                        query = query.filter(Chapter.link_rd != "")
+                        query = query.filter(or_(Chapter.link_ts == None,Chapter.link_ts == ""))
+                    elif status == "pr":
+                        query = query.filter(Chapter.link_tl != None)
+                        query = query.filter(Chapter.link_tl != "")
+                        query = query.filter(Chapter.link_rd != None)
+                        query = query.filter(Chapter.link_rd != "")
+                        query = query.filter(Chapter.link_ts != None)
+                        query = query.filter(Chapter.link_ts != "")
+                        query = query.filter(or_(Chapter.link_pr == None, Chapter.link_pr == ""))
+                    elif status == "qcts":
+                        query = query.filter(Chapter.link_tl != None)
+                        query = query.filter(Chapter.link_tl != "")
+                        query = query.filter(Chapter.link_rd != None)
+                        query = query.filter(Chapter.link_rd != "")
+                        query = query.filter(Chapter.link_ts != None)
+                        query = query.filter(Chapter.link_ts != "")
+                        query = query.filter(Chapter.link_pr != None)
+                        query = query.filter(Chapter.link_pr != "")
+                        query = query.filter(or_(Chapter.link_rl == None, Chapter.link_rl == ""))
+                    elif status == "ready":
+                        query = query.filter(and_(Chapter.link_rl != None, Chapter.link_rl != ""))
+                        query = query.filter(Chapter.date_release != None)
+
                 # if "order_by" in d:
                 #     try:
                 #         query = query.order_by(text(d["order_by"]))
@@ -340,27 +384,28 @@ class Info(commands.Cog):
                     table.add_column("Title", titles)
                     id = [str(chapter.id) for chapter in records]
                     table.add_column("ID", id)
-                    for chapter in records:
-                        if chapter.link_tl is not None:
-                            links_tl.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_tl})")
-                        if chapter.link_rd is not None:
-                            links_rd.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_rd})")
-                        if chapter.link_ts is not None:
-                            links_ts.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_ts})")
-                        if chapter.link_pr is not None:
-                            links_pr.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_pr})")
-                        if chapter.link_rl is not None:
-                            links_qcts.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_rl})")
-                    if len(links_tl) != 0:
-                        embed.add_category(title="Translations", l="\n".join(links_tl))
-                    if len(links_rd) != 0:
-                        embed.add_category(title="Redraws", l="\n".join(links_rd))
-                    if len(links_ts) != 0:
-                        embed.add_category(title="Typesets", l="\n".join(links_ts))
-                    if len(links_pr) != 0:
-                        embed.add_category(title="Proofreads", l="\n".join(links_pr))
-                    if len(links_qcts) != 0:
-                        embed.add_category(title="QC Typesets", l="\n".join(links_qcts))
+                    if links:
+                        for chapter in records:
+                            if chapter.link_tl is not None:
+                                links_tl.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_tl})")
+                            if chapter.link_rd is not None:
+                                links_rd.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_rd})")
+                            if chapter.link_ts is not None:
+                                links_ts.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_ts})")
+                            if chapter.link_pr is not None:
+                                links_pr.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_pr})")
+                            if chapter.link_rl is not None:
+                                links_qcts.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_rl})")
+                        if len(links_tl) != 0:
+                            embed.add_category(title="Translations", l="\n".join(links_tl))
+                        if len(links_rd) != 0:
+                            embed.add_category(title="Redraws", l="\n".join(links_rd))
+                        if len(links_ts) != 0:
+                            embed.add_category(title="Typesets", l="\n".join(links_ts))
+                        if len(links_pr) != 0:
+                            embed.add_category(title="Proofreads", l="\n".join(links_pr))
+                        if len(links_qcts) != 0:
+                            embed.add_category(title="QC Typesets", l="\n".join(links_qcts))
                     tl = [chapter.translator.name if chapter.translator is not None else "None" for chapter in records]
                     table.add_column("Translator", tl)
                     ts = [chapter.typesetter.name if chapter.typesetter is not None else "None" for chapter in records]
@@ -380,8 +425,9 @@ class Info(commands.Cog):
                                      icon_url='https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128')
                     embed1.set_image(url="attachment://image.png")
                     await ctx.send(file=file, embed=embed1)
-                for e in embed.embeds:
-                    await ctx.send(embed=e)
+                if links:
+                    for e in embed.embeds:
+                        await ctx.send(embed=e)
         finally:
             session.close()
 
@@ -631,7 +677,7 @@ class Info(commands.Cog):
                 desc = f"{desc}\n{chapter.project.title} {chapter.number}: [TS]({chapter.link_ts}) [PR]({chapter.link_pr})"
         embed = discord.Embed(color=discord.Colour.gold(), description=desc)
         embed.set_author(name="Current chapters",
-                         icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128")
+                         icon_url=ctx.author.avatar_url)
         await ctx.send(embed=embed)
         session.close()
 

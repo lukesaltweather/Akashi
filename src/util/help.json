@@ -42,8 +42,7 @@
             {"p": "-c=" , "e": "Chapter Number - **REQUIRED**"},
             {"p": "-p=" , "e": "Project - **REQUIRED**"},
             {"p": "-id=" , "e": "Project - Alternative to `-c=` and `-p=`"},
-            {"p": "-link=" , "e": "Link to step - **REQUIRED**"},
-            {"p": "-msg=" , "e": "True/False. Define whether to ping the next member."}
+            {"p": "-link=" , "e": "Link to step - **REQUIRED**"}
         ]
         },
     "donerd":
@@ -54,8 +53,7 @@
             {"p": "-c=" , "e": "Chapter Number - **REQUIRED**"},
             {"p": "-p=" , "e": "Project - **REQUIRED**"},
             {"p": "-id=" , "e": "Project - Alternative to `-c=` and `-p=`"},
-            {"p": "-link=" , "e": "Link to step - **REQUIRED**"},
-            {"p": "-msg=" , "e": "True/False. Define whether to ping the next member."}
+            {"p": "-link=" , "e": "Link to step - **REQUIRED**"}
         ]
         },
     "donets":
@@ -66,8 +64,7 @@
             {"p": "-c=" , "e": "Chapter Number - **REQUIRED**"},
             {"p": "-p=" , "e": "Project - **REQUIRED**"},
             {"p": "-id=" , "e": "Project - Alternative to `-c=` and `-p=`"},
-            {"p": "-link=" , "e": "Link to step - **REQUIRED**"},
-            {"p": "-msg=" , "e": "True/False. Define whether to ping the next member."}
+            {"p": "-link=" , "e": "Link to step - **REQUIRED**"}
         ]
         },
     "donepr":
@@ -78,8 +75,7 @@
             {"p": "-c=" , "e": "Chapter Number - **REQUIRED**"},
             {"p": "-p=" , "e": "Project - **REQUIRED**"},
             {"p": "-id=" , "e": "Project - Alternative to `-c=` and `-p=`"},
-            {"p": "-link=" , "e": "Link to step - **REQUIRED**"},
-            {"p": "-msg=" , "e": "True/False. Define whether to ping the next member."}
+            {"p": "-link=" , "e": "Link to step - **REQUIRED**"}
         ]
         },
     "doneqcts":
@@ -90,8 +86,7 @@
             {"p": "-c=" , "e": "Chapter Number - **REQUIRED**"},
             {"p": "-p=" , "e": "Project - **REQUIRED**"},
             {"p": "-id=" , "e": "Project - Alternative to `-c=` and `-p=`"},
-            {"p": "-link=" , "e": "Link to step - **REQUIRED**"},
-            {"p": "-msg=" , "e": "True/False. Define whether to ping the next member."}
+            {"p": "-link=" , "e": "Link to step - **REQUIRED**"}
         ]
         },
     "addproject": {
@@ -118,6 +113,7 @@
         "usage": [
             {"p": "-p=" , "e": "Project title"},
             {"p": "-c=" , "e": "Chapter number"},
+            {"p": "-status=" , "e": "Chapter status, `active, tl, rd, ts, pr, qcts, ready`"},
             {"p": "-chapter_from=" , "e": "Chapters with numbers from this point on"},
             {"p": "-chapter_upto=" , "e": "Chapters with numbers up to this point"},
             {"p": "-title=" , "e": "Filter by title"},
@@ -126,6 +122,7 @@
             {"p": "-link_tl= /-link_rd= / -link_ts= / -link_pr= / -link_qcts=" , "e": "Filter by link, also accepts `None` as value."},
             {"p": "-creation_on= / -creation_upto= / -creation_from=" , "e": "Date it was created on"},
             {"p": "-tl_on= / -tl_from= / -tl_upto" , "e": "Filter by date. Identical commands exist for `ts, rd, pr, qcts and rl`"},
+            {"p": "-links=" , "e": "Whether to send the hyperlinks with the chapters it returns. Accepts: `true, y, yes`"},
             {"p": "-output=" , "e": "Can be either `image` or `text`. Defaults to `image`."},
             {"p": "-fields=" , "e": "Possible values: `title, id, link_{step}, tl, rd, ts, pr, d_c (date it was created on), d_{step} (Date)`"}
         ]

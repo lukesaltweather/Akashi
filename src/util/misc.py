@@ -114,12 +114,12 @@ async def async_drawimage(string):
     return await loop.run_in_executor(None, thing)
 
 def async_drawimage1(string):
-    fontsize = 100  # starting font size
+    fontsize = 25  # starting font size
     font = ImageFont.truetype('src/util/fonts/DroidSansMono.ttf', fontsize)
     lines = string.split("\n")
-    img = Image.new('RGB', (font.getsize(lines[0])[0]+100, len(lines)*150+100), color=(255, 255, 255))
-    offset = 50
-    margin = 50
+    img = Image.new('RGB', (font.getsize(lines[0])[0]+40, len(lines)*30+70), color=(255, 255, 255))
+    offset = 30
+    margin = 20
     d = ImageDraw.Draw(img)
     for line in lines:
         d.text((margin, offset), line, font=font, fill="black")

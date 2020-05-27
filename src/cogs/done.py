@@ -123,13 +123,58 @@ class command_helper:
                 self.session.rollback()
                 raise RuntimeError("Command Cancelled.")
 
-    @staticmethod
-    def completed_embed(project: str, number: float, author: discord.Member, mem: discord.Member, notes: str, step: str, next_step: str, **links) -> discord.Embed:
+    def get_emojis(self, chapter):
+        em = self.bot.em
+        s = ""
+        if chapter.link_tl in (None, ""):
+            tl = em.get("tlw")
+        else:
+            tl = em.get("tl")
+        if chapter.link_rd in (None, ""):
+            rd = em.get("rdw")
+        else:
+            rd = em.get("rd")
+        if chapter.link_ts in (None, ""):
+            ts = em.get("tsw")
+        else:
+            ts = em.get("ts")
+        if chapter.link_pr in (None, ""):
+            pr = em.get("prw")
+        else:
+            pr = em.get("pr")
+        if chapter.link_rl in (None, ""):
+            qcts = em.get("qctsw")
+        else:
+            qcts = em.get("qcts")
+
+        return f"<:{tl}> - <:{rd}> - <:{ts}> - <:{pr}> - <:{qcts}>"
+
+    def completed_embed(self, chapter: Chapter, author: discord.Member, mem: discord.Member, step: str, next_step: str) -> discord.Embed:
+        project = chapter.project.title
+        notes = chapter.notes
+        number = chapter.number
+        links = {}
+        emojis = self.get_emojis(chapter)
+        if next_step == "TS":
+            links["Redraws"] = chapter.link_rd
+            links["Translation"] = chapter.link_ts
+        elif next_step == "RD":
+            links["Raws"] = chapter.link_raw
+            links["Translation"] = chapter.link_tl
+        elif next_step == "PR":
+            links["Typeset"] = chapter.link_ts
+            links["Translation"] = chapter.link_tl
+        elif next_step == "QCTS":
+            links["Proofread"] = chapter.link_pr
+            links["Typeset"] = chapter.link_ts
+        elif next_step == "RL":
+            links["QCTS"] = chapter.link_rl
         e = discord.Embed(color=discord.Colour.green())
         e.set_author(name=f"Next up: {mem.display_name} | {next_step}", icon_url=mem.avatar_url)
         e.description=f"{author.mention} finished `{project}` Ch. `{formatNumber(number)}` | {step}\n"
         links = '\n'.join(['[%s](%s)' % (key, value) for (key, value) in links.items()])
         e.description=f"{e.description}\n{links}\n\n`Notes:`\n```{notes}```"
+        e.description=f"{e.description}\n{self.get_emojis(chapter)}"
         e.set_footer(text=f"Step finished by {author.display_name}", icon_url=author.avatar_url)
         return e
 
@@ -174,15 +219,9 @@ class TL_helper(command_helper):
         @return: None
         """
         self.message = await self.confirm("Notify Typesetter")
+        embed = self.completed_embed(self.chapter, self.ctx.author, fakesearch(self.chapter.typesetter.discord_id, self.ctx), "TL", "TS")
         ts = fakesearch(self.chapter.typesetter.discord_id, self.ctx).mention
-        await self.channel.send(
-            f'{ts}\nThe translation and redraws for `{self.chapter.project.title} {formatNumber(self.chapter.number)}` are done.\nTranslation: {self.chapter.link_tl}\nRedraws:{self.chapter.link_rd}', allowed_mentions=self.message)
-        embed = discord.Embed(color=discord.Colour.dark_red())
-        embed.title = "Notes:"
-        embed.add_field(name="\u200b", value=f"```{self.chapter.notes}```")
-        await self.channel.send(embed=embed)
-
-
+        await self.channel.send(content=f"{ts}", embed=embed, allowed_mentions=self.message)
 
     async def _no_redraws(self):
         """
@@ -198,7 +237,6 @@ class TL_helper(command_helper):
         embed.title = "Notes:"
         embed.add_field(name="\u200b", value=f"```{self.chapter.notes}```")
         await self.channel.send(embed=embed)
-
 
     async def _no_redrawer(self):
         """
@@ -219,13 +257,8 @@ class TL_helper(command_helper):
         else:
             self.message = await self.confirm("Notify Default Redrawer")
             rd = fakesearch(self.chapter.project.redrawer.discord_id, self.ctx).mention
-            await self.channel.send("Couldn't find a redrawer. Falling back to project defaults.")
-            await self.channel.send(
-                f'{rd}\nThe translation for `{self.chapter.project.title} {formatNumber(self.chapter.number)}` is done.\nRaws: {self.chapter.link_raw}', allowed_mentions=self.message)
-            embed = discord.Embed(color=discord.Colour.dark_red())
-            embed.add_field(name="\u200b", value=f"```{self.chapter.notes}```")
-            embed.title = "Notes:"
-            await self.channel.send(embed=embed)
+            embed = self.completed_embed(self.chapter, self.ctx.author, fakesearch(self.chapter.project.redrawer.discord_id, self.ctx), "TL", "RD")
+            await self.channel.send(content=f"{rd}", embed=embed, allowed_mentions=self.message)
 
             self.chapter.redrawer = self.chapter.project.redrawer
             self.session.commit()
@@ -249,14 +282,8 @@ class TL_helper(command_helper):
         else:
             self.message = await self.confirm("Notify Default Typesetter")
             ts = fakesearch(self.chapter.project.typesetter.discord_id, self.ctx).mention
-            await self.channel.send("Couldn't find a typesetter. Falling back to project defaults.")
-            await self.channel.send(
-                f'{ts}\nThe translation and redraws for `{self.chapter.project.title} {formatNumber(self.chapter.number)}` are done.\nTranslation: {self.chapter.link_tl}\nRedraws:{self.chapter.link_rd}', allowed_mentions=self.message)
-            embed = discord.Embed(color=discord.Colour.dark_red())
-            embed.add_field(name="\u200b", value=f"```{self.chapter.notes}```")
-            embed.title = "Notes:"
-            await self.channel.send(embed=embed)
-
+            embed = self.completed_embed(self.chapter, self.ctx.author, fakesearch(self.chapter.project.typesetter.discord_id, self.ctx), "TL", "TS")
+            await self.channel.send(content=ts, embed=embed, allowed_mentions=self.message)
             self.chapter.typesetter = self.chapter.project.typesetter
 
     async def _set_translator(self):
@@ -305,24 +332,16 @@ class TS_helper(command_helper):
         else:
             self.message = await self.confirm("Notify Default Proofreader")
             self.chapter.proofreader = self.chapter.project.proofreader
-            await self.channel.send("Couldn't find a proofreader. Falling back to project defaults.")
             ts = fakesearch(self.chapter.project.proofreader.discord_id, self.ctx).mention
-            await self.channel.send(
-                f"{ts}\n`{self.chapter.project.title} {formatNumber(self.chapter.number)}` is ready to be proofread.\nTypeset: {self.chapter.link_ts}\nTranslation:{self.chapter.link_tl}", allowed_mentions=self.message)
-            embed = discord.Embed(color=discord.Colour.dark_red())
-            embed.title = "Notes:"
-            embed.add_field(name="\u200b", value=f"```{self.chapter.notes}```")
-            await self.channel.send(embed=embed)
+            embed = self.completed_embed(self.chapter, self.ctx.author, fakesearch(self.chapter.project.proofreader.discord_id, self.ctx), "TS", "PR")
+            await self.channel.send(content=ts, embed=embed, allowed_mentions=self.message)
 
     async def __proofreader(self):
         self.message = await self.confirm("Notify Proofreader")
         ts = fakesearch(self.chapter.proofreader.discord_id, self.ctx).mention
-        await self.channel.send(
-            f"{ts}\n`{self.chapter.project.title} {formatNumber(self.chapter.number)}` is ready to be proofread.\nTypeset: {self.chapter.link_ts}\nTranslation:{self.chapter.link_tl}", allowed_mentions=self.message)
-        embed = discord.Embed(color=discord.Colour.dark_red())
-        embed.title = "Notes:"
-        embed.add_field(name="\u200b", value=f"```{self.chapter.notes}```")
-        await self.channel.send(embed=embed)
+        embed = self.completed_embed(self.chapter, self.ctx.author,
+                                     fakesearch(self.chapter.proofreader.discord_id, self.ctx), "TS", "PR")
+        await self.channel.send(content=ts, embed=embed, allowed_mentions=self.message)
 
 class PR_helper(command_helper):
     def __init__(self, helper: General_helper):
@@ -356,12 +375,9 @@ class PR_helper(command_helper):
     async def __typesetter(self):
         self.message = await self.confirm("Notify OG Typesetter")
         ts = fakesearch(self.chapter.typesetter.discord_id, self.ctx).mention
-        await self.channel.send(
-            f"{ts}\nThe proofread for `{self.chapter.project.title} {formatNumber(self.chapter.number)}` is ready.\nLink: {self.chapter.link_pr}\nNotes: {self.chapter.notes}", allowed_mentions=self.message)
-        embed = discord.Embed(color=discord.Colour.dark_red())
-        embed.add_field(name="\u200b", value=f"```{self.chapter.notes}```")
-        embed.title = "Notes:"
-        await self.channel.send(embed=embed)
+        embed = self.completed_embed(self.chapter, self.ctx.author,
+                                     fakesearch(self.chapter.typesetter.discord_id, self.ctx), "PR", "QCTS")
+        await self.channel.send(content=ts, embed=embed, allowed_mentions=self.message)
 
 class QCTS_helper(command_helper):
     def __init__(self, helper):
@@ -385,12 +401,9 @@ class QCTS_helper(command_helper):
     async def __proofreader(self):
         self.message = await self.confirm("Notify Proofreader")
         pr = fakesearch(self.chapter.proofreader.discord_id, self.ctx).mention
-        await self.channel.send(
-            f"{pr} \nThe QCTS for `{self.chapter.project.title} {formatNumber(self.chapter.number)}` is ready.\nLink: {self.chapter.link_rl}\nNotes: {self.chapter.notes}", allowed_mentions=self.message)
-        embed = discord.Embed(color=discord.Colour.dark_red())
-        embed.add_field(name="\u200b", value=f"```{self.chapter.notes}```")
-        embed.title = "Notes:"
-        await self.channel.send(embed=embed)
+        embed = self.completed_embed(self.chapter, self.ctx.author,
+                                     fakesearch(self.chapter.proofreader.discord_id, self.ctx), "QCTS", "PR")
+        await self.channel.send(content=pr, embed=embed, allowed_mentions=self.message)
 
     async def __no_proofreader(self):
         self.message = await self.confirm("Error: No Proofreader to notify")
@@ -426,16 +439,14 @@ class RD_helper(command_helper):
 
     async def __no_translation(self):
         self.message = await self.confirm("No Translation available. Notifies Translator.")
-        await self.channel.send(
-            f'\nThe redraws for `{self.chapter.project.title} {formatNumber(self.chapter.number)}` are done but the translation isnt ready.{fakesearch(self.chapter.translator.discord_id, self.ctx).mention}\nRedraws: {self.chapter.link_raw}', allowed_mentions=self.message)
-        embed = discord.Embed(color=discord.Colour.dark_red())
-        embed.title = "Notes:"
-        embed.add_field(name="\u200b", value=f"```{self.chapter.notes}```")
-        await self.channel.send(embed=embed)
+        tl = fakesearch(self.chapter.translator.discord_id, self.ctx).mention
+        embed = self.completed_embed(self.chapter, self.ctx.author,
+                                     fakesearch(self.chapter.typesetter.discord_id, self.ctx), "RD", "TL")
+        await self.channel.send(content=tl,embed=embed,allowed_mentions=self.message)
 
     async def __typesetter(self):
         self.message = await self.confirm("Notify Typesetter")
-        embed = super().completed_embed(self.chapter.project.title, self.chapter.number, self.ctx.message.author, fakesearch(self.chapter.typesetter.discord_id, self.ctx), self.chapter.notes, "RD", "TS",  Redraws=self.chapter.link_rd, Translation=self.chapter.link_tl)
+        embed = self.completed_embed(self.chapter, self.ctx.author, fakesearch(self.chapter.typesetter.discord_id, self.ctx), "RD", "TS")
         await self.channel.send(embed=embed)
 
     async def __no_typesetter(self):
@@ -443,13 +454,10 @@ class RD_helper(command_helper):
             self.message = await self.confirm("Mention Default Typesetter")
 
             ts = fakesearch(self.chapter.project.typesetter.discord_id, self.ctx).mention
-            await self.channel.send("Couldn't find a typesetter. Falling back to project defaults.")
-            await self.channel.send(
-                f'{ts}\nThe translation and redraws for `{self.chapter.project.title} {formatNumber(self.chapter.number)}` are done.\nRedraws: {self.chapter.link_rd}\nTranslation: {self.chapter.link_tl}', allowed_mentions=self.message)
-            embed = discord.Embed(color=discord.Colour.dark_red())
-            embed.title = "Notes:"
-            embed.add_field(name="\u200b", value=f"```{self.chapter.notes}```")
-            await self.channel.send(embed=embed)
+            embed = self.completed_embed(self.chapter, self.ctx.author,
+                                         fakesearch(self.chapter.project.typesetter.discord_id, self.ctx), "PR", "QCTS")
+            await self.channel.send(content=ts, embed=embed, allowed_mentions=self.message)
+
         else:
             self.message = await self.confirm("Notify Typesetter Role")
             ts = await make_mentionable(self.ctx.guild.get_role(int(self.bot.config["ts_id"])))

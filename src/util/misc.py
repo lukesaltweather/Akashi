@@ -9,6 +9,9 @@ import discord
 import prettytable
 from discord import member
 from PIL import Image, ImageDraw, ImageFont
+from sqlalchemy.orm import sessionmaker
+
+from src.model.chapter import Chapter
 
 
 async def get_roles(member: discord.Member):
@@ -281,8 +284,77 @@ class BoardPaginator:
         else:
             self.add_field(name=title, value=l)
 
+class Transaction:
+    def __init__(self, maker: sessionmaker):
+        self.sessionmaker = maker
+
+    def __enter__(self):
+        self.session = self.sessionmaker()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None:
+            self.session.rollback()
+            self.session.close()
+            return True
+        else:
+            self.session.commit()
+            self.session.close()
 
 
+def get_emojis(bot, chapter):
+    em = bot.em
+    s = ""
+    if chapter.link_tl in (None, ""):
+        tl = em.get("tlw")
+    else:
+        tl = em.get("tl")
+    if chapter.link_rd in (None, ""):
+        rd = em.get("rdw")
+    else:
+        rd = em.get("rd")
+    if chapter.link_ts in (None, ""):
+        ts = em.get("tsw")
+    else:
+        ts = em.get("ts")
+    if chapter.link_pr in (None, ""):
+        pr = em.get("prw")
+    else:
+        pr = em.get("pr")
+    if chapter.link_rl in (None, ""):
+        qcts = em.get("qctsw")
+    else:
+        qcts = em.get("qcts")
 
+    return f"<:{tl}> - <:{rd}> - <:{ts}> - <:{pr}> - <:{qcts}>"
+
+def completed_embed(chapter: Chapter, author: discord.Member, mem: discord.Member, step: str, next_step: str, bot) -> discord.Embed:
+    project = chapter.project.title
+    notes = chapter.notes
+    number = chapter.number
+    links = {}
+    emojis = get_emojis(bot, chapter)
+    if next_step == "TS":
+        links["Redraws"] = chapter.link_rd
+        links["Translation"] = chapter.link_ts
+    elif next_step == "RD":
+        links["Raws"] = chapter.link_raw
+        links["Translation"] = chapter.link_tl
+    elif next_step == "PR":
+        links["Typeset"] = chapter.link_ts
+        links["Translation"] = chapter.link_tl
+    elif next_step == "QCTS":
+        links["Proofread"] = chapter.link_pr
+        links["Typeset"] = chapter.link_ts
+    elif next_step == "RL":
+        links["QCTS"] = chapter.link_rl
+    e = discord.Embed(color=discord.Colour.green())
+    e.set_author(name=f"Next up: {mem.display_name} | {next_step}", icon_url=mem.avatar_url)
+    e.description=f"{author.mention} finished `{project}` Ch. `{formatNumber(number)}` | {step}\n"
+    links = '\n'.join(['[%s](%s)' % (key, value) for (key, value) in links.items()])
+    e.description=f"{e.description}\n{links}\n\n`Notes:`\n```{notes}```"
+    e.description=f"{e.description}\n{get_emojis(bot, chapter)}"
+    e.set_footer(text=f"Step finished by {author.display_name}", icon_url=author.avatar_url)
+    return e
 
 

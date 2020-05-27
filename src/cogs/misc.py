@@ -8,6 +8,10 @@ from discord.ext import commands
 from src.model.staff import Staff
 from src.util import exceptions, checks
 from src.util.checks import is_admin, is_worker
+import math as m
+import psutil
+import datetime
+import humanize
 
 with open('src/util/help.json', 'r') as f:
     jsonhelp = json.load(f)
@@ -35,6 +39,33 @@ class Misc(commands.Cog):
             await ctx.send('{}: {}'.format(type(e).__name__, e))
         else:
             await ctx.send('\N{OK HAND SIGN}')
+
+    @commands.command()
+    @is_worker()
+    async def hello(self, ctx):
+        message = discord.AllowedMentions(everyone=False, roles=False, users=False)
+        luke = self.bot.get_user(358244935041810443)
+        await ctx.send(f"Hello, I'm Akashi. I keep track of Nekyou's projects.\n{luke.mention} made me.", allowed_mentions=message)
+
+    def get_bot_uptime(self):
+        delta = (self.bot.uptime-datetime.datetime.now()).total_seconds()
+        print(delta)
+        delta = datetime.timedelta(seconds=delta)
+        return humanize.naturaldelta(delta)
+
+    @commands.command(aliases=["statistics", "status", "usage"])
+    @is_admin()
+    async def stats(self, ctx):
+        embed = discord.Embed(color=discord.Colour.blurple())
+        cpu = psutil.cpu_percent()
+        mem = psutil.virtual_memory()
+        disc = psutil.disk_usage("/")
+        description = f"CPU Usage | **{cpu}** %\nMemory | **{round((mem.total-mem.available)/1073741824, 2)} GB** / **{round(mem.total/1073741824, 2)} GB** ({round((mem.total-mem.available)*100/mem.total, 2)}% used)" \
+                      f"\nDisk Usage | **{round((disc.used/1073741824), 2)} GB** / **{round((disc.total/1073741824), 2)} GB** ({disc.percent}%)\nLatency | **{round(self.bot.latency, 2)}** s\n" \
+                      f"Uptime | **{self.get_bot_uptime()}**\n"
+        embed.description = description
+        embed.set_author(name="Usage Statistics", icon_url="https://dinte0h0exzgg.cloudfront.net/logo/7c84429c642945eeaee7f459484bdc34-akashi_12392.jpg")
+        await ctx.send(embed=embed)
 
     @commands.command(hidden=True, enabled=False)
     @is_admin()

@@ -521,13 +521,20 @@ class Edit(commands.Cog):
                 record.date_release = datetime.strptime(d["date"], "%Y %m %d")
             else:
                 record.date_release = func.now()
+            session.commit()
+            if "p" in d and "c" in d:
+                proj = searchproject(d["p"], session)
+                record = query.filter(Chapter.project_id == proj.id).filter(Chapter.number == float(d["c"])).one()
+            elif "id" in d:
+                record = query.filter(Chapter.id == int(d["id"])).one()
+            else:
+                raise MissingRequiredArgument
             embed = discord.Embed(color=discord.Colour.green())
             embed.set_author(name="Success!",
                              icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128")
             embed.add_field(name="\u200b",
                             value=f"Releasedate of {record.project.title} {record.number} set to {record.date_release.strftime('%Y/%m/%d')}")
             await ctx.send(embed=embed)
-            session.commit()
             session.close()
 
 def setup(Bot):

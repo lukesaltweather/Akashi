@@ -110,7 +110,6 @@ class Loops(commands.Cog):
         for value in messages.get("0", list()):
             msg = await ch.fetch_message(value)
             mes.append(msg)
-            print(msg.id)
         session = self.bot.Session()
         try:
             projects = session.query(Project).filter \

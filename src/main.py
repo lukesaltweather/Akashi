@@ -112,6 +112,7 @@ async def on_ready():
     bot.load_extension('src.cogs.stats')
     bot.load_extension("jishaku")
     bot.load_extension('src.cogs.tags')
+    bot.load_extension('src.cogs.mangadex')
     bot.em = emojis
     bot.debug = False
     print(discord.version_info)

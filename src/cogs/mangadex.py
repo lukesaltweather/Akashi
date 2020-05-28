@@ -25,7 +25,6 @@ class Source(menus.AsyncIteratorPageSource):
         start = menu.current_page * self.per_page
         async with self.session.post('https://api.imgur.com/3/upload', data={'name': 'page.png', 'image': entries}, headers={'Authorization': 'Client-ID 223de056d30d21d'}) as resp:
             r = await resp.json()
-            print(r)
         embed = discord.Embed(color=discord.Colour.gold())
         embed.set_author(name="Page",
                          icon_url="https://pbs.twimg.com/profile_images/1191033858424233987/pyULgeym_400x400.jpg")
@@ -36,7 +35,7 @@ class Source(menus.AsyncIteratorPageSource):
     async def destroy_images(self):
         for hash in self.hashes:
             async with self.session.post('https://api.imgur.com/3/image/{}'.format(hash), headers={'Authorization': 'Client-ID 223de056d30d21d'}) as r:
-                print(await r.json())
+                pass
 
 class MyMenu(menus.MenuPages):
     def __init__(self, source, **kwargs):
@@ -47,6 +46,17 @@ class MyMenu(menus.MenuPages):
         """stops the pagination session."""
         await self._source.destroy_images()
         self.stop()
+
+    async def update(self, payload):
+        if self._can_remove_reactions:
+            if payload.event_type == 'REACTION_ADD':
+                await self.bot.http.remove_reaction(
+                    payload.channel_id, payload.message_id,
+                    discord.Message._emoji_reaction(payload.emoji), payload.member.id
+                )
+            elif payload.event_type == 'REACTION_REMOVE':
+                return
+        await super().update(payload)
 
 class MangaDex(commands.Cog):
     """
@@ -80,6 +90,28 @@ class MangaDex(commands.Cog):
             await self.pool.release(connection)
 
     @commands.command()
+    async def chapter(self,ctx, ints : commands.Greedy[int], *, title: str=""):
+        chapter = ints[0]
+        connection = await self.pool.acquire()
+        if len(ints) == 2:
+            query = """SELECT * FROM mangadex WHERE id = $1 LIMIT 1;"""
+            title = ints[1]
+        else:
+            query = """SELECT *, title <-> $1 as dis FROM mangadex WHERE title % $1 ORDER BY dis DESC;"""
+            title = f"{title}%"
+        try:
+            chap = await connection.fetchrow(query, title)
+            m = mangadex.Manga(chap.get('id'))
+            m.populate()
+            chaps = m.get_chapters()
+            c = chaps[chapter]
+            pages = c.get_pages()
+            pages = MyMenu(source=Source(pages, self.session), clear_reactions_after=True)
+            await pages.start(ctx)
+        finally:
+            await self.pool.release(connection)
+
+    @commands.command()
     async def page(self,ctx, ints : commands.Greedy[int], *, title: str=""):
         chapter = ints[0]
         if len(ints) == 2:
@@ -100,14 +132,12 @@ class MangaDex(commands.Cog):
             chaps = m.get_chapters()
             c = chaps[chapter]
             pages = c.get_pages()
-            # arr = await pages[page].async_download()
-            # embed = discord.Embed(color=discord.Colour.gold())
-            # embed.set_author(name="Page", icon_url="https://pbs.twimg.com/profile_images/1191033858424233987/pyULgeym_400x400.jpg")
-            # file = discord.File(arr, filename="image.png")
-            # embed.set_image(url="attachment://image.png")
-            # await ctx.send(file=file, embed=embed)
-            pages = MyMenu(source=Source(pages, self.session), clear_reactions_after=True)
-            await pages.start(ctx)
+            arr = await pages[page].async_download()
+            embed = discord.Embed(color=discord.Colour.gold())
+            embed.set_author(name="Page", icon_url="https://pbs.twimg.com/profile_images/1191033858424233987/pyULgeym_400x400.jpg")
+            file = discord.File(arr, filename="image.png")
+            embed.set_image(url="attachment://image.png")
+            await ctx.send(file=file, embed=embed)
         finally:
             await self.pool.release(connection)
 

@@ -10,32 +10,52 @@ from discord.ext import menus
 
 from discord.ext import menus
 
-async def generate(number, p):
+async def generate(number, p, session):
     for i in range(number):
         arr = await p[i].async_download()
-        yield arr
+        async with session.post('https://api.imgur.com/3/upload', data={'name': 'page.png', 'image': arr}, headers={'Authorization': 'Client-ID 223de056d30d21d'}) as resp:
+            r = await resp.json()
+        yield r
 
 class Source(menus.AsyncIteratorPageSource):
     def __init__(self, p, session: aiohttp.ClientSession):
-        super().__init__(generate(len(p), p), per_page=1)
-        self.session = session
+        super().__init__(generate(len(p), p, session), per_page=1)
+        self.links = []
         self.hashes = []
 
+    async def _get_single_page(self, page_number):
+        if page_number < 0:
+            raise IndexError('Negative page number.')
+
+        if not self._exhausted and len(self._cache) <= page_number:
+            await self._iterate((page_number + 1) - len(self._cache))
+        return self._cache[page_number]
+
     async def format_page(self, menu, entries):
-        start = menu.current_page * self.per_page
-        async with self.session.post('https://api.imgur.com/3/upload', data={'name': 'page.png', 'image': entries}, headers={'Authorization': 'Client-ID 223de056d30d21d'}) as resp:
-            r = await resp.json()
+        start = menu.current_page
         embed = discord.Embed(color=discord.Colour.gold())
         embed.set_author(name="Page",
                          icon_url="https://pbs.twimg.com/profile_images/1191033858424233987/pyULgeym_400x400.jpg")
-        embed.set_image(url=r.get('data').get('link'))
-        self.hashes.append(r.get('data').get('deletehash'))
+        embed.set_image(url=entries.get('data').get('link'))
+        self.hashes.append(entries.get('data').get('deletehash'))
         return embed
 
     async def destroy_images(self):
         for hash in self.hashes:
             async with self.session.post('https://api.imgur.com/3/image/{}'.format(hash), headers={'Authorization': 'Client-ID 223de056d30d21d'}) as r:
                 pass
+
+class TestSource(menus.ListPageSource):
+    def __init__(self, pages):
+        super().__init__(pages, per_page=1)
+
+    async def format_page(self, menu, entries):
+        start = menu.current_page * self.per_page
+        embed = discord.Embed(color=discord.Colour.gold())
+        embed.set_author(name="Page",
+                         icon_url="https://pbs.twimg.com/profile_images/1191033858424233987/pyULgeym_400x400.jpg")
+        embed.set_image(url=entries.url)
+        return embed
 
 class MyMenu(menus.MenuPages):
     def __init__(self, source, **kwargs):
@@ -93,20 +113,40 @@ class MangaDex(commands.Cog):
     async def chapter(self,ctx, ints : commands.Greedy[int], *, title: str=""):
         chapter = ints[0]
         connection = await self.pool.acquire()
-        if len(ints) == 2:
-            query = """SELECT * FROM mangadex WHERE id = $1 LIMIT 1;"""
-            title = ints[1]
-        else:
-            query = """SELECT *, title <-> $1 as dis FROM mangadex WHERE title % $1 ORDER BY dis DESC;"""
-            title = f"{title}%"
         try:
-            chap = await connection.fetchrow(query, title)
-            m = mangadex.Manga(chap.get('id'))
+            if len(ints) == 2:
+                m = mangadex.Manga(ints[1])
+            else:
+                query = """SELECT *, title <-> $1 as dis FROM mangadex WHERE title ILIKE $1 ORDER BY dis DESC;"""
+                title = f"%{title}%"
+                chap = await connection.fetchrow(query, title)
+                m = mangadex.Manga(chap.get('id'))
             m.populate()
             chaps = m.get_chapters()
-            c = chaps[chapter]
+            c = chaps[chapter-1]
             pages = c.get_pages()
             pages = MyMenu(source=Source(pages, self.session), clear_reactions_after=True)
+            await pages.start(ctx)
+        finally:
+            await self.pool.release(connection)
+
+    @commands.command()
+    async def chaptertest(self,ctx, ints : commands.Greedy[int], *, title: str=""):
+        chapter = ints[0]
+        connection = await self.pool.acquire()
+        try:
+            if len(ints) == 2:
+                m = mangadex.Manga(ints[1])
+            else:
+                query = """SELECT *, title <-> $1 as dis FROM mangadex WHERE title ILIKE $1 ORDER BY dis DESC;"""
+                title = f"%{title}%"
+                chap = await connection.fetchrow(query, title)
+                m = mangadex.Manga(chap.get('id'))
+            m.populate()
+            chaps = m.get_chapters()
+            c = chaps[chapter-1]
+            pages = c.get_pages()
+            pages = MyMenu(source=TestSource(pages), clear_reactions_after=True)
             await pages.start(ctx)
         finally:
             await self.pool.release(connection)

@@ -74,10 +74,9 @@ class Loops(commands.Cog):
                         embed = discord.Embed(color=discord.Colour.red())
                         embed.set_author(name="Assignment",
                                          icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128")
-                        wordy = (await self.bot.get_user(345845639663583252)).mention
+                        wordy = (self.bot.get_user(345845639663583252)).mention
                         embed.description = f"*{chapter.project.title}* {formatNumber(chapter.number)}\nNo staffmember assigned themselves to Chapter.\n[Jump!]({msg})\n"
-                        await channel.send(wordy)
-                        await channel.send(embed=embed)
+                        await channel.send(embed=embed, content=wordy)
                         session.delete(message)
                     elif message.created_on < (datetime.datetime.utcnow() - datetime.timedelta(hours=24)) and not message.reminder:
                         m = await channel.fetch_message(message.message_id)

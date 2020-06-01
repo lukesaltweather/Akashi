@@ -1,3 +1,6 @@
+import asyncio
+import functools
+
 import aiohttp
 from discord.ext.menus import button, Last
 
@@ -7,21 +10,25 @@ import asyncpg
 import discord
 from discord.ext import commands
 from discord.ext import menus
-
+import shutil
 from discord.ext import menus
+import aiofiles
+from aiofiles import os as aios
+import pathlib
 
 async def generate(number, p, session):
     for i in range(number):
         arr = await p[i].async_download()
-        async with session.post('https://api.imgur.com/3/upload', data={'name': 'page.png', 'image': arr}, headers={'Authorization': 'Client-ID 223de056d30d21d'}) as resp:
-            r = await resp.json()
-        yield r
+        pathlib.Path(f'/var/www/api.lukesaltweather.de/static/{p[i].chapter_hash}').mkdir(parents=True, exist_ok=True)
+        async with aiofiles.open(f'/var/www/api.lukesaltweather.de/static/{p[i].chapter_hash}/{p[i].page_filename}', mode='wb') as f:
+            await f.write(arr.getbuffer())
+        yield f'https://api.lukesaltweather.de/static/{p[i].chapter_hash}/{p[i].page_filename}'
 
 class Source(menus.AsyncIteratorPageSource):
     def __init__(self, p, session: aiohttp.ClientSession):
         super().__init__(generate(len(p), p, session), per_page=1)
         self.links = []
-        self.hashes = []
+        self.hash = p[0].chapter_hash
 
     async def _get_single_page(self, page_number):
         if page_number < 0:
@@ -32,18 +39,17 @@ class Source(menus.AsyncIteratorPageSource):
         return self._cache[page_number]
 
     async def format_page(self, menu, entries):
-        start = menu.current_page
         embed = discord.Embed(color=discord.Colour.gold())
         embed.set_author(name="Page",
                          icon_url="https://pbs.twimg.com/profile_images/1191033858424233987/pyULgeym_400x400.jpg")
-        embed.set_image(url=entries.get('data').get('link'))
-        self.hashes.append(entries.get('data').get('deletehash'))
+        embed.set_image(url=entries)
+        await asyncio.sleep(0.5)
         return embed
 
     async def destroy_images(self):
-        for hash in self.hashes:
-            async with self.session.post('https://api.imgur.com/3/image/{}'.format(hash), headers={'Authorization': 'Client-ID 223de056d30d21d'}) as r:
-                pass
+        thing = functools.partial(shutil.rmtree, f'/var/www/api.lukesaltweather.de/static/{self.hash}')
+        some_stuff = await asyncio.get_running_loop().run_in_executor(None, thing)
+        await aios.rmdir(f'/var/www/api.lukesaltweather.de/static/{self.hash}')
 
 class TestSource(menus.ListPageSource):
     def __init__(self, pages):
@@ -61,22 +67,14 @@ class MyMenu(menus.MenuPages):
     def __init__(self, source, **kwargs):
         super().__init__(source, **kwargs)
 
-    @button('\N{BLACK SQUARE FOR STOP}\ufe0f', position=Last(2))
-    async def stop_pages(self, payload):
-        """stops the pagination session."""
-        await self._source.destroy_images()
-        self.stop()
+    def stop(self):
+        self._running = False
+        if self.__task is not None:
+            self.__task.cancel()
+            self.__task = None
 
-    async def update(self, payload):
-        if self._can_remove_reactions:
-            if payload.event_type == 'REACTION_ADD':
-                await self.bot.http.remove_reaction(
-                    payload.channel_id, payload.message_id,
-                    discord.Message._emoji_reaction(payload.emoji), payload.member.id
-                )
-            elif payload.event_type == 'REACTION_REMOVE':
-                return
-        await super().update(payload)
+    async def finalize(self):
+        await self.source.destroy_images()
 
 class MangaDex(commands.Cog):
     """
@@ -125,7 +123,7 @@ class MangaDex(commands.Cog):
             chaps = m.get_chapters()
             c = chaps[chapter-1]
             pages = c.get_pages()
-            pages = MyMenu(source=Source(pages, self.session), clear_reactions_after=True)
+            pages = MyMenu(source=Source(pages, self.session), delete_message_after=True)
             await pages.start(ctx)
         finally:
             await self.pool.release(connection)

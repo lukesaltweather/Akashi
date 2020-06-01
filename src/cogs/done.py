@@ -421,7 +421,10 @@ class RD_helper(command_helper):
             self.chapter.date_rd = func.now()
             await self.__set_redrawer()
             if self.chapter.link_tl in (None, ""):
-                await self.__no_translation()
+                if self.chapter.translator is not None:
+                    await self.__no_translation()
+                else:
+                    await self.__no_translator()
             else:
                 if self.chapter.typesetter is not None:
                     await self.__typesetter()
@@ -441,7 +444,15 @@ class RD_helper(command_helper):
         self.message = await self.confirm("No Translation available. Notifies Translator.")
         tl = fakesearch(self.chapter.translator.discord_id, self.ctx).mention
         embed = self.completed_embed(self.chapter, self.ctx.author,
-                                     fakesearch(self.chapter.typesetter.discord_id, self.ctx), "RD", "TL")
+                                     fakesearch(self.chapter.translator.discord_id, self.ctx), "RD", "TL")
+        await self.channel.send(content=tl,embed=embed,allowed_mentions=self.message)
+
+    async def __no_translator(self):
+        calendar = self.ctx.guild.get_role(453730138056556544)
+        self.message = await self.confirm("No Translator assigned. Notifies Calendars.")
+        tl = calendar.mention
+        embed = self.completed_embed(self.chapter, self.ctx.author,
+                                     fakesearch(345845639663583252, self.ctx), "RD", "TL")
         await self.channel.send(content=tl,embed=embed,allowed_mentions=self.message)
 
     async def __typesetter(self):

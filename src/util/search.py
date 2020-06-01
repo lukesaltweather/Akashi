@@ -31,7 +31,7 @@ async def dbstaff(passid: int, session2):
         raise StaffNotFoundError
 
 
-def fakesearch(did: int, ctx):
+def fakesearch(did, ctx):
     try:
         user = ctx.guild.get_member(int(did))
         if user is not None:

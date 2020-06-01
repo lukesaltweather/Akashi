@@ -21,7 +21,7 @@ multidict==4.7.6
 pylint==2.5.2
 six==1.15.0
 websockets==8.1
-wrapt==1.11.2
+wrapt==1.12.1
 yarl==1.4.2
 prettytable~=0.7.2
 psutil~=5.7.0

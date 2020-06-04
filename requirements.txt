@@ -29,5 +29,5 @@ humanize~=2.4.0
 asyncpg~=0.20.1
 boto3~=1.13.22
 aiofiles~=0.5.0
-urllib3~=1.24.3
+urllib3~=1.25.9
 setuptools~=47.1.1

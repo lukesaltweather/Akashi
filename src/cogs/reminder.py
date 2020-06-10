@@ -6,14 +6,14 @@ from dateutil import tz, parser
 from discord.ext import commands
 
 from src.util import exceptions
-from src.model.timer import Reminder
+from src.model import timer
 from datetime import *
 from src.util.search import searchstaff, discordstaff
 
 with open('src/util/help.json', 'r') as f:
     jsonhelp = json.load(f)
 
-class ReminderCog(commands.Cog):
+class Reminder(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -47,7 +47,7 @@ class ReminderCog(commands.Cog):
                 u = await discordstaff(d.get("u"), ctx)
             else:
                 u = ctx.author
-            r = Reminder(ctx.author.id, d.get("msg"), date, u.id)
+            r = timer.Reminder(ctx.author.id, d.get("msg"), date, u.id)
             def check(message: discord.Message) -> bool:
                 return message.author == ctx.author
             try:
@@ -69,4 +69,4 @@ class ReminderCog(commands.Cog):
             session.close()
 
 def setup(bot):
-    bot.add_cog(ReminderCog(bot))
+    bot.add_cog(Reminder(bot))

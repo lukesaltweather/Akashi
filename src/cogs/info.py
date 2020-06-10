@@ -86,7 +86,7 @@ class Info(commands.Cog):
                         helper = arghelper(d.get("c"))
                         fi = helper.get_number()
                     else:
-                        fi = Chapter.number == int(d["c"])
+                        fi = Chapter.number == float(d["c"])
                     query = query.filter(fi)
                 if "id" in d:
                     query = query.filter(Chapter.id == int(d["id"]))

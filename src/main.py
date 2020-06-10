@@ -81,11 +81,29 @@ def after_cursor_execute(conn, cursor, statement,
     logger2.debug("Query Complete!")
     logger2.debug("Total Time: %f" % total)"""
 
+class Bot(commands.Bot):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def get_cog_insensitive(self, name):
+        """Gets the cog instance requested.
+
+        If the cog is not found, ``None`` is returned instead.
+
+        Parameters
+        -----------
+        name: :class:`str`
+            The name of the cog you are requesting.
+            This is equivalent to the name passed via keyword
+            argument in class creation or the class name if unspecified.
+        """
+        a_lower = {k.lower():v for k,v in self.cogs.items()}
+        return a_lower.get(name.lower())
 
 if config["online"]:
-    bot = commands.Bot(command_prefix='$')
+    bot = Bot(command_prefix='$')
 else:
-    bot = commands.Bot(command_prefix='-')
+    bot = Bot(command_prefix='-')
 
 
 @bot.check

@@ -26,7 +26,7 @@ class arghelper:
     def get_number(self):
         conds = list()
         for arg in self.args:
-            conds.append(Chapter.number == int(arg))
+            conds.append(Chapter.number == float(arg))
         return or_(*conds)
 
     async def get_translator(self, ctx, session):

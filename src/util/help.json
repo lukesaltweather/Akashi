@@ -42,7 +42,8 @@
             {"p": "-c=" , "e": "Chapter Number - **REQUIRED**"},
             {"p": "-p=" , "e": "Project - **REQUIRED**"},
             {"p": "-id=" , "e": "Project - Alternative to `-c=` and `-p=`"},
-            {"p": "-link=" , "e": "Link to step - **REQUIRED**"}
+            {"p": "-link=" , "e": "Link to step - **REQUIRED**"},
+            {"p": "-note=" , "e": "New note to add"}
         ]
         },
     "donerd":
@@ -53,7 +54,8 @@
             {"p": "-c=" , "e": "Chapter Number - **REQUIRED**"},
             {"p": "-p=" , "e": "Project - **REQUIRED**"},
             {"p": "-id=" , "e": "Project - Alternative to `-c=` and `-p=`"},
-            {"p": "-link=" , "e": "Link to step - **REQUIRED**"}
+            {"p": "-link=" , "e": "Link to step - **REQUIRED**"},
+            {"p": "-note=" , "e": "New note to add"}
         ]
         },
     "donets":
@@ -64,7 +66,8 @@
             {"p": "-c=" , "e": "Chapter Number - **REQUIRED**"},
             {"p": "-p=" , "e": "Project - **REQUIRED**"},
             {"p": "-id=" , "e": "Project - Alternative to `-c=` and `-p=`"},
-            {"p": "-link=" , "e": "Link to step - **REQUIRED**"}
+            {"p": "-link=" , "e": "Link to step - **REQUIRED**"},
+            {"p": "-note=" , "e": "New note to add"}
         ]
         },
     "donepr":
@@ -75,7 +78,8 @@
             {"p": "-c=" , "e": "Chapter Number - **REQUIRED**"},
             {"p": "-p=" , "e": "Project - **REQUIRED**"},
             {"p": "-id=" , "e": "Project - Alternative to `-c=` and `-p=`"},
-            {"p": "-link=" , "e": "Link to step - **REQUIRED**"}
+            {"p": "-link=" , "e": "Link to step - **REQUIRED**"},
+            {"p": "-note=" , "e": "New note to add"}
         ]
         },
     "doneqcts":
@@ -86,7 +90,8 @@
             {"p": "-c=" , "e": "Chapter Number - **REQUIRED**"},
             {"p": "-p=" , "e": "Project - **REQUIRED**"},
             {"p": "-id=" , "e": "Project - Alternative to `-c=` and `-p=`"},
-            {"p": "-link=" , "e": "Link to step - **REQUIRED**"}
+            {"p": "-link=" , "e": "Link to step - **REQUIRED**"},
+            {"p": "-note=" , "e": "New note to add"}
         ]
         },
     "addproject": {

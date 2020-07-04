@@ -48,3 +48,5 @@ test.xls
 /src/cogs/__pycache__/tags.cpython-38.pyc
 search.cpython-38.pyc
 /src/helpers/__pycache__/arghelper.cpython-38.pyc
+/poetry.lock
+/oldres.txt

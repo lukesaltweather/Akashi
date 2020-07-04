@@ -53,6 +53,8 @@ class General_helper:
             self.chapter = query.filter(int(d["id"]) == Chapter.id).one()
         else:
             raise MissingRequiredParameter("Project and Chapter or ID")
+        if "note" in d:
+            self.chapter.notes = f'{self.chapter.notes if self.chapter.notes else ""}\n{d.get("note")}'
         self.message = discord.AllowedMentions(everyone=False, roles=False, users=False)
         self.link = d.get("link")
 
@@ -323,9 +325,8 @@ class TS_helper(command_helper):
             msg = await self.channel.send(
                 f"{pr}\nProofreader required for `{self.chapter.project.title} {formatNumber(self.chapter.number)}`. React below to assign yourself.", allowed_mentions=self.message)
             await msg.add_reaction("🙋")
-            await toggle_mentionable(self.ctx.guild.get_role(int(self.bot.config["pr_id"])))
             await msg.pin()
-            msgdb = Message(msg.id, self.bot.config["rd_id"], "🙋")
+            msgdb = Message(msg.id, self.bot.config["pr_id"], "🙋")
             msgdb.chapter = self.chapter.id
             msgdb.created_on = func.now()
             self.session.add(msgdb)

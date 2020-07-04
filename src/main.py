@@ -105,6 +105,26 @@ if config["online"]:
 else:
     bot = Bot(command_prefix='-')
 
+bot.Session = sessionmaker(bind=engine)
+bot.config = config
+bot.pool = asyncio.get_event_loop().run_until_complete(asyncpg.create_pool(bot.config.get("db_uri"), min_size=1, max_size=10))
+bot.load_extension('src.cogs.loops')
+bot.load_extension('src.cogs.edit')
+bot.load_extension('src.cogs.misc')
+bot.load_extension('src.cogs.info')
+bot.load_extension('src.cogs.add')
+bot.load_extension('src.cogs.done')
+bot.load_extension('src.cogs.note')
+bot.load_extension('src.cogs.help')
+bot.load_extension('src.cogs.reminder')
+bot.load_extension('src.cogs.stats')
+bot.load_extension("jishaku")
+bot.load_extension('src.cogs.tags')
+bot.load_extension('src.cogs.mangadex')
+bot.em = emojis
+bot.debug = False
+print(discord.version_info)
+bot.uptime = datetime.datetime.now()
 
 @bot.check
 async def globally_block_dms(ctx):
@@ -115,26 +135,6 @@ async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
     activity = discord.Activity(name='$help', type=discord.ActivityType.playing)
     await bot.change_presence(activity=activity)
-    bot.Session = sessionmaker(bind=engine)
-    bot.config = config
-    bot.pool = await asyncpg.create_pool(bot.config.get("db_uri"), min_size=2, max_size=10)
-    bot.load_extension('src.cogs.loops')
-    bot.load_extension('src.cogs.edit')
-    bot.load_extension('src.cogs.misc')
-    bot.load_extension('src.cogs.info')
-    bot.load_extension('src.cogs.add')
-    bot.load_extension('src.cogs.done')
-    bot.load_extension('src.cogs.note')
-    bot.load_extension('src.cogs.help')
-    bot.load_extension('src.cogs.reminder')
-    bot.load_extension('src.cogs.stats')
-    bot.load_extension("jishaku")
-    bot.load_extension('src.cogs.tags')
-    bot.load_extension('src.cogs.mangadex')
-    bot.em = emojis
-    bot.debug = False
-    print(discord.version_info)
-    bot.uptime = datetime.datetime.now()
     # Set-up the engine here.
     # Create a session
 
@@ -211,17 +211,17 @@ async def on_raw_reaction_add(payload):
             session.close()
         try:
             if int(msg.awaiting) == config["ts_id"]:
-                ts = (await bot.get_guild(payload.guild_id)).get_role(config["ts_id"])
+                ts = (bot.get_guild(payload.guild_id)).get_role(config["ts_id"])
                 if ts not in await get_roles(user):
                     raise ReactionInvalidRoleError
                 else:
                     ts_alias = aliased(Staff)
                     chp = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id).filter(Chapter.id == msg.chapter).one()
                     chp.typesetter = await dbstaff(payload.user_id, session)
-                    author = await bot.get_user(msg.author)
+                    author = bot.get_user(msg.author)
                     embed = misc.completed_embed(chp, author, user, "RD", "TS", bot)
                     session.delete(msg)
-                    msg2 = await channel.get_message(payload.message_id)
+                    msg2 = await channel.fetch_message(payload.message_id)
                     await msg2.clear_reactions()
                     await msg2.unpin()
                     await msg2.edit(embed=embed)
@@ -229,7 +229,7 @@ async def on_raw_reaction_add(payload):
                     session.commit()
                 session.close()
             elif int(msg.awaiting) == config["rd_id"]:
-                rd = (await bot.get_guild(payload.guild_id)).get_role(config["rd_id"])
+                rd = (bot.get_guild(payload.guild_id)).get_role(config["rd_id"])
                 if rd not in await get_roles(user):
                     raise ReactionInvalidRoleError
                 else:
@@ -237,10 +237,10 @@ async def on_raw_reaction_add(payload):
                     chp = session.query(Chapter).outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id).filter(
                         Chapter.id == msg.chapter).one()
                     chp.redrawer = await dbstaff(payload.user_id, session)
-                    author = await bot.get_user(msg.author)
+                    author = bot.get_user(msg.author)
                     embed = misc.completed_embed(chp, author, user, "TL", "RD", bot)
                     session.delete(msg)
-                    msg2 = await channel.get_message(payload.message_id)
+                    msg2 = await channel.fetch_message(payload.message_id)
                     await msg2.clear_reactions()
                     await msg2.unpin()
                     await msg2.edit(embed=embed)
@@ -248,7 +248,7 @@ async def on_raw_reaction_add(payload):
                     session.commit()
                 session.close()
             elif int(msg.awaiting) == config["tl_id"]:
-                tl = (await bot.get_guild(payload.guild_id)).get_role(config["tl_id"])
+                tl = (bot.get_guild(payload.guild_id)).get_role(config["tl_id"])
                 if tl not in await get_roles(user):
                     raise ReactionInvalidRoleError
                 else:
@@ -256,10 +256,10 @@ async def on_raw_reaction_add(payload):
                     chp = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id).filter(
                         Chapter.id == msg.chapter).one()
                     chp.translator = await dbstaff(payload.user_id, session)
-                    author = await bot.get_user(msg.author)
+                    author = bot.get_user(msg.author)
                     embed = misc.completed_embed(chp, author, user, "RAW", "RD", bot)
                     session.delete(msg)
-                    msg2 = await channel.get_message(payload.message_id)
+                    msg2 = await channel.fetch_message(payload.message_id)
                     await msg2.clear_reactions()
                     await msg2.unpin()
                     await msg2.edit(embed=embed)
@@ -267,7 +267,7 @@ async def on_raw_reaction_add(payload):
                     session.commit()
                 session.close()
             elif int(msg.awaiting) == config["pr_id"]:
-                pr = (await bot.get_guild(payload.guild_id)).get_role(config["pr_id"])
+                pr = (bot.get_guild(payload.guild_id)).get_role(config["pr_id"])
                 if pr not in await get_roles(user):
                     raise ReactionInvalidRoleError
                 else:
@@ -275,18 +275,18 @@ async def on_raw_reaction_add(payload):
                     chp = session.query(Chapter).outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id).filter(
                         Chapter.id == msg.chapter).one()
                     chp.proofreader = await dbstaff(payload.user_id, session)
-                    author = await bot.get_user(msg.author)
+                    author = bot.get_user(msg.author)
                     embed = misc.completed_embed(chp, author, user, "TS", "PR", bot)
                     session.delete(msg)
-                    msg2 = await channel.get_message(payload.message_id)
+                    msg2 = await channel.fetch_message(payload.message_id)
                     await msg2.clear_reactions()
                     await msg2.unpin()
                     await msg2.edit(embed=embed)
                     await msg2.add_reaction("✅")
                     session.commit()
                 session.close()
-        except Exception:
-            pass
+        except Exception as e:
+            print(e)
         finally:
             session.close()
 

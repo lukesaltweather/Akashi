@@ -46,3 +46,4 @@ class Chapter(Base):
         self.link_rd = None
         self.link_pr = None
         self.link_rl = None
+        self.notes = ""

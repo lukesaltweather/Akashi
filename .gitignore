@@ -50,3 +50,4 @@ search.cpython-38.pyc
 /src/helpers/__pycache__/arghelper.cpython-38.pyc
 /poetry.lock
 /oldres.txt
+.env

@@ -166,5 +166,10 @@ class Misc(commands.Cog):
         embed = discord.Embed(color=color)
         await ctx.send(embed=embed)
 
+    @commands.command(description=jsonhelp['addrelease']['description'], usage=jsonhelp["addrelease"]["usage"], bried=jsonhelp["addrelease"]['brief'], help=jsonhelp["addrelease"]['help'])
+    @is_admin()
+    async def add_release(self, date: CustomDateConverter, *, text: str):
+        pass
+
 def setup(Bot):
     Bot.add_cog(Misc(Bot))

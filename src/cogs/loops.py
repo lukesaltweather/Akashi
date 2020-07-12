@@ -48,7 +48,7 @@ class Loops(commands.Cog):
     async def deletemessages(self):
         session = self.bot.Session()
         try:
-            channel = self.bot.get_channel(self.bot.config["file_room"])
+            channel = await self.bot.fetch_channel(self.bot.config["file_room"])
             messages = session.query(Message).all()
             for message in messages:
                 chapter = session.query(Chapter).filter(Chapter.id == message.chapter).one()
@@ -104,7 +104,7 @@ class Loops(commands.Cog):
     async def refreshembed(self):
         with open('src/util/board.json', 'r') as f:
             messages = json.load(f)
-        ch = self.bot.get_channel(self.bot.config['board_channel'])
+        ch = await self.bot.fetch_channel(self.bot.config['board_channel'])
         mes = list()
         for value in messages.get("0", list()):
             msg = await ch.fetch_message(value)

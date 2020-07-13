@@ -1,4 +1,6 @@
+import itertools
 import json
+import time
 from io import BytesIO
 
 import aiohttp
@@ -12,6 +14,7 @@ import math as m
 import psutil
 import datetime
 import humanize
+import pygit2
 
 with open('src/util/help.json', 'r') as f:
     jsonhelp = json.load(f)
@@ -53,18 +56,38 @@ class Misc(commands.Cog):
         delta = datetime.timedelta(seconds=delta)
         return humanize.naturaldelta(delta)
 
-    @commands.command(aliases=["statistics", "status", "usage"])
-    @is_admin()
+    def get_last_commits(self, count=3):
+        repo = pygit2.Repository('.git')
+        commits = list(itertools.islice(repo.walk(repo.head.target, pygit2.GIT_SORT_TOPOLOGICAL), count))
+        return '\n'.join(self.format_commit(c) for c in commits)
+
+    def format_commit(self, commit):
+        short, _, _ = commit.message.partition('\n')
+        short_sha2 = commit.hex[0:6]
+        commit_tz = datetime.timezone(datetime.timedelta(minutes=commit.commit_time_offset))
+        commit_time = datetime.datetime.fromtimestamp(commit.commit_time).replace(tzinfo=commit_tz)
+
+        # [`hash`](url) message (offset)
+        offset = humanize.naturaldelta(commit_time.astimezone(datetime.timezone.utc).replace(tzinfo=None))
+        return f'[`{short_sha2}`](https://github.com/lukesaltweather/akashi/commit/{commit.hex}) {short} ({offset} ago)'
+
+    @commands.command(aliases=["statistics", "status", "usage", 'about', 'uptime'])
     async def stats(self, ctx):
         embed = discord.Embed(color=discord.Colour.blurple())
         cpu = psutil.cpu_percent()
         mem = psutil.virtual_memory()
         disc = psutil.disk_usage("/")
-        description = f"CPU Usage | **{cpu}** %\nMemory | **{round((mem.total-mem.available)/1073741824, 2)} GB** / **{round(mem.total/1073741824, 2)} GB** ({round((mem.total-mem.available)*100/mem.total, 2)}% used)" \
-                      f"\nDisk Usage | **{round((disc.used/1073741824), 2)} GB** / **{round((disc.total/1073741824), 2)} GB** ({disc.percent}%)\nLatency | **{round(self.bot.latency, 2)}** s\n" \
-                      f"Uptime | **{self.get_bot_uptime()}**\n"
+        revision = self.get_last_commits()
+        description = f"**`Latest Changes:`**\n\n {revision}\n\n"
         embed.description = description
         embed.set_author(name="Usage Statistics", icon_url="https://dinte0h0exzgg.cloudfront.net/logo/7c84429c642945eeaee7f459484bdc34-akashi_12392.jpg")
+        icon = self.bot.get_user(358244935041810443).avatar_url
+        embed.set_footer(icon_url=icon, text='Built with love by lukesaltweather#1111.')
+        embed.add_field(name='CPU Usage', value=f'{cpu} %', inline=False)
+        embed.add_field(name='Memory', value=f'{round((mem.total-mem.available)/1073741824, 2)} **GB** / {round(mem.total/1073741824, 2)} **GB** *({round((mem.total-mem.available)*100/mem.total, 2)}* **%** used)', inline=False)
+        embed.add_field(name='Disk Usage', value=f'{round((disc.used/1073741824), 2)} **GB** / {round((disc.total/1073741824), 2)} **GB** (*{disc.percent}* **%**)', inline=False)
+        embed.add_field(name='Websocket Latency', value=f'{round(self.bot.latency*1000, 2)} **ms**', inline=True)
+        embed.add_field(name='Uptime', value=f'{self.get_bot_uptime()}')
         await ctx.send(embed=embed)
 
     @commands.command(hidden=True, enabled=False)
@@ -166,10 +189,10 @@ class Misc(commands.Cog):
         embed = discord.Embed(color=color)
         await ctx.send(embed=embed)
 
-    @commands.command(description=jsonhelp['addrelease']['description'], usage=jsonhelp["addrelease"]["usage"], bried=jsonhelp["addrelease"]['brief'], help=jsonhelp["addrelease"]['help'])
-    @is_admin()
-    async def add_release(self, date: CustomDateConverter, *, text: str):
-        pass
+    # @commands.command(description=jsonhelp['addrelease']['description'], usage=jsonhelp["addrelease"]["usage"], bried=jsonhelp["addrelease"]['brief'], help=jsonhelp["addrelease"]['help'])
+    # @is_admin()
+    # async def add_release(self, date: CustomDateConverter, *, text: str):
+    #     pass
 
 def setup(Bot):
     Bot.add_cog(Misc(Bot))

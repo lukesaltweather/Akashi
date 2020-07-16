@@ -5,6 +5,7 @@ from io import BytesIO
 
 import aiohttp
 import discord
+import pkg_resources
 from discord.ext import commands
 
 from src.model.staff import Staff
@@ -68,10 +69,10 @@ class Misc(commands.Cog):
         commit_time = datetime.datetime.fromtimestamp(commit.commit_time).replace(tzinfo=commit_tz)
 
         # [`hash`](url) message (offset)
-        offset = humanize.naturaldelta(commit_time.astimezone(datetime.timezone.utc).replace(tzinfo=None))
+        offset = humanize.naturaldelta(commit_time.astimezone(datetime.timezone.utc).replace(tzinfo=None)+datetime.timedelta(hours=2))
         return f'[`{short_sha2}`](https://github.com/lukesaltweather/akashi/commit/{commit.hex}) {short} ({offset} ago)'
 
-    @commands.command(aliases=["statistics", "status", "usage", 'about', 'uptime'])
+    @commands.command(aliases=["statistics", "status", "usage", 'about', 'uptime', 'akashi'])
     async def stats(self, ctx):
         embed = discord.Embed(color=discord.Colour.blurple())
         cpu = psutil.cpu_percent()
@@ -80,14 +81,29 @@ class Misc(commands.Cog):
         revision = self.get_last_commits()
         description = f"**`Latest Changes:`**\n\n {revision}\n\n"
         embed.description = description
-        embed.set_author(name="Usage Statistics", icon_url="https://dinte0h0exzgg.cloudfront.net/logo/7c84429c642945eeaee7f459484bdc34-akashi_12392.jpg")
         icon = self.bot.get_user(358244935041810443).avatar_url
-        embed.set_footer(icon_url=icon, text='Built with love by lukesaltweather#1111.')
+        embed.set_author(icon_url=icon, name='Created by lukesaltweather#1111')
+        version = pkg_resources.get_distribution('discord.py').version
+        embed.set_footer(text=f'Powered by discord.py {version} and SQLAlchemy {pkg_resources.get_distribution("SQLAlchemy").version}', icon_url='https://dinte0h0exzgg.cloudfront.net/logo/7c84429c642945eeaee7f459484bdc34-akashi_12392.jpg')
+        embed.timestamp = datetime.datetime.utcnow()
         embed.add_field(name='CPU Usage', value=f'{cpu} %', inline=False)
         embed.add_field(name='Memory', value=f'{round((mem.total-mem.available)/1073741824, 2)} **GB** / {round(mem.total/1073741824, 2)} **GB** *({round((mem.total-mem.available)*100/mem.total, 2)}* **%** used)', inline=False)
         embed.add_field(name='Disk Usage', value=f'{round((disc.used/1073741824), 2)} **GB** / {round((disc.total/1073741824), 2)} **GB** (*{disc.percent}* **%**)', inline=False)
         embed.add_field(name='Websocket Latency', value=f'{round(self.bot.latency*1000, 2)} **ms**', inline=True)
         embed.add_field(name='Uptime', value=f'{self.get_bot_uptime()}')
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def tos(self, ctx):
+        embed = discord.Embed(color=discord.Colour.dark_blue())
+        embed.set_author(name="Terms of Service", icon_url='https://dinte0h0exzgg.cloudfront.net/logo/7c84429c642945eeaee7f459484bdc34-akashi_12392.jpg')
+        embed.timestamp = datetime.datetime.utcnow()
+        embed.add_field(name='Clause 1', value='We are storing some public information about you: the username and the id, which are stored on a secured database.')
+        embed.add_field(name='Clause 2', value='You may request deletion of your stored data. However, this information is required for the bot to work properly. After such a request has been fullfilled, the bot will cease working for you.')
+        embed.add_field(name='Clause 3', value='We do not keep logs of your commands, messages, presence or similar. Member update event information is only used to update aforementioned user database.')
+        embed.add_field(name='Clause 4', value='While backups of the database are kept, we are not liable in case any data is lost.')
+        embed.add_field(name='Clause 5', value='We reserve the right to ban you from using the bot, for any reason. In most cases, that would be trolling, trying to find exploits or even destructive behaviours.')
+        embed.add_field(name='Clause 6', value='These terms of service are OPT-OUT, by using the bot and not opting out, you agree to them.')
         await ctx.send(embed=embed)
 
     @commands.command(hidden=True, enabled=False)

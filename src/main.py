@@ -175,7 +175,7 @@ async def on_command_error(ctx, error):
 @bot.command(hidden=True)
 @is_admin()
 async def restart(ctx):
-    os.system("systemctl restart akashi")
+    await ctx.bot.close()
 
 
 @bot.event

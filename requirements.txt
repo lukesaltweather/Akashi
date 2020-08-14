@@ -24,7 +24,7 @@ wrapt==1.12.1
 yarl==1.4.2
 prettytable~=0.7.2
 psutil~=5.7.0
-humanize~=2.4.0
+humanize~=2.6.0
 asyncpg~=0.20.1
 boto3~=1.13.22
 aiofiles~=0.5.0

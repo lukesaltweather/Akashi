@@ -34,6 +34,15 @@
             {"p": "-link_pr=" , "e": "Link to proofreader"}
         ]
         },
+        "massaddchapter":
+        {"help": "https://docs.lukesaltweather.de/commands/massaddchapter",
+        "brief": "Mass add chapters of a project to the bot.",
+        "description": "Mass add chapters. Post links after initial command, each link on a new line. Requires raws to do so, as well as a project it belongs to. \n Aliases: `mac, bigmac, addchapters, massaddchapters`",
+        "usage": [
+            {"p": "-c=" , "e": "Chapter Number - **REQUIRED**"},
+            {"p": "-p=" , "e": "Project - **REQUIRED**"}
+        ]
+        },
     "donetl":
         {"help": "https://docs.lukesaltweather.de/commands/donetl",
         "brief": "Mark a chapters translation as done. Requires role `Translator`",

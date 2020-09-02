@@ -175,7 +175,7 @@ async def on_command_error(ctx, error):
 @bot.command(hidden=True)
 @is_admin()
 async def restart(ctx):
-    await ctx.bot.close()
+    os.system('systemctl restart akashi')
 
 
 @bot.event
@@ -207,6 +207,7 @@ async def on_raw_reaction_add(payload):
         message = await channel.fetch_message(payload.message_id)
         try:
             msg = session.query(Message).filter(payload.message_id == Message.message_id).one()
+            print(msg)
         except:
             session.close()
         try:
@@ -218,7 +219,7 @@ async def on_raw_reaction_add(payload):
                     ts_alias = aliased(Staff)
                     chp = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id).filter(Chapter.id == msg.chapter).one()
                     chp.typesetter = await dbstaff(payload.user_id, session)
-                    author = bot.get_user(msg.author)
+                    author = bot.user
                     embed = misc.completed_embed(chp, author, user, "RD", "TS", bot)
                     session.delete(msg)
                     msg2 = await channel.fetch_message(payload.message_id)
@@ -237,7 +238,7 @@ async def on_raw_reaction_add(payload):
                     chp = session.query(Chapter).outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id).filter(
                         Chapter.id == msg.chapter).one()
                     chp.redrawer = await dbstaff(payload.user_id, session)
-                    author = bot.get_user(msg.author)
+                    author = bot.user
                     embed = misc.completed_embed(chp, author, user, "TL", "RD", bot)
                     session.delete(msg)
                     msg2 = await channel.fetch_message(payload.message_id)
@@ -256,7 +257,7 @@ async def on_raw_reaction_add(payload):
                     chp = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id).filter(
                         Chapter.id == msg.chapter).one()
                     chp.translator = await dbstaff(payload.user_id, session)
-                    author = bot.get_user(msg.author)
+                    author = bot.user
                     embed = misc.completed_embed(chp, author, user, "RAW", "RD", bot)
                     session.delete(msg)
                     msg2 = await channel.fetch_message(payload.message_id)
@@ -275,7 +276,7 @@ async def on_raw_reaction_add(payload):
                     chp = session.query(Chapter).outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id).filter(
                         Chapter.id == msg.chapter).one()
                     chp.proofreader = await dbstaff(payload.user_id, session)
-                    author = bot.get_user(msg.author)
+                    author = bot.user
                     embed = misc.completed_embed(chp, author, user, "TS", "PR", bot)
                     session.delete(msg)
                     msg2 = await channel.fetch_message(payload.message_id)
@@ -316,10 +317,11 @@ async def deletechapter(ctx, *, arg):
         session = bot.Session()
         query = session.query(Chapter)
         if "id" in d:
-            record = query.filter(Project.id == int(d["id"])).one()
+            record = query.filter(Chapter.id == float(d["id"])).one()
         else:
             raise MissingRequiredArgument
         session.delete(record)
+        session.commit()
     finally:
         session.close()
 

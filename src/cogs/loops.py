@@ -174,7 +174,7 @@ class Loops(commands.Cog):
                     color = discord.Colour(int(x.color, 16))
                 embed = BoardPaginator(color)
                 embed.set_author(name=x.title, icon_url=x.icon, url=x.link)
-                embed.set_thumbnail(x.thumbnail)
+                embed.set_thumbnail(x.thumbnail if x.thumbnail is not None and x.thumbnail != '' else 'https://nekyou.mangadex.com/wp-content/uploads/sites/83/2019/06/About-Nekyou.png')
                 embed.title = "Link to project"
                 embed.url = x.link
                 if len(list_in_progress_project) != 0:
@@ -215,12 +215,18 @@ class Loops(commands.Cog):
                 print(f"Deleted: {m.id}")
                 await m.delete()
             messages = {"0":new_messages}
+            print(messages)
             with open('src/util/board.json', 'w') as f:
                 json.dump(messages, f, indent=4)
         except Exception as e:
             raise e
         finally:
             session.close()
+
+    @refreshembed.error
+    async def refresherror(self, e):
+        ch = self.bot.get_channel(701831937001652286)
+        await ch.send(f'{(await self.bot.fetch_user(358244935041810443)).mention} Board errored with error: {e}')
 
     @staticmethod
     async def foundStaff(channel: discord.TextChannel, member: str, m: discord.Message, chapter):

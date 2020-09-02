@@ -124,6 +124,41 @@ class Add(commands.Cog):
         finally:
             session1.close()
 
+    @commands.command(aliases=["mac", "massaddchapters", "addchapters", 'bigmac'], description=jsonhelp["massaddchapter"]["description"],
+                      usage=jsonhelp["massaddchapter"]["usage"], brief=jsonhelp["massaddchapter"]["brief"], help=jsonhelp["massaddchapter"]["help"])
+    async def massaddchapter(self, ctx, *, arg):
+        session1 = self.bot.Session()
+        try:
+            arg = arg[1:]
+            d = dict(x.split('=', 1) for x in arg.split(' -'))
+            if "c" in d and "p" in d:
+                p = d['p']
+                start_chp = int(d['c'])
+            else:
+                raise MissingRequiredParameter("c, p or link_raw")
+            date_created = func.now()
+            project = searchproject(p, session1)
+
+            message = await ctx.send('Please paste the links, with one link per line.')
+
+            def check(message):
+                return message.author == ctx.message.author and message.channel == ctx.channel
+
+            try:
+                message2 = await self.bot.wait_for('message', timeout=30.0, check=check)
+            except asyncio.TimeoutError:
+                await message.edit(content='No reaction from command author. Chapters was not added.')
+            else:
+                content = message2.content.split('\n')
+                for i, link in enumerate(content, start_chp):
+                    chp = Chapter(i, link)
+                    chp.date_created = date_created
+                    chp.project = project
+                    session1.add(chp)
+                await ctx.send(f'Successfully added {str(len(content))} chapters of `{project.title}`!')
+                session1.commit()
+        finally:
+            session1.close()
 
     @commands.command(aliases=["ac", "addch", "addc"], description=jsonhelp["addchapter"]["description"],
                       usage=jsonhelp["addchapter"]["usage"], brief=jsonhelp["addchapter"]["brief"], help=jsonhelp["addchapter"]["help"])

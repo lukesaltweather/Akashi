@@ -21,7 +21,7 @@ pylint==2.6.0
 six==1.15.0
 websockets==8.1
 wrapt==1.12.1
-yarl==1.4.2
+yarl==1.6.0
 prettytable~=0.7.2
 psutil~=5.7.0
 humanize~=2.6.0

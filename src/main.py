@@ -121,6 +121,7 @@ bot.load_extension('src.cogs.stats')
 bot.load_extension("jishaku")
 bot.load_extension('src.cogs.tags')
 bot.load_extension('src.cogs.mangadex')
+bot.load_extension('src.cogs.halloween')
 bot.em = emojis
 bot.debug = False
 print(discord.version_info)
@@ -148,7 +149,8 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.MissingRequiredArgument):
         await ctx.send("Please enter at least one argument.")
     elif isinstance(error, commands.CommandNotFound):
-        await ctx.send("Command doesn't exist.")
+        # await ctx.send("Command doesn't exist.")
+        pass
     elif isinstance(error, ValueError):
         await ctx.send("Error while parsing parameters.")
         await ctx.send(error)

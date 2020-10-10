@@ -57,7 +57,7 @@ class Halloween(commands.Cog):
             await ctx.send(embed=embed)
             await self.pool.release(con)
 
-    @commands.command(alias=["eventstats"])
+    @commands.command(aliases=["eventstats", "event", "hw"])
     async def halloween(self, ctx):
         con = await self.pool.acquire()
         wolfs = """SELECT SUM(amt), COUNT(*) FROM halloween_users WHERE species = 0"""
@@ -68,15 +68,18 @@ class Halloween(commands.Cog):
             res.append(await con.fetchrow(q))
 
         embed = discord.Embed(title='Event Stats')
-        embed.add_field(name="Participants", value=f"{res[0][1]+res[1][1]+res[2][1]} Monsters", inline=True)
+        embed.add_field(name="Participants", value=f"{res[0][1]+res[1][1]+res[2][1]} Monsters")
         embed.add_field(name="Messages in total", value=f"{res[0][0]+res[1][0]+res[2][0]}", inline=True)
-        embed.add_field(name="Wolf Messages", value=f"{res[0][0]}", inline=False)
+        embed.add_field(name="Wolf Messages", value=f"{res[0][0]}", inline=True)
         embed.add_field(name="Vampire Messages", value=f"{res[1][0]}", inline=True)
         embed.add_field(name="Zombie Messages", value=f"{res[2][0]}", inline=True)
+        embed.add_field(name="Wolves", value=f"{res[0][1]}", inline=True)
+        embed.add_field(name="Vampires", value=f"{res[1][1]}", inline=True)
+        embed.add_field(name="Zombies", value=f"{res[2][1]}", inline=True)
         embed.set_author(
             icon_url='https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Jack-o%27-Lantern_2003-10-31.jpg/220px-Jack-o%27-Lantern_2003-10-31.jpg',
             name='Halloween Event')
-        embed.set_footer(text="Created by luke", icon_url=ctx.get_member(ctx.bot.owner_id).avatar_url)
+        embed.set_footer(text="Created by luke", icon_url=ctx.guild.get_member(ctx.bot.owner_id).avatar_url)
         await ctx.send(embed=embed)
         await self.pool.release(con)
 

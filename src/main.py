@@ -101,9 +101,9 @@ class Bot(commands.Bot):
         return a_lower.get(name.lower())
 
 if config["online"]:
-    bot = Bot(command_prefix='$')
+    bot = Bot(command_prefix='$', intents=discord.Intents.all())
 else:
-    bot = Bot(command_prefix='-')
+    bot = Bot(command_prefix='-', intents=discord.Intents.all())
 
 bot.Session = sessionmaker(bind=engine)
 bot.config = config
@@ -121,7 +121,7 @@ bot.load_extension('src.cogs.stats')
 bot.load_extension("jishaku")
 bot.load_extension('src.cogs.tags')
 bot.load_extension('src.cogs.mangadex')
-bot.load_extension('src.cogs.halloween')
+# bot.load_extension('src.cogs.halloween')
 bot.em = emojis
 bot.debug = False
 print(discord.version_info)

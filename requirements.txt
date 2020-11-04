@@ -9,7 +9,7 @@ astroid==2.4.1
 async-timeout==3.0.1
 attrs==20.1.0
 chardet==3.0.4
-colorama==0.4.3
+colorama==0.4.4
 git+git://github.com/Rapptz/discord.py@master#egg=discord.py
 git+git://github.com/Rapptz/discord-ext-menus#egg=ext-menus
 idna==2.9

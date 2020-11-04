@@ -22,7 +22,7 @@ six==1.15.0
 websockets==8.1
 wrapt==1.12.1
 yarl==1.4.2
-prettytable~=0.7.2
+prettytable~=1.0.1
 psutil~=5.7.3
 humanize~=2.6.0
 asyncpg~=0.21.0

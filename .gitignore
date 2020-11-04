@@ -51,3 +51,4 @@ search.cpython-38.pyc
 /poetry.lock
 /oldres.txt
 .env
+*.pyc

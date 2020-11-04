@@ -217,8 +217,8 @@ class Edit(commands.Cog):
                     record.project = proj
                     table.add_column("New Project", [record.project.title, d["to_project"]])
                 if "to_chapter" in d:
-                    record.number = int(d["to_chapter"])
                     table.add_column("New Ch. Number", [record.number, d["to_chapter"]])
+                    record.number = int(d["to_chapter"])
                 if "notes" in d:
                     record.notes = d["notes"]
                     table.add_column("Notes", [record.notes, d["notes"]])

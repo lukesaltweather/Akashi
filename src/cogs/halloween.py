@@ -16,15 +16,15 @@ class Halloween(commands.Cog):
         self.pool = client.pool
 
     @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.author == message.guild.me:
+    async def on_message(self, message: discord.Message):
+        if message.author == message.guild.me or message.author.id in (329668530926780426, 172002275412279296, 603216263484801039) or message.author.bot:
             return
         author_id = message.author.id
         con = await self.pool.acquire()
         query1 = """INSERT INTO halloween_users (author, amt, species) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING"""
         query2 = """UPDATE halloween_users SET amt = amt + 1 WHERE author = $1"""
 
-        await con.execute(query1, author_id, 0, random.choice([0, 1, 2]))
+        await con.execute(query1, author_id, 0, random.randint(0, 2))
         await con.execute(query2, author_id)
         await self.pool.release(con)
 
@@ -79,7 +79,7 @@ class Halloween(commands.Cog):
         embed.set_author(
             icon_url='https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Jack-o%27-Lantern_2003-10-31.jpg/220px-Jack-o%27-Lantern_2003-10-31.jpg',
             name='Halloween Event')
-        embed.set_footer(text="Created by luke", icon_url=ctx.guild.get_member(ctx.bot.owner_id).avatar_url)
+        embed.set_footer(text="Created by luke", icon_url=(await ctx.guild.fetch_member(ctx.bot.owner_id)).avatar_url)
         await ctx.send(embed=embed)
         await self.pool.release(con)
 
@@ -96,6 +96,32 @@ class Halloween(commands.Cog):
         embed.add_field(name="Monster / Team", value=f"{Species(res[0]).name}", inline=True).add_field(name="Total Messages", value=f"{res[1]}").set_footer(
             icon_url='https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Jack-o%27-Lantern_2003-10-31.jpg/220px-Jack-o%27-Lantern_2003-10-31.jpg',
             text='Halloween Event').set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+        await ctx.send(embed=embed)
+        await self.pool.release(con)
+
+    @commands.command(aliases=["all"])
+    async def participants(self, ctx):
+        con = await self.pool.acquire()
+        query = """SELECT species,amt,author FROM halloween_users Order By species"""
+        res: list = await con.fetch(query)
+
+        def upto(i: int):
+            a = list()
+            for e, user in enumerate(res):
+                if user[0] == i:
+                    a.append(user[2])
+            return a
+
+        werewolves = '\n'.join([ctx.guild.get_member(id).name if ctx.guild.get_member(id) else '' for id in upto(0)])
+        vampires = '\n'.join([ctx.guild.get_member(id).name if ctx.guild.get_member(id) else '' for id in upto(1)])
+        zombies = '\n'.join([ctx.guild.get_member(id).name if ctx.guild.get_member(id) else '' for id in upto(2)])
+
+        embed = discord.Embed()
+        embed.add_field(name="Werewolves", value=werewolves).\
+            add_field(name="Zombies", value=zombies).\
+            add_field(name="Vampires", value=vampires).set_footer(
+            icon_url='https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Jack-o%27-Lantern_2003-10-31.jpg/220px-Jack-o%27-Lantern_2003-10-31.jpg',
+            text='Halloween Event').set_author(name="Team Overview", icon_url=ctx.author.avatar_url)
         await ctx.send(embed=embed)
         await self.pool.release(con)
 

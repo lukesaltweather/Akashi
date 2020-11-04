@@ -7,7 +7,7 @@ jishaku
 aiohttp==3.7.2
 astroid==2.4.1
 async-timeout==3.0.1
-attrs==20.1.0
+attrs==20.2.0
 chardet==3.0.4
 colorama==0.4.3
 git+git://github.com/Rapptz/discord.py@master#egg=discord.py

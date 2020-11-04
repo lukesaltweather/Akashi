@@ -45,7 +45,6 @@ async def searchstaff(passstr: str, ctx, sessions):
     if passstr in ("None", "none"):
         return None
     dst = await discordstaff(passstr, ctx)
-    worker = ctx.guild.get_role(config["neko_workers"])
     if dst is None:
         try:
             staff = await dbstaff(int(passstr), sessions)
@@ -53,8 +52,6 @@ async def searchstaff(passstr: str, ctx, sessions):
                 return staff
         except ValueError:
             raise StaffNotFoundError
-    if worker not in dst.roles:
-        raise StaffNotFoundError
     return await dbstaff(dst.id, sessions)
 
 

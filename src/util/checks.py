@@ -15,6 +15,12 @@ def is_worker():
         return ia and ic
     return commands.check(predicate)
 
+def has_worker():
+    async def predicate(ctx):
+        workers = ctx.guild.get_role(config["neko_workers"])
+        return workers in ctx.message.author.roles
+    return commands.check(predicate)
+
 def is_admin():
     def predicate(ctx):
         admin = ctx.guild.get_role(config["neko_herders"])

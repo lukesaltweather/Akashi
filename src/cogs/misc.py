@@ -10,7 +10,7 @@ from discord.ext import commands
 
 from src.model.staff import Staff
 from src.util import exceptions, checks
-from src.util.checks import is_admin, is_worker
+from src.util.checks import is_admin, is_worker, has_worker
 import math as m
 import psutil
 import datetime
@@ -36,7 +36,8 @@ class Misc(commands.Cog):
         channel = await self.bot.fetch_channel(345797456614785028)
         rules = await self.bot.fetch_channel(345829173438316545)
         if channel:
-            await channel.send('{0.mention} Welcome to the Land of Nekos. Please read all the information in {1.mention}'.format(member, rules), delete_after=3600)
+            await channel.send('{0.mention} Welcome to the Land of Nekos. Please read all the information in {1.mention}'.format(member, rules))
+            await self.bot.http.add_role(345797456614785024, member.id, 440714683587231744, reason="Initial Role")
         else:
             await (self.bot.get_user(self.bot.owner_id)).send("kein channel")
     @commands.command(name='reload', hidden=True)
@@ -58,6 +59,17 @@ class Misc(commands.Cog):
         message = discord.AllowedMentions(everyone=False, roles=False, users=False)
         luke = self.bot.get_user(358244935041810443)
         await ctx.send(f"Hello, I'm Akashi. I keep track of Nekyou's projects.\n{luke.mention} made me.", allowed_mentions=message)
+
+    @commands.command()
+    async def apply(self, ctx):
+        role = await ctx.guild.fetch_role(345886396046770176)
+        await ctx.author.add_roles(role)
+
+    @commands.command()
+    @has_worker()
+    async def kouhai(self, ctx, member: discord.Member):
+        role = await ctx.guild.fetch_role(345886396046770176)
+        await member.add_roles(role)
 
     def get_bot_uptime(self):
         delta = (self.bot.uptime-datetime.datetime.now()).total_seconds()

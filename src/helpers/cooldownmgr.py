@@ -5,25 +5,22 @@ class CooldownManager:
     """Track XP cooldowns of members
     """
 
-    __slots__ = ("__dict__", "_cooldown", "_messages", "_tasks")
+    __slots__ = ("__dict__", "_cooldown", "_tasks")
 
-    def __init__(self, cooldown: float):
+    def __init__(self, cooldown: float = 30):
         self._loop = asyncio.get_running_loop()
         self._cooldown = cooldown
-        self._messages = []
         self._tasks = {}
 
     def add(self, author: int):
-        self._messages.append(author)
         self._tasks[author] = self._loop.create_task(self._remove(author))
 
     async def _remove(self, author: int):
         await asyncio.sleep(self._cooldown)
-        self._messages.remove(author)
         self._tasks.pop(author)
 
     def on_cooldown(self, author: int) -> bool:
-        return author in self._messages
+        return author in self._tasks
 
     def cancel_cooldown(self, author: typing.Optional[int] = None):
         if author:

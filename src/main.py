@@ -1,47 +1,23 @@
-import asyncio
-import os
-import random
-import sys
-import threading
-import time
-import traceback
-from datetime import datetime, timedelta
-from io import BytesIO
 
-import aiohttp
+import os
+
 import asyncpg
-import discord
+
 import sqlalchemy
-from aiohttp import web
-from discord import Embed, AsyncWebhookAdapter
-from discord.ext import commands, tasks
+
+from discord.ext import commands
 from discord.ext.commands import MissingRequiredArgument
-from sqlalchemy import or_, text, func, Date, event
-from sqlalchemy.engine import Engine
-from sqlalchemy.orm import sessionmaker, joinedload, aliased
-from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
+
+from sqlalchemy.orm import sessionmaker, aliased
+
 import datetime
 
-from src.cogs.add import Add
-from src.cogs.assign import Assign
-from src.cogs.done import Done
-from src.cogs.edit import Edit
-from src.cogs.help import MyCog
-from src.cogs.info import Info
-from src.cogs.misc import Misc
-from src.cogs.note import Note
-from src.util.checks import is_admin, is_worker
+from src.util.checks import is_admin
 from src.model.message import Message
-from src.model.staff import Staff
-from src.model.chapter import Chapter
-from src.model.project import Project
-from src.util import misc, exceptions
+
 from src.util.db import loadDB
 from src.model import testdb
-import json
-import requests
-from discord import Webhook, RequestsWebhookAdapter
-from prettytable import PrettyTable
+
 
 from src.util.exceptions import ReactionInvalidRoleError, TagAlreadyExists
 from src.util.search import *

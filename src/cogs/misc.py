@@ -62,13 +62,13 @@ class Misc(commands.Cog):
 
     @commands.command()
     async def apply(self, ctx):
-        role = await ctx.guild.fetch_role(345886396046770176)
+        role = ctx.guild.get_role(345886396046770176)
         await ctx.author.add_roles(role)
 
     @commands.command()
     @has_worker()
     async def kouhai(self, ctx, member: discord.Member):
-        role = await ctx.guild.fetch_role(345886396046770176)
+        role = ctx.guild.get_role(345886396046770176)
         await member.add_roles(role)
 
     def get_bot_uptime(self):

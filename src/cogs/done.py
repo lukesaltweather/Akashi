@@ -55,6 +55,13 @@ class General_helper:
             raise MissingRequiredParameter("Project and Chapter or ID")
         if "note" in d:
             self.chapter.notes = f'{self.chapter.notes if self.chapter.notes else ""}\n{d.get("note")}'
+        if 'skipconfirm' in d:
+            if d['skipconfirm'] == 'mention':
+                self.confirm = True
+            else:
+                self.confirm = False
+        else:
+            self.confirm = None
         self.message = discord.AllowedMentions(everyone=False, roles=False, users=False)
         self.link = d.get("link")
 
@@ -79,6 +86,9 @@ class General_helper:
     def get_bot(self):
         return self.bot
 
+    def get_confirm(self):
+        return self.confirm
+
 class command_helper:
     def __init__(self, helper: General_helper):
         self.helper = helper
@@ -88,42 +98,48 @@ class command_helper:
         self.message = helper.get_message()
         self.chapter = helper.get_chapter()
         self.session = helper.get_session()
+        self.skip_confirm = helper.get_confirm()
 
     @abstractmethod
     async def execute(self):
         pass
 
     async def confirm(self, preview):
-        embed = discord.Embed(color=discord.Colour.gold())
-        embed.description = f"This will do the following:\n```{preview}```\n\n Press ✉ to mention, 📝 to not mention, ❌ to cancel."
+        if self.skip_confirm is None:
+            embed = discord.Embed(color=discord.Colour.gold())
+            embed.description = f"This will do the following:\n```{preview}```\n\n Press ✉ to mention, 📝 to not mention, ❌ to cancel."
 
-        message = await self.ctx.send(embed=embed)
+            message = await self.ctx.send(embed=embed)
 
-        await message.add_reaction("✉")
-        await message.add_reaction("📝")
-        await message.add_reaction("❌")
-        await asyncio.sleep(delay=0.5)
+            await message.add_reaction("✉")
+            await message.add_reaction("📝")
+            await message.add_reaction("❌")
+            await asyncio.sleep(delay=0.5)
 
-        def check(reaction, user):
-            return user == self.ctx.message.author and (str(reaction.emoji) == '✉' or str(reaction.emoji) == '📝', str(reaction.emoji) == '❌')
+            def check(reaction, user):
+                return user == self.ctx.message.author and (str(reaction.emoji) == '✉' or str(reaction.emoji) == '📝', str(reaction.emoji) == '❌')
 
-        try:
-            reaction, user = await self.bot.wait_for('reaction_add', timeout=30.0, check=check)
-        except asyncio.TimeoutError:
-            self.session.rollback()
-            await message.delete()
-            raise RuntimeError("No reaction from command author. No action was taken.")
-        else:
-            await message.delete()
-            if str(reaction.emoji) == "✉":
-                await self.ctx.message.add_reaction("✅")
-                return discord.AllowedMentions(everyone=True, users=True, roles=True)
-            elif str(reaction.emoji) == "📝":
-                await self.ctx.message.add_reaction("✅")
-                return discord.AllowedMentions(everyone=False, users=False, roles=False)
-            else:
+            try:
+                reaction, user = await self.bot.wait_for('reaction_add', timeout=30.0, check=check)
+            except asyncio.TimeoutError:
                 self.session.rollback()
-                raise RuntimeError("Command Cancelled.")
+                await message.delete()
+                raise RuntimeError("No reaction from command author. No action was taken.")
+            else:
+                await message.delete()
+                if str(reaction.emoji) == "✉":
+                    await self.ctx.message.add_reaction("✅")
+                    return discord.AllowedMentions(everyone=True, users=True, roles=True)
+                elif str(reaction.emoji) == "📝":
+                    await self.ctx.message.add_reaction("✅")
+                    return discord.AllowedMentions(everyone=False, users=False, roles=False)
+                else:
+                    self.session.rollback()
+                    raise RuntimeError("Command Cancelled.")
+        else:
+            if self.skip_confirm:
+                return discord.AllowedMentions(everyone=True, users=True, roles=True)
+            return discord.AllowedMentions(everyone=False, users=False, roles=False)
 
     def get_emojis(self, chapter):
         em = self.bot.em
@@ -488,7 +504,8 @@ class Done(commands.Cog):
 
     async def cog_check(self, ctx):
         worker = ctx.guild.get_role(self.bot.config["neko_workers"])
-        ia = worker in ctx.message.author.roles
+        herder = ctx.guild.get_role(345798301322575882)
+        ia = (worker in ctx.message.author.roles) or (herder in ctx.message.author.roles)
         ic = ctx.channel.id == self.bot.config["command_channel"]
         guild = ctx.guild is not None
         if ia and ic and guild:
@@ -498,7 +515,7 @@ class Done(commands.Cog):
         elif not guild:
             raise exceptions.MissingRequiredPermission("Missing permission `Server Member`.")
 
-    @commands.command(checks=[is_tl], description=jsonhelp["donetl"]["description"],
+    @commands.command(description=jsonhelp["donetl"]["description"],
                       usage=jsonhelp["donetl"]["usage"], brief=jsonhelp["donetl"]["brief"], help=jsonhelp["donetl"]["help"])
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
     async def donetl(self, ctx, *, arg):
@@ -507,7 +524,7 @@ class Done(commands.Cog):
         await TL.execute()
 
 
-    @commands.command(checks=[is_ts], description=jsonhelp["donets"]["description"],
+    @commands.command(description=jsonhelp["donets"]["description"],
                       usage=jsonhelp["donets"]["usage"], brief=jsonhelp["donets"]["brief"], help=jsonhelp["donets"]["help"])
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
     async def donets(self, ctx, *, arg):
@@ -516,7 +533,7 @@ class Done(commands.Cog):
         await TS.execute()
 
 
-    @commands.command(checks=[is_pr],description=jsonhelp["donepr"]["description"],
+    @commands.command(description=jsonhelp["donepr"]["description"],
                       usage=jsonhelp["donepr"]["usage"], brief=jsonhelp["donepr"]["brief"], help=jsonhelp["donepr"]["help"])
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
     async def donepr(self, ctx, *, arg):
@@ -524,7 +541,7 @@ class Done(commands.Cog):
         PR = PR_helper(helper)
         await PR.execute()
 
-    @commands.command(checks=[is_ts], description=jsonhelp["doneqcts"]["description"],
+    @commands.command(description=jsonhelp["doneqcts"]["description"],
                       usage=jsonhelp["doneqcts"]["usage"], brief=jsonhelp["doneqcts"]["brief"], help=jsonhelp["doneqcts"]["help"])
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
     async def doneqcts(self, ctx, *, arg):
@@ -532,7 +549,7 @@ class Done(commands.Cog):
         QCTS = QCTS_helper(helper)
         await QCTS.execute()
 
-    @commands.command(checks=[is_rd], description=jsonhelp["donerd"]["description"],
+    @commands.command(description=jsonhelp["donerd"]["description"],
                       usage=jsonhelp["donerd"]["usage"], brief=jsonhelp["donerd"]["brief"], help=jsonhelp["donerd"]["help"])
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
     async def donerd(self, ctx, *, arg):

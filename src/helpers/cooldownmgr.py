@@ -7,8 +7,8 @@ class CooldownManager:
 
     __slots__ = ("__dict__", "_cooldown", "_tasks")
 
-    def __init__(self, cooldown: float = 30):
-        self._loop = asyncio.get_running_loop()
+    def __init__(self, loop, cooldown: float = 30):
+        self._loop = loop
         self._cooldown = cooldown
         self._tasks = {}
 

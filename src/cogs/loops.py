@@ -27,6 +27,12 @@ class Loops(commands.Cog):
         self.deletemessages.cancel()
         self.reminder.cancel()
 
+    @commands.command()
+    async def restartloops(self):
+        self.refreshembed.restart()
+        self.deletemessages.restart()
+        self.reminder.restart()
+
     @tasks.loop(minutes=1)
     async def reminder(self):
         session = self.bot.Session()
@@ -227,6 +233,11 @@ class Loops(commands.Cog):
     async def refresherror(self, e):
         ch = self.bot.get_channel(701831937001652286)
         await ch.send(f'{(await self.bot.fetch_user(358244935041810443)).mention} Board errored with error: {e}')
+        try:
+            self.refreshembed.cancel()
+        except:
+            pass
+        self.refreshembed.start()
 
     @staticmethod
     async def foundStaff(channel: discord.TextChannel, member: str, m: discord.Message, chapter):

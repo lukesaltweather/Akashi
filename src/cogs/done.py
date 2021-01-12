@@ -517,7 +517,7 @@ class Done(commands.Cog):
 
     @commands.command(description=jsonhelp["donetl"]["description"],
                       usage=jsonhelp["donetl"]["usage"], brief=jsonhelp["donetl"]["brief"], help=jsonhelp["donetl"]["help"])
-    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
+    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.guild, wait=True)
     async def donetl(self, ctx, *, arg):
         general = General_helper(self.bot, ctx, arg)
         TL = TL_helper(general)
@@ -526,7 +526,7 @@ class Done(commands.Cog):
 
     @commands.command(description=jsonhelp["donets"]["description"],
                       usage=jsonhelp["donets"]["usage"], brief=jsonhelp["donets"]["brief"], help=jsonhelp["donets"]["help"])
-    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
+    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.guild, wait=True)
     async def donets(self, ctx, *, arg):
         general = General_helper(self.bot, ctx, arg)
         TS = TS_helper(general)
@@ -535,7 +535,7 @@ class Done(commands.Cog):
 
     @commands.command(description=jsonhelp["donepr"]["description"],
                       usage=jsonhelp["donepr"]["usage"], brief=jsonhelp["donepr"]["brief"], help=jsonhelp["donepr"]["help"])
-    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
+    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.guild, wait=True)
     async def donepr(self, ctx, *, arg):
         helper = General_helper(self.bot, ctx, arg)
         PR = PR_helper(helper)
@@ -543,7 +543,7 @@ class Done(commands.Cog):
 
     @commands.command(description=jsonhelp["doneqcts"]["description"],
                       usage=jsonhelp["doneqcts"]["usage"], brief=jsonhelp["doneqcts"]["brief"], help=jsonhelp["doneqcts"]["help"])
-    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
+    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.guild, wait=True)
     async def doneqcts(self, ctx, *, arg):
         helper = General_helper(self.bot, ctx, arg)
         QCTS = QCTS_helper(helper)
@@ -551,11 +551,89 @@ class Done(commands.Cog):
 
     @commands.command(description=jsonhelp["donerd"]["description"],
                       usage=jsonhelp["donerd"]["usage"], brief=jsonhelp["donerd"]["brief"], help=jsonhelp["donerd"]["help"])
-    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
+    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.guild, wait=True)
     async def donerd(self, ctx, *, arg):
         helper = General_helper(self.bot, ctx, arg)
         RD = RD_helper(helper)
         await RD.execute()
+
+    @commands.command(description="All done commands in one singular guided command.")
+    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.guild, wait=True)
+    async def done(self, ctx: commands.Context):
+        def check(message):
+            if message.content in ["cancel", "c", "Cancel", "C"]:
+                raise exceptions.CancelError
+            return message.author == ctx.message.author and message.channel == ctx.channel
+
+        await ctx.send("What's the title of the chapter's manga/project?\n*(Type 'c' or 'cancel' at any time to cancel)*")
+        try:
+            project_message = await self.bot.wait_for('message', timeout=30, check=check)
+        except TimeoutError:
+            await ctx.send("Sorry, your time ran out. Please try again.")
+        project = project_message.content
+
+
+        await ctx.send("What's the chapter number of the finished chapter?")
+        try:
+            chapter_message = await self.bot.wait_for('message', timeout=30, check=check)
+        except TimeoutError:
+            await ctx.send("Sorry, your time ran out. Please try again.")
+        chapter = chapter_message.content
+
+        await ctx.send("What's the link to your finished step?")
+        try:
+            link_message = await self.bot.wait_for('message', timeout=30, check=check)
+        except TimeoutError:
+            await ctx.send("Sorry, your time ran out. Please try again.")
+        link = link_message.content
+
+        em = discord.Embed()
+        em.description = "What Step did you complete?"
+        msg = await ctx.send(embed=em)
+        await msg.add_reaction(emoji='<:tl:710847978386096229>')
+        await msg.add_reaction(emoji='<:rd:710847978356605029>')
+        await msg.add_reaction(emoji='<:ts:710848908263424021>')
+        await msg.add_reaction(emoji='<:pr:710848907931811911>')
+        await msg.add_reaction(emoji='<:qcts:710848908020154388>')
+        await msg.add_reaction(emoji='❌')
+
+        def check(reaction, user):
+            if str(reaction.emoji) == '❌':
+                raise exceptions.CancelError
+            return user == ctx.message.author and (
+            str(reaction.emoji) in ('<:ts:710848908263424021>','<:tl:710847978386096229>','<:rd:710847978356605029>','<:pr:710848907931811911>','<:qcts:710848908020154388>', '❌'))
+
+        try:
+            reaction, _ = await self.bot.wait_for('reaction_add', timeout=30, check=check)
+        except TimeoutError:
+            await ctx.send("Sorry, your time ran out. Please try again.")
+        step = None
+        arg = f'-c={chapter} -p={project} -link={link}'
+        helper = General_helper(self.bot, ctx, arg)
+
+        if str(reaction) == '<:tl:710847978386096229>':
+            await msg.clear_reaction(emoji='<:tl:710847978386096229>')
+            await msg.add_reaction(emoji='<:tlw:710847978470113351>')
+            step = TL_helper(helper)
+        elif str(reaction) == '<:rd:710847978356605029>':
+            await msg.clear_reaction(emoji='<:rd:710847978356605029>')
+            await msg.add_reaction(emoji='<:rdw:710847978293690389>')
+            step = RD_helper(helper)
+        elif str(reaction) == '<:ts:710848908263424021>':
+            await msg.clear_reaction(emoji='<:ts:710848908263424021>')
+            await msg.add_reaction(emoji='<:tsw:710848908015829035>')
+            step = TS_helper(helper)
+        elif str(reaction) == '<:pr:710848907931811911>':
+            await msg.clear_reaction(emoji='<:pr:710848907931811911>')
+            await msg.add_reaction(emoji='<:prw:710848907999182869>')
+            step = PR_helper(helper)
+        elif str(reaction) == '<:qcts:710848908020154388>':
+            await msg.clear_reaction(emoji='<:qcts:710848908020154388>')
+            await msg.add_reaction(emoji='<:qctsw:710848908192120924>')
+            step = QCTS_helper(helper)
+        await step.execute()
+        await ctx.send("Thanks for your work!")
+
 
 
 def setup(Bot):

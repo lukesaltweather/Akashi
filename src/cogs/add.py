@@ -90,6 +90,7 @@ class Add(commands.Cog):
 
     @commands.command(aliases=["ap", "addp", "addproj"], description=jsonhelp["addproject"]["description"],
                       usage=jsonhelp["addproject"]["usage"], brief=jsonhelp["addproject"]["brief"], help=jsonhelp["addproject"]["help"])
+    @is_admin()
     async def addproject(self, ctx, *, arg):
         session1 = self.bot.Session()
         try:

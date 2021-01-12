@@ -257,6 +257,7 @@ class Edit(commands.Cog):
 
     @commands.command(aliases=["editproj", "editp", "ep"],description=jsonhelp["editproject"]["description"],
                       usage=jsonhelp["editproject"]["usage"], brief=jsonhelp["editproject"]["brief"], help=jsonhelp["editproject"]["help"])
+    @is_admin()
     async def editproject(self, ctx, *, arg):
         session = self.bot.Session()
         try:

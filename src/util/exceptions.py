@@ -15,3 +15,5 @@ class NoResultFound(discord.ext.commands.CommandError):
 class TagAlreadyExists(discord.ext.commands.CommandError):
     def __init__(self, message=None):
         self.message=message
+class CancelError(discord.ext.commands.CommandError):
+    pass

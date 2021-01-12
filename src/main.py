@@ -19,7 +19,7 @@ from src.util.db import loadDB
 from src.model import testdb
 
 
-from src.util.exceptions import ReactionInvalidRoleError, TagAlreadyExists
+from src.util.exceptions import ReactionInvalidRoleError, TagAlreadyExists, CancelError
 from src.util.search import *
 from src.util.misc import *
 import logging
@@ -35,7 +35,7 @@ with open('src/util/emojis.json', 'r') as f:
 
 engine = loadDB(config["db_uri"])
 logger = logging.getLogger('discord')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
@@ -94,7 +94,6 @@ bot.load_extension('src.cogs.note')
 bot.load_extension('src.cogs.help')
 bot.load_extension('src.cogs.reminder')
 bot.load_extension('src.cogs.stats')
-bot.load_extension('src.cogs.christmas')
 bot.load_extension("jishaku")
 bot.load_extension('src.cogs.tags')
 bot.load_extension('src.cogs.mangadex')
@@ -147,6 +146,8 @@ async def on_command_error(ctx, error):
         await ctx.send("Sorry, I couldn't find what you were looking for. Does this chapter/project exist?")
     elif isinstance(error, TagAlreadyExists):
         await ctx.send(f"{error.message} Tag already exists.")
+    elif isinstance(error, CancelError):
+        await ctx.send("Command cancelled.")
     else:
         await ctx.send(error)
 

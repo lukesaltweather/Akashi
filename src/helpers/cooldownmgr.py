@@ -22,11 +22,8 @@ class CooldownManager:
     def on_cooldown(self, author: int) -> bool:
         return author in self._tasks
 
-    def cancel_cooldown(self, author: typing.Optional[int] = None):
-        if author:
-            if task := self._tasks.pop(author, None):
-                task.cancel()
-                return
-            raise LookupError("Couldn't find a Cooldown for this author.")
-        for task in self._tasks:
+    def cancel_cooldown(self, author: typing.Optional[int]):
+        if task := self._tasks.pop(author, None):
             task.cancel()
+            return
+        raise LookupError("Couldn't find a Cooldown for this author.")

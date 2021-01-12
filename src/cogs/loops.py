@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import json
 import random
@@ -108,15 +109,15 @@ class Loops(commands.Cog):
 
     @tasks.loop(seconds=60)
     async def refreshembed(self):
-        with open('src/util/board.json', 'r') as f:
-            messages = json.load(f)
-        ch = await self.bot.fetch_channel(self.bot.config['board_channel'])
-        mes = list()
-        for value in messages.get("0", list()):
-            msg = await ch.fetch_message(value)
-            mes.append(msg)
         session = self.bot.Session()
         try:
+            with open('src/util/board.json', 'r') as f:
+                messages = json.load(f)
+            ch = await self.bot.fetch_channel(self.bot.config['board_channel'])
+            mes = list()
+            for value in messages.get("0", list()):
+                msg = await ch.fetch_message(value)
+                mes.append(msg)
             projects = session.query(Project).filter \
                 (Project.status == "active").order_by(Project.position.asc()).all()
             embeds = list()
@@ -235,9 +236,16 @@ class Loops(commands.Cog):
         await ch.send(f'{(await self.bot.fetch_user(358244935041810443)).mention} Board errored with error: {e}')
         try:
             self.refreshembed.cancel()
+            await asyncio.sleep(20)
         except:
-            pass
+            await ch.send(f'Exception while Cancelling')
+        if self.refreshembed.is_running():
+            await ch.send("Task still running!")
+        if self.refreshembed.is_being_cancelled():
+            await ch.send("Task is being cancelled!")
+            await asyncio.sleep(20)
         self.refreshembed.start()
+        await ch.send("Restarted task successfully")
 
     @staticmethod
     async def foundStaff(channel: discord.TextChannel, member: str, m: discord.Message, chapter):

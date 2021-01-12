@@ -71,6 +71,63 @@ class Misc(commands.Cog):
         role = ctx.guild.get_role(345886396046770176)
         await member.add_roles(role)
 
+    @commands.command(description='Add a self-assignable role. Use $roles to see a list of roles.', usage='$iam <role>',  brief='Add a self-assignable role.')
+    async def iam(self, ctx: commands.Context, role: str):
+        l = role.lower()
+        roles = {
+            'kouhai':345886396046770176,
+            'recipes': 464213892109828097,
+            'tabletop':717869655695425558,
+            'roleplaying':538484121375211550,
+            'gamers':717869966136967330,
+            'programming':717869431623254028
+        }
+        role = ctx.guild.get_role(roles.get(l, None))
+        if not role:
+            raise RuntimeError
+        await ctx.author.add_roles(role, reason="Added Self-Assignable role.")
+        embed = discord.Embed()
+        embed.title = "Enjoy your new role!"
+        embed.color = discord.Colour.dark_green()
+        await ctx.send(embed=embed, delete_after=20)
+
+    @commands.command(description='Remove a self-assignable role. Use $roles to see a list of roles.', usage='$iam <role>', brief='Remove a self-assignable role.')
+    async def iamnot(self, ctx: commands.Context, role: str):
+        l = role.lower()
+        roles = {
+            'kouhai': 345886396046770176,
+            'recipes': 464213892109828097,
+            'tabletop': 717869655695425558,
+            'roleplaying': 538484121375211550,
+            'gamers': 717869966136967330,
+            'programming': 717869431623254028
+        }
+        role = ctx.guild.get_role(roles.get(l, None))
+        if not role:
+            raise RuntimeError
+        await ctx.author.remove_roles(role, reason='Used Command to remove self-assigned role.')
+        embed = discord.Embed()
+        embed.title = "Removed role."
+        embed.color = discord.Colour.dark_orange()
+        await ctx.send(embed=embed, delete_after=20)
+
+    @commands.command(description='Shows Self-Assignable roles.', brief='Shows Self-Assignable roles.' ,usage='$roles')
+    async def roles(self, ctx: commands.Context):
+        em = discord.Embed()
+        em.color = discord.Colour.blurple()
+        em.title = "Self-Assignable Roles"
+        em.description="Kouhai\nRecipes\nTabletop\nRoleplaying\nGamers\nProgramming"
+        await ctx.send(embed=em)
+
+    @iam.error
+    async def iamerror(self, ctx, e):
+        await ctx.send(f"Oops... Something went wrong.\n{e}")
+
+    @iamnot.error
+    async def iamnoterror(self, ctx, e):
+        await ctx.send(f"Oops... Something went wrong.\n{e}")
+
+
     def get_bot_uptime(self):
         delta = (self.bot.uptime-datetime.datetime.now()).total_seconds()
         print(delta)

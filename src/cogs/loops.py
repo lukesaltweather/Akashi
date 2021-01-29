@@ -233,12 +233,12 @@ class Loops(commands.Cog):
     @refreshembed.error
     async def refresherror(self, e):
         ch = self.bot.get_channel(701831937001652286)
-        await ch.send(f'{(await self.bot.fetch_user(358244935041810443)).mention} Board errored with error: {e}')
+        await ch.send(f'{(await self.bot.fetch_user(358244935041810443)).mention} Board errored with error: {e} {type(e)}')
         try:
             self.refreshembed.cancel()
             await asyncio.sleep(20)
-        except:
-            await ch.send(f'Exception while Cancelling')
+        except Exception as e:
+            await ch.send(f'Exception while Cancelling: {e}')
         if self.refreshembed.is_running():
             await ch.send("Task still running!")
         if self.refreshembed.is_being_cancelled():

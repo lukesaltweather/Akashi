@@ -14,7 +14,7 @@ git+git://github.com/Rapptz/discord.py@master#egg=discord.py
 git+git://github.com/Rapptz/discord-ext-menus#egg=ext-menus
 idna==2.9
 isort==5.6.4
-lazy-object-proxy==1.5.1
+lazy-object-proxy==1.6.0
 mccabe==0.6.1
 multidict==5.0.2
 pylint==2.6.0

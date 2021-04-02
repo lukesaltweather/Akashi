@@ -20,18 +20,18 @@ class Loops(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.refreshembed.start()
-        self.deletemessages.start()
+        # self.deletemessages.start()
         self.reminder.start()
 
     def cog_unload(self):
         self.refreshembed.cancel()
-        self.deletemessages.cancel()
+       # self.deletemessages.cancel()
         self.reminder.cancel()
 
     @commands.command()
     async def restartloops(self):
         self.refreshembed.restart()
-        self.deletemessages.restart()
+        #self.deletemessages.restart()
         self.reminder.restart()
 
     @tasks.loop(minutes=1)
@@ -107,8 +107,9 @@ class Loops(commands.Cog):
         finally:
             session.close()
 
-    @tasks.loop(seconds=60)
+    @tasks.loop(minutes=2)
     async def refreshembed(self):
+        await self.bot.wait_until_ready()
         session = self.bot.Session()
         try:
             with open('src/util/board.json', 'r') as f:
@@ -133,36 +134,36 @@ class Loops(commands.Cog):
                 for y in chapters:
                     done = 0
                     chapter = f" [Raws]({y.link_raw}) |"
-                    if y.translator is None and y.link_tl is None:
+                    if (y.translator is None or y.translator == "") and y.link_tl is None:
                         chapter = chapter + " ~~TL~~ |"
-                    elif y.translator is not None and y.link_tl is None:
+                    elif y.translator is not None and y.translator != "" and y.link_tl is None:
                         chapter = chapter + f" **TL** ({y.translator.name}) |"
                     elif y.link_tl is not None:
                         chapter = "{} [TL ({})]({}) |".format(chapter,
                                                               y.translator.name if y.translator is not None else "None",
                                                               y.link_tl)
                         done += 1
-                    if y.redrawer is None and y.link_rd is None:
+                    if (y.redrawer is None or y.redrawer == "") and y.link_rd is None:
                         chapter = chapter + " ~~RD~~ |"
-                    elif y.redrawer is not None and y.link_rd is None:
+                    elif y.redrawer is not None and y.redrawer != "" and y.link_rd is None:
                         chapter = chapter + f" **RD** ({y.redrawer.name}) |"
                     elif y.link_rd is not None:
                         chapter = chapter + f" [RD ({y.redrawer.name if y.redrawer is not None else 'None'})]({y.link_rd}) |"
                         done += 1
-                    if y.typesetter is None and y.link_ts is None:
+                    if (y.typesetter is None or y.typesetter == "") and y.link_ts is None:
                         chapter = chapter + " ~~TS~~ |"
-                    elif y.typesetter is not None and y.link_ts is None:
+                    elif y.typesetter is not None and y.typesetter != "" and y.link_ts is None:
                         chapter = chapter + f" **TS** ({y.typesetter.name}) |"
                     elif y.link_ts is not None:
                         chapter = chapter + f" [TS ({y.typesetter.name if y.typesetter is not None else 'None'})]({y.link_ts}) |"
                         done += 1
-                    if y.proofreader is None and y.link_pr is None:
+                    if (y.proofreader is None or y.proofreader == "")and y.link_pr is None:
                         chapter = chapter + " ~~PR~~ |"
-                    elif y.proofreader is not None and y.link_pr is None:
+                    elif y.proofreader is not None and y.proofreader != "" and y.link_pr is None:
                         chapter = chapter + f" **PR** ({y.proofreader.name}) |"
                     elif y.link_pr is not None:
                         chapter = chapter + f" [PR ({y.proofreader.name if y.proofreader is not None else 'None'})]({y.link_pr}) |"
-                    if y.link_rl is not None:
+                    if y.link_rl is not None and y.link_rl != "":
                         chapter = chapter + f" [QCTS]({y.link_rl})"
                         done += 1
                     done += 1
@@ -232,7 +233,7 @@ class Loops(commands.Cog):
 
     @refreshembed.error
     async def refresherror(self, e):
-        ch = self.bot.get_channel(701831937001652286)
+        ch = await self.bot.fetch_channel(701831937001652286)
         await ch.send(f'{(await self.bot.fetch_user(358244935041810443)).mention} Board errored with error: {e} {type(e)}')
         try:
             self.refreshembed.cancel()

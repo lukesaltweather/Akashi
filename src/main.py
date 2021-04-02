@@ -7,6 +7,7 @@ import sqlalchemy
 
 from discord.ext import commands
 from discord.ext.commands import MissingRequiredArgument
+from discord.ext import ipc
 
 from sqlalchemy.orm import sessionmaker, aliased
 
@@ -40,26 +41,18 @@ handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-"""logging.basicConfig(filename="sqlalchemy.log")
-logger2 = logging.getLogger("myapp.sqltime")
-logger2.setLevel(logging.DEBUG)
-
-@event.listens_for(Engine, "before_cursor_execute")
-def before_cursor_execute(conn, cursor, statement,
-                        parameters, context, executemany):
-    conn.info.setdefault('query_start_time', []).append(time.time())
-    logger2.debug("Start Query: %s" % statement)
-
-@event.listens_for(Engine, "after_cursor_execute")
-def after_cursor_execute(conn, cursor, statement,
-                        parameters, context, executemany):
-    total = time.time() - conn.info['query_start_time'].pop(-1)
-    logger2.debug("Query Complete!")
-    logger2.debug("Total Time: %f" % total)"""
-
 class Bot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.ipc = ipc.Server(self, secret_key="1234", port=8765)  # create our IPC Server
+
+    async def on_ipc_ready(self):
+        """Called upon the IPC Server being ready"""
+        print("Ipc is ready.")
+
+    async def on_ipc_error(self, endpoint, error):
+        """Called upon an error being raised within an IPC route"""
+        print(endpoint, "raised", error)
 
     def get_cog_insensitive(self, name):
         """Gets the cog instance requested.
@@ -97,6 +90,7 @@ bot.load_extension('src.cogs.stats')
 bot.load_extension("jishaku")
 bot.load_extension('src.cogs.tags')
 bot.load_extension('src.cogs.mangadex')
+bot.load_extension("src.cogs.ipc")  # load the IPC Route cog
 # bot.load_extension('src.cogs.halloween')
 bot.em = emojis
 bot.debug = False
@@ -341,33 +335,11 @@ async def displayconfig(ctx):
         j = json.dumps(r, indent=4, sort_keys=True)
         await ctx.author.send(j)
 
-# def aiohttp_server():
-#     async def say_hello(request):
-#         json = await request.post()
-#         print(json.get("hello"))
-#         return web.Response(text='Hello, world')
-#
-#     app = web.Application()
-#     app.add_routes([web.post('/', say_hello)])
-#     runner = web.AppRunner(app)
-#     return runner
-#
-#
-# def run_server(runner):
-#     loop = asyncio.new_event_loop()
-#     asyncio.set_event_loop(loop)
-#     loop.run_until_complete(runner.setup())
-#     site = web.TCPSite(runner, 'localhost', 8080)
-#     loop.run_until_complete(site.start())
-#     loop.run_forever()
-#
-#
-# t = threading.Thread(target=run_server, args=(aiohttp_server(),))
-# t.start()
-
 
 if config["online"]:
+    bot.ipc.start()
     bot.run(config["heroku_key"])
 else:
+    bot.ipc.start()
     bot.run(config["offline_key"])
 

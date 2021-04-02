@@ -7,27 +7,20 @@ license = "Apache-2.0"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-sqlalchemy = "*"
-psycopg2-binary = "*"
-pillow = "*"
-requests = "*"
-python-dateutil = "*"
+sqlalchemy = "^1.4.4"
+psycopg2-binary = "^2.8.6"
+pillow = "^8.2.0"
+python-dateutil = "^2.8.1"
 jishaku = "*"
-aiohttp = "*"
-astroid = "*"
-async-timeout = "*"
-attrs = "*"
-chardet = "*"
-colorama = "*"
 "discord.py" = {git = "https://github.com/Rapptz/discord.py", branch = "master"}
 "discord-ext-menus" = {git = "https://github.com/Rapptz/discord-ext-menus"}
 "discord-ext-ipc" = {git = "https://github.com/Ext-Creators/discord-ext-ipc"}
-asyncpg = "*"
-prettytable = "*"
-pygit2 = "*"
-psutil = "*"
-boto3 = "*"
-aiofiles = "*"
+asyncpg = "^0.22.0"
+prettytable = "^2.1.0"
+pygit2 = "^1.5.0"
+psutil = "^5.8.0"
+boto3 = "1.17.43"
+aiofiles = "^0.6.0"
 
 [tool.poetry.dev-dependencies]
 

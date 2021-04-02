@@ -25,7 +25,7 @@ class Misc(commands.Cog):
         Miscellaneous Commands
     """
     def __init__(self, client):
-        self.bot = client
+        self.bot: commands.Bot = client
 
 
     async def cog_check(self, ctx):
@@ -40,6 +40,40 @@ class Misc(commands.Cog):
             await self.bot.http.add_role(345797456614785024, member.id, 440714683587231744, reason="Initial Role")
         else:
             await (self.bot.get_user(self.bot.owner_id)).send("kein channel")
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        if payload.message_id == 818205833220325404:
+            guild: discord.Guild = await self.bot.fetch_guild(345797456614785024)
+            member: discord.Member = await guild.fetch_member(payload.user_id)
+            print(payload.emoji.__str__())
+            if payload.emoji.__str__() == "⌨️":
+                await member.add_roles(guild.get_role(717869431623254028))
+            elif payload.emoji.__str__() == "🎲":
+                await member.add_roles(guild.get_role(717869655695425558))
+            elif payload.emoji.__str__() == "🎮":
+                await member.add_roles(guild.get_role(717869966136967330))
+            elif payload.emoji.__str__() == "✉️":
+                await member.add_roles(guild.get_role(345886396046770176))
+            elif payload.emoji.__str__() == "🍲":
+                await member.add_roles(guild.get_role(464213892109828097))
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+        if payload.message_id == 818205833220325404:
+            guild: discord.Guild = await self.bot.fetch_guild(345797456614785024)
+            member: discord.Member = await guild.fetch_member(payload.user_id)
+            if payload.emoji.__str__() == "⌨️":
+                await member.remove_roles(guild.get_role(717869431623254028))
+            elif payload.emoji.__str__() == "🎲":
+                await member.remove_roles(guild.get_role(717869655695425558))
+            elif payload.emoji.__str__() == "🎮":
+                await member.remove_roles(guild.get_role(717869966136967330))
+            elif payload.emoji.__str__() == "✉️":
+                await member.remove_roles(guild.get_role(345886396046770176))
+            elif payload.emoji.__str__() == "🍲":
+                await member.remove_roles(guild.get_role(464213892109828097))
+
     @commands.command(name='reload', hidden=True)
     @is_admin()
     async def _reload(self, ctx, module: str):

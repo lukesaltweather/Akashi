@@ -1,8 +1,0 @@
-version: '3.4'
-
-services:
-  akashi:
-    image: akashi
-    build:
-      context: .
-      dockerfile: ./Dockerfile

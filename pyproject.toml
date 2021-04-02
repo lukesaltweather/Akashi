@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "akashi"
+version = "1.0"
+description = ""
+authors = ["lukesaltweather"]
+license = "Apache-2.0"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+sqlalchemy = "*"
+psycopg2-binary = "*"
+pillow = "*"
+requests = "*"
+python-dateutil = "*"
+jishaku = "*"
+aiohttp = "*"
+astroid = "*"
+async-timeout = "*"
+attrs = "*"
+chardet = "*"
+colorama = "*"
+"discord.py" = {git = "https://github.com/Rapptz/discord.py", branch = "master"}
+"discord-ext-menus" = {git = "https://github.com/Rapptz/discord-ext-menus"}
+"discord-ext-ipc" = {git = "https://github.com/Ext-Creators/discord-ext-ipc"}
+asyncpg = "*"
+prettytable = "*"
+pygit2 = "*"
+psutil = "*"
+boto3 = "*"
+aiofiles = "*"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

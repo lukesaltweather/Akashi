@@ -73,20 +73,20 @@ tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>
 
 [[package]]
 name = "boto3"
-version = "1.17.43"
+version = "1.17.44"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 
 [package.dependencies]
-botocore = ">=1.20.43,<1.21.0"
+botocore = ">=1.20.44,<1.21.0"
 jmespath = ">=0.7.1,<1.0.0"
 s3transfer = ">=0.3.0,<0.4.0"
 
 [[package]]
 name = "botocore"
-version = "1.20.43"
+version = "1.20.44"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -176,11 +176,11 @@ resolved_reference = "309c70222eec33acacb8c21bbb0fbe9bc57de661"
 
 [[package]]
 name = "discord.py"
-version = "1.7.0a2836+g6524869"
+version = "2.0.0a2864+ga3a6f889"
 description = "A Python wrapper for the Discord API"
 category = "main"
 optional = false
-python-versions = ">=3.5.3"
+python-versions = ">=3.8.0"
 develop = false
 
 [package.dependencies]
@@ -194,7 +194,7 @@ voice = ["PyNaCl (>=1.3.0,<1.5)"]
 type = "git"
 url = "https://github.com/Rapptz/discord.py"
 reference = "master"
-resolved_reference = "6524869ddd283a1704d0eec9bc87b2663c247d01"
+resolved_reference = "a3a6f88936146b35b260b524e1eb22a324ee89b8"
 
 [[package]]
 name = "greenlet"
@@ -442,7 +442,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "551a460d2c37cc4d7d6aae819e217b885fa131fc4ed5e65e41cbe5e65c271adc"
+content-hash = "054102851dd06c6b740ebcd0a90a758e79c21723d056ec1168ece3e883702617"
 
 [metadata.files]
 aiofiles = [
@@ -518,12 +518,12 @@ attrs = [
     {file = "attrs-20.3.0.tar.gz", hash = "sha256:832aa3cde19744e49938b91fea06d69ecb9e649c93ba974535d08ad92164f700"},
 ]
 boto3 = [
-    {file = "boto3-1.17.43-py2.py3-none-any.whl", hash = "sha256:66c5581ae0746a41b8e119522a5c2434cffca0ef2620d49f15f350d0b14e2dd0"},
-    {file = "boto3-1.17.43.tar.gz", hash = "sha256:b86aaa96ccbdba1aaca0a321dbe4be480a39b7d6fe85dcd7ee5d7c44c9b32726"},
+    {file = "boto3-1.17.44-py2.py3-none-any.whl", hash = "sha256:e74da1da74fbefbe2db7a9c53082018d862433f35e2ecd4c173632efc5742f40"},
+    {file = "boto3-1.17.44.tar.gz", hash = "sha256:ffb9b192b2b52ab88cde09e2af7d9fd6e541287e5719098be97ffd7144f47eb1"},
 ]
 botocore = [
-    {file = "botocore-1.20.43-py2.py3-none-any.whl", hash = "sha256:7d0326fd8f8d7b3b7d2e8ecc4edb5a39ecd5537072bd0f088767ca53dd34818a"},
-    {file = "botocore-1.20.43.tar.gz", hash = "sha256:7630d734260babdc34dc53c704d937f53c362bb15ccd3863ccf1b1b26be04df8"},
+    {file = "botocore-1.20.44-py2.py3-none-any.whl", hash = "sha256:8a7f85bf05ad62551b0e6dfeeec471147b330cb2b5c7f48795057e811e6a2e77"},
+    {file = "botocore-1.20.44.tar.gz", hash = "sha256:2958e3912939558fd789a64b23a10039d8b0c0c84a23b573f3f2e3154de357ad"},
 ]
 braceexpand = [
     {file = "braceexpand-0.1.6-py2.py3-none-any.whl", hash = "sha256:c37571ad130213247fac9921f3fd1032c81057490b9ca29be6884fd6d9dc1013"},

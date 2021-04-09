@@ -73,20 +73,20 @@ tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>
 
 [[package]]
 name = "boto3"
-version = "1.17.46"
+version = "1.17.48"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 
 [package.dependencies]
-botocore = ">=1.20.46,<1.21.0"
+botocore = ">=1.20.48,<1.21.0"
 jmespath = ">=0.7.1,<1.0.0"
 s3transfer = ">=0.3.0,<0.4.0"
 
 [[package]]
 name = "botocore"
-version = "1.20.46"
+version = "1.20.48"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -442,7 +442,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "88f32567e3f7baeddbb40bb77df61a14f0e39fa2626ce83ff2220803bae690bc"
+content-hash = "33cbc39e1118f068fccd0ca831d3b8c435564334ce0462a4e4fc2df20640ba86"
 
 [metadata.files]
 aiofiles = [
@@ -518,12 +518,12 @@ attrs = [
     {file = "attrs-20.3.0.tar.gz", hash = "sha256:832aa3cde19744e49938b91fea06d69ecb9e649c93ba974535d08ad92164f700"},
 ]
 boto3 = [
-    {file = "boto3-1.17.46-py2.py3-none-any.whl", hash = "sha256:070c1c4fb75cb3d599e2eb520a50d8e763080f6c06d9de77e9773c36442f23e9"},
-    {file = "boto3-1.17.46.tar.gz", hash = "sha256:5dee15bf961ea584d681fae42c50034c839717e7454c3da90cb57a6c52e97532"},
+    {file = "boto3-1.17.48-py2.py3-none-any.whl", hash = "sha256:df5912350e092e795f72d8047a44d3f5af9690317acfe48147b9853a2f89b304"},
+    {file = "boto3-1.17.48.tar.gz", hash = "sha256:e86c15049dc07cb67e8b466795f004f1f23c1acf078d47283cd5e4a692a5aa37"},
 ]
 botocore = [
-    {file = "botocore-1.20.46-py2.py3-none-any.whl", hash = "sha256:8cd22cd9dd3852c58dad714950b3fb62316d73c18c4eaf90eda1c677ab5e379b"},
-    {file = "botocore-1.20.46.tar.gz", hash = "sha256:50bbc3e9341c7daa8219db98c38f26012a151ca88fa260148e5bf3adcbcb9541"},
+    {file = "botocore-1.20.48-py2.py3-none-any.whl", hash = "sha256:af27a8133f5b8f6a55738ccd5efd35689f1822cfd447625a839ef7a991eab64f"},
+    {file = "botocore-1.20.48.tar.gz", hash = "sha256:99c4f96bffae406f6dec1fa94e0886993e5bcd8657604d950abb43a49121fa7c"},
 ]
 braceexpand = [
     {file = "braceexpand-0.1.6-py2.py3-none-any.whl", hash = "sha256:c37571ad130213247fac9921f3fd1032c81057490b9ca29be6884fd6d9dc1013"},

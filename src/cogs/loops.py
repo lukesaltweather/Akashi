@@ -134,55 +134,55 @@ class Loops(commands.Cog):
                 for y in chapters:
                     done = 0
                     chapter = f" [Raws]({y.link_raw}) |"
-                    if (y.translator is None or y.translator == "") and y.link_tl is None:
+                    if not y.translator and not y.link_tl:
                         chapter = chapter + " ~~TL~~ |"
-                    elif y.translator is not None and y.translator != "" and y.link_tl is None:
+                    elif y.translator and not y.link_tl:
                         chapter = chapter + f" **TL** ({y.translator.name}) |"
-                    elif y.link_tl is not None:
+                    elif y.link_tl:
                         chapter = "{} [TL ({})]({}) |".format(chapter,
                                                               y.translator.name if y.translator is not None else "None",
                                                               y.link_tl)
                         done += 1
-                    if (y.redrawer is None or y.redrawer == "") and y.link_rd is None:
+                    if not y.redrawer and not y.link_rd:
                         chapter = chapter + " ~~RD~~ |"
-                    elif y.redrawer is not None and y.redrawer != "" and y.link_rd is None:
+                    elif y.redrawer and not y.link_rd:
                         chapter = chapter + f" **RD** ({y.redrawer.name}) |"
-                    elif y.link_rd is not None:
+                    elif y.link_rd:
                         chapter = chapter + f" [RD ({y.redrawer.name if y.redrawer is not None else 'None'})]({y.link_rd}) |"
                         done += 1
-                    if (y.typesetter is None or y.typesetter == "") and y.link_ts is None:
+                    if not y.typesetter and not y.link_ts:
                         chapter = chapter + " ~~TS~~ |"
-                    elif y.typesetter is not None and y.typesetter != "" and y.link_ts is None:
+                    elif y.typesetter and not y.link_ts:
                         chapter = chapter + f" **TS** ({y.typesetter.name}) |"
-                    elif y.link_ts is not None:
+                    elif not y.link_ts:
                         chapter = chapter + f" [TS ({y.typesetter.name if y.typesetter is not None else 'None'})]({y.link_ts}) |"
                         done += 1
-                    if (y.proofreader is None or y.proofreader == "")and y.link_pr is None:
+                    if not y.proofreader and not y.link_pr:
                         chapter = chapter + " ~~PR~~ |"
-                    elif y.proofreader is not None and y.proofreader != "" and y.link_pr is None:
+                    elif y.proofreader and not y.link_pr:
                         chapter = chapter + f" **PR** ({y.proofreader.name}) |"
-                    elif y.link_pr is not None:
+                    elif not y.link_pr:
                         chapter = chapter + f" [PR ({y.proofreader.name if y.proofreader is not None else 'None'})]({y.link_pr}) |"
-                    if y.link_rl is not None and y.link_rl != "":
+                    if y.link_rl:
                         chapter = chapter + f" [QCTS]({y.link_rl})"
                         done += 1
                     done += 1
-                    if chapter != "" and done != 5 and y.date_release is None:
+                    if chapter and done != 5 and not y.date_release:
                         num = formatNumber(y.number)
                         chapter = "Chapter {}:{}".format(num, chapter)
                         list_in_progress_project.append(f"{chapter}\n")
-                    elif chapter != "" and done == 5 and y.date_release is None:
+                    elif chapter and done == 5 and not y.date_release:
                         num = formatNumber(y.number)
                         chapter = "Chapter {}:{}".format(num, chapter)
                         list_done_project.append(f"{chapter}\n")
-                if x.color is None:
+                if not x.color:
                     color = random.choice([discord.Colour.blue(), discord.Colour.green(), discord.Colour.purple(),
                                            discord.Colour.dark_red(), discord.Colour.dark_teal()])
                 else:
                     color = discord.Colour(int(x.color, 16))
                 embed = BoardPaginator(color)
                 embed.set_author(name=x.title, icon_url=x.icon, url=x.link)
-                embed.set_thumbnail(x.thumbnail if x.thumbnail is not None and x.thumbnail != '' else 'https://nekyou.mangadex.com/wp-content/uploads/sites/83/2019/06/About-Nekyou.png')
+                embed.set_thumbnail(x.thumbnail if x.thumbnail else 'https://nekyou.mangadex.com/wp-content/uploads/sites/83/2019/06/About-Nekyou.png')
                 embed.title = "Link to project"
                 embed.url = x.link
                 if len(list_in_progress_project) != 0:

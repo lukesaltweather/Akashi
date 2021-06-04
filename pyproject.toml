@@ -12,9 +12,9 @@ psycopg2-binary = "^2.8.6"
 pillow = "^8.2.0"
 python-dateutil = "^2.8.1"
 jishaku = "*"
-"discord.py" = {git = "https://github.com/Rapptz/discord.py", tag="v1.7.0"}
+"discord.py" = {git = "https://github.com/Rapptz/discord.py", tag="v1.7.2"}
 "discord-ext-menus" = {git = "https://github.com/Rapptz/discord-ext-menus"}
-"discord-ext-ipc" = {git = "https://github.com/Ext-Creators/discord-ext-ipc"}
+"discord-ext-ipc" = "^2.0.0"
 asyncpg = "^0.22.0"
 prettytable = "^2.1.0"
 pygit2 = "^1.5.0"

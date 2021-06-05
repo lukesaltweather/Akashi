@@ -154,18 +154,20 @@ class Loops(commands.Cog):
                         chapter = chapter + " ~~TS~~ |"
                     elif y.typesetter and not y.link_ts:
                         chapter = chapter + f" **TS** ({y.typesetter.name}) |"
-                    elif not y.link_ts:
+                    elif y.link_ts:
                         chapter = chapter + f" [TS ({y.typesetter.name if y.typesetter is not None else 'None'})]({y.link_ts}) |"
                         done += 1
                     if not y.proofreader and not y.link_pr:
                         chapter = chapter + " ~~PR~~ |"
                     elif y.proofreader and not y.link_pr:
                         chapter = chapter + f" **PR** ({y.proofreader.name}) |"
-                    elif not y.link_pr:
+                    elif y.link_pr:
                         chapter = chapter + f" [PR ({y.proofreader.name if y.proofreader is not None else 'None'})]({y.link_pr}) |"
                     if y.link_rl:
                         chapter = chapter + f" [QCTS]({y.link_rl})"
                         done += 1
+                    else:
+                        chapter = chapter + f" ~~QCTS~~"
                     done += 1
                     if chapter and done != 5 and not y.date_release:
                         num = formatNumber(y.number)

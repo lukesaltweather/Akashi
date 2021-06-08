@@ -31,15 +31,15 @@ class Misc(commands.Cog):
     async def cog_check(self, ctx):
         return ctx.guild is not None
 
-    @commands.Cog.listener()
-    async def on_member_join(self, member):
-        channel = await self.bot.fetch_channel(345797456614785028)
-        rules = await self.bot.fetch_channel(345829173438316545)
-        if channel:
-            await channel.send('{0.mention} Welcome to the Land of Nekos. Please read all the information in {1.mention}'.format(member, rules))
-            await self.bot.http.add_role(345797456614785024, member.id, 440714683587231744, reason="Initial Role")
-        else:
-            await (self.bot.get_user(self.bot.owner_id)).send("kein channel")
+    # @commands.Cog.listener()
+    # async def on_member_join(self, member):
+    #     channel = await self.bot.fetch_channel(345797456614785028)
+    #     rules = await self.bot.fetch_channel(345829173438316545)
+    #     if channel:
+    #         await channel.send('{0.mention} Welcome to the Land of Nekos. Please read all the information in {1.mention}'.format(member, rules))
+    #         await self.bot.http.add_role(345797456614785024, member.id, 440714683587231744, reason="Initial Role")
+    #     else:
+    #         await (self.bot.get_user(self.bot.owner_id)).send("kein channel")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):

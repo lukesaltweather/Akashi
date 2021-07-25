@@ -248,13 +248,9 @@ class TL_helper(command_helper):
         @return: None
         """
         self.message = await self.confirm("Notify Redrawer")
-        ts = fakesearch(self.chapter.redrawer.discord_id, self.ctx).mention
-        await self.channel.send(
-            f'{ts}\nThe translation `{self.chapter.project.title} {formatNumber(self.chapter.number)}` is done.\nRaws: {self.chapter.link_raw}', allowed_mentions=self.message)
-        embed = discord.Embed(color=discord.Colour.dark_red())
-        embed.title = "Notes:"
-        embed.add_field(name="\u200b", value=f"```{self.chapter.notes}```")
-        await self.channel.send(embed=embed)
+        embed = self.completed_embed(self.chapter, self.ctx.author, fakesearch(self.chapter.redrawer.discord_id, self.ctx), "TL", "RD")
+        rd = fakesearch(self.chapter.redrawer.discord_id, self.ctx).mention
+        await self.channel.send(content=f"{rd}", embed=embed, allowed_mentions=self.message)
 
     async def _no_redrawer(self):
         """

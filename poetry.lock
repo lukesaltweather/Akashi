@@ -128,6 +128,25 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
+name = "click"
+version = "8.0.1"
+description = "Composable command line interface toolkit"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+colorama = {version = "*", markers = "platform_system == \"Windows\""}
+
+[[package]]
+name = "colorama"
+version = "0.4.4"
+description = "Cross-platform colored terminal text."
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+
+[[package]]
 name = "discord-ext-ipc"
 version = "2.0.0"
 description = "A discord.py extension for inter-process communication."
@@ -190,17 +209,6 @@ python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*"
 docs = ["sphinx"]
 
 [[package]]
-name = "humanize"
-version = "3.7.0"
-description = "Python humanize utilities"
-category = "main"
-optional = false
-python-versions = ">=3.6"
-
-[package.extras]
-tests = ["freezegun", "pytest", "pytest-cov"]
-
-[[package]]
 name = "idna"
 version = "3.2"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -224,7 +232,7 @@ test = ["pytest", "pytest-cov"]
 
 [[package]]
 name = "jishaku"
-version = "2.0.0"
+version = "2.2.0"
 description = "A discord.py extension including useful tools for bot development and debugging."
 category = "main"
 optional = false
@@ -232,8 +240,8 @@ python-versions = ">=3.8.0"
 
 [package.dependencies]
 braceexpand = ">=0.1.7"
+click = ">=8.0.1"
 "discord.py" = ">=1.7.2"
-humanize = ">=3.7.0"
 import-expression = ">=1.0.0,<2.0.0"
 
 [package.extras]
@@ -569,6 +577,14 @@ chardet = [
     {file = "chardet-4.0.0-py2.py3-none-any.whl", hash = "sha256:f864054d66fd9118f2e67044ac8981a54775ec5b67aed0441892edb553d21da5"},
     {file = "chardet-4.0.0.tar.gz", hash = "sha256:0d6f53a15db4120f2b08c94f11e7d93d2c911ee118b6b30a04ec3ee8310179fa"},
 ]
+click = [
+    {file = "click-8.0.1-py3-none-any.whl", hash = "sha256:fba402a4a47334742d782209a7c79bc448911afe1149d07bdabdf480b3e2f4b6"},
+    {file = "click-8.0.1.tar.gz", hash = "sha256:8c04c11192119b1ef78ea049e0a6f0463e4c48ef00a30160c704337586f3ad7a"},
+]
+colorama = [
+    {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
+    {file = "colorama-0.4.4.tar.gz", hash = "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b"},
+]
 discord-ext-ipc = [
     {file = "discord-ext-ipc-2.0.0.tar.gz", hash = "sha256:812e2a13ba616c71c4cfa13cdebd5c9cad6c3a33029a6f705268f4b36c2e4ccc"},
     {file = "discord_ext_ipc-2.0.0-py3-none-any.whl", hash = "sha256:df5ee363c7317ecafce99a908c730aaae8df07841bf4f39dd0c42b8ded104f12"},
@@ -626,10 +642,6 @@ greenlet = [
     {file = "greenlet-1.1.0-cp39-cp39-win_amd64.whl", hash = "sha256:aa4230234d02e6f32f189fd40b59d5a968fe77e80f59c9c933384fe8ba535535"},
     {file = "greenlet-1.1.0.tar.gz", hash = "sha256:c87df8ae3f01ffb4483c796fe1b15232ce2b219f0b18126948616224d3f658ee"},
 ]
-humanize = [
-    {file = "humanize-3.7.0-py3-none-any.whl", hash = "sha256:5eaafcd584fd01ab9a59f040e20b3daa35a24e8125d4c84788392d799be2012a"},
-    {file = "humanize-3.7.0.tar.gz", hash = "sha256:8b1463a17bf722c06712ac9d31f7e46efd048dd4e76fafeac9f3b8f972b0b8e3"},
-]
 idna = [
     {file = "idna-3.2-py3-none-any.whl", hash = "sha256:14475042e284991034cb48e06f6851428fb14c4dc953acd9be9a5e95c7b6dd7a"},
     {file = "idna-3.2.tar.gz", hash = "sha256:467fbad99067910785144ce333826c71fb0e63a425657295239737f7ecd125f3"},
@@ -639,10 +651,10 @@ import-expression = [
     {file = "import_expression-1.1.4.tar.gz", hash = "sha256:06086a6ab3bfa528b1c478e633d6adf2b3a990e31440f6401b0f3ea12b0659a9"},
 ]
 jishaku = [
-    {file = "jishaku-2.0.0-py3-none-any.whl", hash = "sha256:276e186e6ef99a23cb667efe64a0ae2de9e49f7cfd10f5fbfe4db4eb30379183"},
-    {file = "jishaku-2.0.0-py3.8.egg", hash = "sha256:9e31e43117c14cd785ec8578dde524bf00d94186cd0178d61759183c8d706319"},
-    {file = "jishaku-2.0.0-py3.9.egg", hash = "sha256:1e3626c85b60c93ed32798ea32291b23e5b39031e7c48f903fb896437e7c0a78"},
-    {file = "jishaku-2.0.0.tar.gz", hash = "sha256:7ac6fd1f2a048fae78299b800be555aec012631e40c96438f7d9201538b09c0c"},
+    {file = "jishaku-2.2.0-py3-none-any.whl", hash = "sha256:a012a751cee43e32a108e8a04266a0d0b7a898e18ef12aac33699bcc9b5f9264"},
+    {file = "jishaku-2.2.0-py3.8.egg", hash = "sha256:e33e7b943f8db825d5e0d3adf685727a0bbcd1fa3210b79608df8da6a070e7d4"},
+    {file = "jishaku-2.2.0-py3.9.egg", hash = "sha256:f31c69d0122d27fba27fdc00052c58ccf90a15acb4c3ecc32dea167f5cd0605c"},
+    {file = "jishaku-2.2.0.tar.gz", hash = "sha256:89ff33d8eb620311df1ff3c92dc4872b6560b58a70c181b0354e51ddd5fc6645"},
 ]
 jmespath = [
     {file = "jmespath-0.10.0-py2.py3-none-any.whl", hash = "sha256:cdf6525904cc597730141d61b36f2e4b8ecc257c420fa2f4549bac2c2d0cb72f"},

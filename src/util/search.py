@@ -68,7 +68,7 @@ def searchproject(sti, session):
             if i == 1:
                 return session.query(Project).filter(Project.title.ilike("%" + sti + "%")).one()
             if i == 2:
-                return session.query(Project).filter(Project.altNames.ilike("%"+sti+"%")).one()
+                return session.query(Project).filter(Project.altNames.ilike("%"+sti+",%")).one()
         except:
             pass
     raise exceptions.NoResultFound(message="Couldn't find a project like this.")

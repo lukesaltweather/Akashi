@@ -5,8 +5,11 @@ from src.util.search import searchproject, searchstaff
 
 
 class arghelper:
-    def __init__(self, args:str):
-        self.args = args.split(",")
+    def __init__(self, args):
+        if isinstance(args, list):
+            self.args = list
+        else:
+            self.args = args.split(",")
 
     def list(self):
         return self.args

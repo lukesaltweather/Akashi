@@ -18,6 +18,7 @@ from src.model.chapter import Chapter
 from src.model.project import Project
 from src.model.staff import Staff
 
+from src.util.flags.infoflags import InfoChapter, InfoProject
 
 with open('src/util/help.json', 'r') as f:
     jsonhelp = json.load(f)
@@ -43,12 +44,10 @@ class Info(commands.Cog):
 
     @commands.command(aliases=["infochapters", "ic", "infoc"], description=jsonhelp["infochapter"]["description"],
                       usage=jsonhelp["infochapter"]["usage"], brief=jsonhelp["infochapter"]["brief"], help=jsonhelp["infochapter"]["help"])
-    async def infochapter(self, ctx, *, arg):
+    async def infochapter(self, ctx, *, flags: InfoChapter):
         session = self.bot.Session()
         try:
             async with ctx.channel.typing():
-                arg = arg[1:]
-                d = dict(x.split('=', 1) for x in arg.split(' -'))
                 ts_alias = aliased(Staff)
                 rd_alias = aliased(Staff)
                 tl_alias = aliased(Staff)
@@ -60,183 +59,61 @@ class Info(commands.Cog):
                                                     join(Project, Chapter.project_id == Project.id)
                 # joinen geschieht in zukunft hier. damit wird vermieden dass beim sortieren kacke passiert
                 links = False
-                if "p" in d:
-                    if ',' in d["p"]:
-                        helper = arghelper(d.get("p"))
+                if flags.project:
+                    if len(flags.project) > 1:
+                        helper = arghelper(flags.project)
                         pro = helper.get_project(session)
                     else:
-                        pro = searchproject(d["p"], session).id == Chapter.project_id
+                        pro = searchproject(flags.project[0], session).id == Chapter.project_id
                     if pro is not None:
                         query = query.filter(pro)
                     else:
                         pass
-                if "title" in d:
-                    if ',' in d["title"]:
-                        helper = arghelper(d.get("title"))
+                if flags.title:
+                    if len(flags.title) > 1:
+                        helper = arghelper(flags.title)
                         fi = helper.get_title()
                     else:
-                        fi = Chapter.title.match(d["title"])
+                        fi = Chapter.title.match(flags.title[0])
                     query = query.filter(fi)
-                if "chapter_from" in d:
-                    query = query.filter(Chapter.number >= int(d["chapter_from"]))
-                if "chapter_upto" in d:
-                    query = query.filter(Chapter.number <= int(d["chapter_upto"]))
-                if "c" in d:
-                    if ',' in d["c"]:
-                        helper = arghelper(d.get("c"))
+                if flags.chapter_from:
+                    query = query.filter(Chapter.number >= flags.chapter_from)
+                if flags.chapter_upto:
+                    query = query.filter(Chapter.number <= flags.chapter_upto)
+                if flags.chapter:
+                    if len(flags.chapter) > 1:
+                        helper = arghelper(flags.chapter)
                         fi = helper.get_number()
                     else:
-                        fi = Chapter.number == float(d["c"])
+                        fi = Chapter.number == flags.chapter[0]
                     query = query.filter(fi)
-                if "id" in d:
-                    query = query.filter(Chapter.id == int(d["id"]))
-                if "ts" in d:
-                    if ',' in d["ts"]:
-                        helper = arghelper(d.get("ts"))
-                        ts = await helper.get_typesetter(ctx, session)
-                    else:
-                        ts = await searchstaff(d["ts"], ctx, session) == Chapter.typesetter
-                    # typ = typ.id
-                    query = query.filter(ts)
-                if "rd" in d:
-                    if ',' in d["rd"]:
-                        helper = arghelper(d.get("rd"))
-                        rd = await helper.get_redrawer(ctx, session)
-                    else:
-                        rd = await searchstaff(d["rd"], ctx, session) == Chapter.redrawer
-                    # typ = typ.id
-                    query = query.filter(rd)
-                if "tl" in d:
-                    if ',' in d["tl"]:
-                        helper = arghelper(d.get("tl"))
-                        tl = await helper.get_translator(ctx, session)
-                    else:
-                        tl = await searchstaff(d["tl"], ctx, session) == Chapter.translator
-                    # typ = typ.id
-                    query = query.filter(tl)
-                if "pr" in d:
-                    if ',' in d["pr"]:
-                        helper = arghelper(d.get("pr"))
-                        pr = await helper.get_proofreader(ctx, session)
-                    else:
-                        pr = await searchstaff(d["pr"], ctx, session) == Chapter.proofreader
-                    query = query.filter(pr)
-                if "link_pr" in d:
-                    if d["link_pr"] == "None" or d["link_pr"] == "none":
-                        query = query.filter(Chapter.link_pr == None)
-                    else:
-                        query = query.filter(Chapter.link_pr == d["link_pr"])
-                if "link_ts" in d:
-                    if d["link_ts"] == "None" or d["link_ts"] == "none":
-                        query = query.filter(Chapter.link_ts == None)
-                    else:
-                        query = query.filter(Chapter.link_ts == d["link_ts"])
-                if "link_rd" in d:
-                    if d["link_rd"] == "None" or d["link_rd"] == "none":
-                        query = query.filter(Chapter.link_rd == None)
-                    else:
-                        query = query.filter(Chapter.link_rd == d["link_rd"])
-                if "link_tl" in d:
-                    if d["link_tl"] == "None" or d["link_tl"] == "none":
-                        query = query.filter(Chapter.link_tl == None)
-                    else:
-                        query = query.filter(Chapter.link_tl == d["link_tl"])
-                if "link_qcts" in d:
-                    if d["link_rl"] == "None" or d["link_rl"] == "none":
-                        query = query.filter(Chapter.link_rl == None)
-                    else:
-                        query = query.filter(Chapter.link_rl == d["link_qcts"])
-                if "creation_from" in d:
-                    date = datetime.strptime(d["creation_from"], "%Y %m %d").date()
-                    query = query.filter(Chapter.date_created.cast(Date) >= date)
-                if "creation_upto" in d:
-                    date = datetime.strptime(d["creation_upto"], "%Y %m %d").date()
-                    query = query.filter(Chapter.date_created.cast(Date) <= date)
-                if "creation_on" in d:
-                    if d["creation_on"] == "None":
-                        query = query.filter(Chapter.date_created.cast(Date) == None)
-                    else:
-                        date = datetime.strptime(d["creation_on"], "%Y %m %d").date()
-                        query = query.filter(Chapter.date_created.cast(Date) == date)
-                if "tl_on" in d:
-                    if d["tl_on"] == "None" or d["tl_on"] == "none":
-                        query = query.filter(Chapter.date_tl.cast(Date) == None)
-                    else:
-                        date = datetime.strptime(d["tl_on"], "%Y %m %d").date()
-                        query = query.filter(Chapter.date_tl.cast(Date) == date)
-                if "tl_from" in d:
-                    date = datetime.strptime(d["tl_from"], "%Y %m %d").date()
-                    query = query.filter(Chapter.date_tl.cast(Date) >= date)
-                if "tl_upto" in d:
-                    date = datetime.strptime(d["tl_upto"], "%Y %m %d").date()
-                    query = query.filter(Chapter.date_tl.cast(Date) <= date)
-                if "rd_on" in d:
-                    if d["rd_on"] == "None" or d["rd_on"] == "none":
-                        query = query.filter(Chapter.date_rd.cast(Date) == None)
-                    else:
-                        date = datetime.strptime(d["rd_on"], "%Y %m %d").date()
-                        query = query.filter(Chapter.date_rd.cast(Date) == date)
-                if "rd_from" in d:
-                    date = datetime.strptime(d["rd_from"], "%Y %m %d").date()
-                    query = query.filter(Chapter.date_rd.cast(Date) >= date)
-                if "rd_upto" in d:
-                    date = datetime.strptime(d["rd_upto"], "%Y %m %d").date()
-                    query = query.filter(Chapter.date_rd.cast(Date) <= date)
-                if "ts_on" in d:
-                    if d["ts_on"] == "None" or d["ts_on"] == "none":
-                        query = query.filter(Chapter.date_ts.cast(Date) == None)
-                    else:
-                        date = datetime.strptime(d["ts_on"], "%Y %m %d").date()
-                        query = query.filter(Chapter.date_ts.cast(Date) == date)
-                if "ts_from" in d:
-                    date = datetime.strptime(d["ts_from"], "%Y %m %d").date()
-                    query = query.filter(Chapter.date_ts.cast(Date) >= date)
-                if "ts_upto" in d:
-                    date = datetime.strptime(d["ts_upto"], "%Y %m %d").date()
-                    query = query.filter(Chapter.date_ts.cast(Date) <= date)
-                if "pr_on" in d:
-                    if d["pr_on"] == "None" or d["pr_on"] == "none":
-                        query = query.filter(Chapter.date_pr.cast(Date) == None)
-                    else:
-                        date = datetime.strptime(d["pr_on"], "%Y %m %d").date()
-                        query = query.filter(Chapter.date_pr.cast(Date) == date)
-                if "pr_from" in d:
-                    date = datetime.strptime(d["pr_from"], "%Y %m %d").date()
-                    query = query.filter(Chapter.date_pr.cast(Date) >= date)
-                if "pr_upto" in d:
-                    date = datetime.strptime(d["pr_upto"], "%Y %m %d").date()
-                    query = query.filter(Chapter.date_pr.cast(Date) <= date)
-                if "qcts_on" in d:
-                    if d["qcts_on"] == "None" or d["qcts_on"] == "none":
-                        query = query.filter(Chapter.date_qcts.cast(Date) == None)
-                    else:
-                        date = datetime.strptime(d["qcts_on"], "%Y %m %d").date()
-                        query = query.filter(Chapter.date_qcts.cast(Date) == date)
-                if "qcts_from" in d:
-                    date = datetime.strptime(d["qcts_from"], "%Y %m %d").date()
-                    query = query.filter(Chapter.date_qcts.cast(Date) >= date)
-                if "qcts_upto" in d:
-                    date = datetime.strptime(d["qcts_upto"], "%Y %m %d").date()
-                    query = query.filter(Chapter.date_qcts.cast(Date) <= date)
-                if "rl_on" in d:
-                    if d["rl_on"] == "None" or d["rl_on"] == "none":
-                        query = query.filter(Chapter.date_release.cast(Date) == None)
-                    else:
-                        date = datetime.strptime(d["rl_on"], "%Y %m %d").date()
-                        query = query.filter(Chapter.date_release.cast(Date) == date)
-                if "rl_from" in d:
-                    date = datetime.strptime(d["rl_from"], "%Y %m %d").date()
-                    query = query.filter(Chapter.date_release.cast(Date) >= date)
-                if "rl_upto" in d:
-                    date = datetime.strptime(d["rl_upto"], "%Y %m %d").date()
-                    query = query.filter(Chapter.date_release.cast(Date) <= date)
-                if "links" in d:
-                    if d.get("links").lower() in ("yes", "y", "true"):
-                        links = True
-                    else:
-                        links = False
-                if "status" in d:
-                    status = d.get("status").lower()
+                if flags.id:
+                    query = query.filter(Chapter.id == flags.id)
+                if flags.ts:
+                    query = query.filter(Chapter.typesetter_id.in_([staff.id for staff in flags.ts]))
+                if flags.rd:
+                    conds = list()
+                    for arg in flags.rd:
+                        conds.append(Chapter.redrawer == arg)
+                    query = query.filter(or_(*conds))
+                if flags.tl:
+                    conds = list()
+                    for arg in flags.tl:
+                        conds.append(Chapter.translator == arg)
+                    query = query.filter(or_(*conds))
+                if flags.pr:
+                    conds = list()
+                    for arg in flags.pr:
+                        conds.append(Chapter.proofreader == arg)
+                    query = query.filter(or_(*conds))
+                if flags.release_on:
+                    query = query.filter(Chapter.date_release.cast(Date) == flags.release_on)
+                if flags.release_from:
+                    query = query.filter(Chapter.date_release.cast(Date) >= flags.release_from)
+                if flags.release_upto:
+                    query = query.filter(Chapter.date_release.cast(Date) <= flags.release_upto)
+                if flags.status:
+                    status = flags.status.lower()
                     if status == "active":
                         query = query.filter(or_(Chapter.link_rl == None, Chapter.date_release is None))
                     elif status == "tl":
@@ -273,22 +150,10 @@ class Info(commands.Cog):
                         query = query.filter(and_(Chapter.link_rl != None, Chapter.link_rl != ""))
                         query = query.filter(Chapter.date_release != None)
 
-                # if "order_by" in d:
-                #     try:
-                #         query = query.order_by(text(d["order_by"]))
-                #     except Exception:
-                #         await ctx.send("Your sorting parameter seems to be off. Use the help command to verify.")
-                output = "image"
-                if "output" in d:
-                    if d["output"] == "text":
-                        output = "text"
-                    else:
-                        output = "image"
                 records = query.order_by(Project.title).order_by(Chapter.number).all()
                 embed = BoardPaginator(color=discord.Colour.blue(), title="Infochapter")
                 embed.set_author(name="Links", icon_url='https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128', url=None)
-                if "fields" in d:
-                    fields = d["fields"].replace("\u0020", "").split(",")
+                if flags.fields:
                     table = PrettyTable()
                     projects = [str(chapter.project.title) if chapter.project is not None else "None" for chapter in records]
                     table.add_column("Project", projects)
@@ -299,7 +164,7 @@ class Info(commands.Cog):
                     links_ts = []
                     links_pr = []
                     links_qcts = []
-                    for field in fields:
+                    for field in flags.fields:
                         if field == "title":
                             titles = [chapter.title if chapter.title is not None else "None" for chapter in records]
                             table.add_column("Title", titles)
@@ -384,7 +249,7 @@ class Info(commands.Cog):
                     table.add_column("Title", titles)
                     id = [str(chapter.id) for chapter in records]
                     table.add_column("ID", id)
-                    if links:
+                    if flags.links:
                         for chapter in records:
                             if chapter.link_tl is not None:
                                 links_tl.append(f"[`{chapter.project.title} {formatNumber(chapter.number)}`]({chapter.link_tl})")
@@ -414,18 +279,16 @@ class Info(commands.Cog):
                     table.add_column("Redrawer", rd)
                     pr = [chapter.proofreader.name if chapter.proofreader is not None else "None" for chapter in records]
                     table.add_column("Proofreader", pr)
-                if output == "text":
-                    await ctx.send(f"```{table}```")
-                else:
-                    file = await drawimage(table.get_string(title="Chapters"))
-                    embed1 = discord.Embed(
-                        color=discord.Colour.dark_green()
-                    )
-                    embed1.set_author(name="Results",
-                                     icon_url='https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128')
-                    embed1.set_image(url="attachment://image.png")
-                    await ctx.send(file=file, embed=embed1)
-                if links:
+
+                file = await drawimage(table.get_string(title="Chapters"))
+                embed1 = discord.Embed(
+                    color=discord.Colour.dark_green()
+                )
+                embed1.set_author(name="Results",
+                                 icon_url='https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128')
+                embed1.set_image(url="attachment://image.png")
+                await ctx.send(file=file, embed=embed1)
+                if flags.links:
                     for e in embed.embeds:
                         await ctx.send(embed=e)
         finally:
@@ -433,12 +296,10 @@ class Info(commands.Cog):
 
     @commands.command(aliases=["infoprojects", "infop", "ip"], description=jsonhelp["infoproject"]["description"],
                       usage=jsonhelp["infoproject"]["usage"], brief=jsonhelp["infoproject"]["brief"], help=jsonhelp["infoproject"]["help"])
-    async def infoproject(self, ctx, *, arg):
+    async def infoproject(self, ctx, *, flags: InfoProject):
         session = self.bot.Session()
         try:
             async with ctx.channel.typing():
-                arg = arg[1:]
-                d = dict(x.split('=', 1) for x in arg.split(' -'))
                 ts_alias = aliased(Staff)
                 rd_alias = aliased(Staff)
                 tl_alias = aliased(Staff)
@@ -448,47 +309,23 @@ class Info(commands.Cog):
                     outerjoin(tl_alias, Project.translator_id == tl_alias.id). \
                     outerjoin(pr_alias, Project.proofreader_id == pr_alias.id)
 
-                if "status" in d:
-                    query = query.filter(Project.status.match(d["status"]))
-                if "p" in d:
-                    query = query.filter(or_(Project.title.match(d["p"]), Project.altNames.contains(d["p"])))
-                if "id" in d:
-                    query = query.filter(Project.id == int(d["id"]))
-                if "ts" in d:
-                    typ = await searchstaff(d["ts"], ctx, session)
-                    typ = typ.id
-                    query = query.filter(ts_alias.id == typ)
-                if "rd" in d:
-                    typ = await searchstaff(d["rd"], ctx, session)
-                    typ = typ.id
-                    query = query.filter(rd_alias.id == typ)
-                if "tl" in d:
-                    typ = await searchstaff(d["tl"], ctx, session)
-                    typ = typ.id
-                    query = query.filter(tl_alias.id == typ)
-                if "pr" in d:
-                    typ = await searchstaff(d["pr"], ctx, session)
-                    typ = typ.id
-                    query = query.filter(pr_alias.id == typ)
-                if "order_by" in d:
-
-                    try:
-                        query = query.order_by(d["order_by"])
-                    except Exception:
-                        await ctx.send("Your sorting parameter seems to be off. Use the help command to verify.")
-                if "all" in d:
-                    pass
+                if flags.status:
+                    query = query.filter(Project.status.match(flags.status))
+                if flags.project:
+                    query = query.filter(or_(Project.title.match(flags.project), Project.altNames.contains(flags.project)))
+                if flags.ts:
+                    query = query.filter(ts_alias.id == flags.ts.id)
+                if flags.rd:
+                    query = query.filter(rd_alias.id == flags.rd.id)
+                if flags.tl:
+                    query = query.filter(tl_alias.id == flags.tl.id)
+                if flags.pr:
+                    query = query.filter(pr_alias.id == flags.pr.id)
                 records = query.all()
-                output = "image"
-                if "output" in d:
-                    if d["output"] == "text":
-                        output = "text"
-                    else:
-                        output = "image"
                 table = PrettyTable()
                 embed = None
-                if "fields" in d:
-                    fields = d["fields"].strip(" ").split(",")
+                if flags.fields:
+                    fields = flags.fields
                     for field in fields:
                         if field == "title":
                             titles = [project.title if project is not None else "None" for project in records]
@@ -552,21 +389,17 @@ class Info(commands.Cog):
                     table.add_column("Typesetters", ts)
                     pr = [project.proofreader.name if project.proofreader is not None else "None" for project in records]
                     table.add_column("Proofreaders", pr)
-                if output == "text":
-                    await ctx.send(f"```{table}```")
-                    if embed is not None:
-                        await ctx.send(embed=embed)
-                else:
-                    file = await drawimage(table.get_string(title="Projects"))
-                    embed1 = discord.Embed(
-                        color=discord.Colour.greyple()
-                    )
-                    embed1.set_author(name="Results",
-                                      icon_url='https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128')
-                    embed1.set_image(url="attachment://image.png")
-                    await ctx.send(file=file, embed=embed1)
-                    if embed is not None:
-                        await ctx.send(embed=embed)
+
+                file = await drawimage(table.get_string(title="Projects"))
+                embed1 = discord.Embed(
+                    color=discord.Colour.greyple()
+                )
+                embed1.set_author(name="Results",
+                                  icon_url='https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128')
+                embed1.set_image(url="attachment://image.png")
+                await ctx.send(file=file, embed=embed1)
+                if embed is not None:
+                    await ctx.send(embed=embed)
         finally:
             session.close()
 

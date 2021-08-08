@@ -9,6 +9,7 @@ import discord
 import prettytable
 from discord import member
 from PIL import Image, ImageDraw, ImageFont
+from sqlalchemy import or_
 from sqlalchemy.orm import sessionmaker
 
 from src.model.chapter import Chapter
@@ -356,5 +357,4 @@ def completed_embed(chapter: Chapter, author: discord.Member, mem: discord.Membe
     e.description=f"{e.description}\n{get_emojis(bot, chapter)}"
     e.set_footer(text=f"Step finished by {author.display_name}", icon_url=author.avatar_url)
     return e
-
 

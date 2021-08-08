@@ -11,6 +11,9 @@ from discord.ext import commands
 from src.model.staff import Staff
 from src.util import exceptions, checks
 from src.util.checks import is_admin, is_worker, has_worker
+
+from src.util.flags.editflags import ChapterFlags
+
 import math as m
 import psutil
 import datetime

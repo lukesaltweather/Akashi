@@ -44,15 +44,6 @@ logger.addHandler(handler)
 class Bot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ipc = ipc.Server(self, secret_key="1234", port=8765)  # create our IPC Server
-
-    async def on_ipc_ready(self):
-        """Called upon the IPC Server being ready"""
-        print("Ipc is ready.")
-
-    async def on_ipc_error(self, endpoint, error):
-        """Called upon an error being raised within an IPC route"""
-        print(endpoint, "raised", error)
 
     def get_cog_insensitive(self, name):
         """Gets the cog instance requested.
@@ -90,7 +81,6 @@ bot.load_extension('src.cogs.stats')
 bot.load_extension("jishaku")
 bot.load_extension('src.cogs.tags')
 bot.load_extension('src.cogs.mangadex')
-bot.load_extension("src.cogs.ipc")  # load the IPC Route cog
 # bot.load_extension('src.cogs.halloween')
 bot.em = emojis
 bot.debug = False
@@ -337,9 +327,7 @@ async def displayconfig(ctx):
 
 
 if config["online"]:
-    bot.ipc.start()
     bot.run(config["heroku_key"])
 else:
-    bot.ipc.start()
     bot.run(config["offline_key"])
 

@@ -2,7 +2,6 @@ import asyncio
 import datetime
 import json
 import random
-import time
 
 import discord
 from discord.ext import tasks , commands

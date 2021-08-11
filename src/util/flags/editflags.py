@@ -1,49 +1,52 @@
-from typing import Optional, Literal
+from typing import Optional, Literal, Union
 
-from discord.ext.commands import FlagConverter
-from .converters import ChapterConverter, StaffConverter, DateTimeConverter, ProjectConverter
+from discord import Colour
+from discord.ext.commands import FlagConverter, flag, ColourConverter
+from .converters import ChapterConverter, DateTimeConverter
 
 from .baseflags import ChapterFlags
+from src.model.staff import Staff
+from src.model.project import Project
+
+NoneLiteral = Literal["None", "none"]
 
 class EditChapterFlags(ChapterFlags):
     title: Optional[str]
-    tl: Optional[StaffConverter]
-    rd: Optional[StaffConverter]
-    ts: Optional[StaffConverter]
-    pr: Optional[StaffConverter]
+    tl: Union[NoneLiteral,Staff] = flag(default=None)
+    rd: Union[NoneLiteral,Staff] = flag(default=None)
+    ts: Union[NoneLiteral,Staff] = flag(default=None)
+    pr: Union[NoneLiteral,Staff] = flag(default=None)
     link_tl: Optional[str]
     link_rd: Optional[str]
     link_ts: Optional[str]
     link_pr: Optional[str]
     link_qcts: Optional[str]
     link_raw: Optional[str]
-    date_tl: Optional[DateTimeConverter]
-    date_rd: Optional[DateTimeConverter]
-    date_ts: Optional[DateTimeConverter]
-    date_pq: Optional[DateTimeConverter]
-    date_qcts: Optional[DateTimeConverter]
-    date_rl: Optional[DateTimeConverter]
-    to_project: Optional[ProjectConverter]
+    to_project: Optional[Project]
     to_chapter: Optional[float]
     notes: Optional[str]
 
-class EditProjectFlags:
-    project: ProjectConverter
+class ReleaseFlags(ChapterFlags):
+    date: Optional[DateTimeConverter]
+
+
+class EditProjectFlags(FlagConverter):
+    project: Project
     title: Optional[str]
     status: Optional[str]
-    color: Optional[str]
-    position: Optional[str]
-    tl: Optional[StaffConverter]
-    rd: Optional[StaffConverter]
-    ts: Optional[StaffConverter]
-    pr: Optional[StaffConverter]
+    color: Union[Colour,NoneLiteral] = flag(default=None)
+    position: Union[NoneLiteral, int] = flag(default=None)
+    tl: Union[NoneLiteral,Staff] = flag(default=None)
+    rd: Union[NoneLiteral,Staff] = flag(default=None)
+    ts: Union[NoneLiteral,Staff] = flag(default=None)
+    pr: Union[NoneLiteral,Staff] = flag(default=None)
     altnames: Optional[str]
     thumbnail: Optional[str]
     icon: Optional[str]
     link: Optional[str]
 
 class EditStaffFlags:
-    id: int
-    to_id: Optional[int]
+    member: Staff
+    id: Optional[int]
     name: Optional[str]
     status: Literal["active", "inactive"]

@@ -2,7 +2,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import aliased
 
-from discord.ext.commands.errors import ConversionError
+from discord.ext.commands.errors import ConversionError, BadArgument
 
 from src.model.chapter import Chapter
 from src.model.project import Project
@@ -14,11 +14,11 @@ class ChapterConverter:
     @classmethod
     async def convert(cls, ctx, arg: str):
         chapter = float(arg.split(" ")[-1])
-        project = arg[0:len(arg)-len(arg.split(" ")[-1])]
+        proj= arg[0:len(arg)-len(arg.split(" ")[-1])]
 
-        session = ctx.bot.Session()
+        session = ctx.session
         try:
-            project = searchproject(project, session)
+            project = searchproject(proj, session)
 
             ts_alias = aliased(Staff)
             rd_alias = aliased(Staff)
@@ -31,7 +31,7 @@ class ChapterConverter:
                 join(Project, Chapter.project_id == Project.id)
             return query.filter(Chapter.project_id == project.id).filter(Chapter.number == chapter).one()
         except Exception as e:
-            raise ConversionError(cls, e)
+            raise BadArgument(cls, e)
 
 class DateTimeConverter:
     @classmethod
@@ -41,9 +41,9 @@ class DateTimeConverter:
 class StaffConverter:
     @classmethod
     async def convert(cls, ctx, arg):
-        return await searchstaff(arg, ctx, ctx.bot.Session())
+        return await searchstaff(arg, ctx, ctx.session)
 
 class ProjectConverter:
     @classmethod
     async def convert(cls, ctx, arg):
-        return searchproject(arg, ctx.bot.Session())
+        return searchproject(arg, ctx.session)

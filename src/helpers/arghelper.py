@@ -7,7 +7,7 @@ from src.util.search import searchproject, searchstaff
 class arghelper:
     def __init__(self, args):
         if isinstance(args, list):
-            self.args = list
+            self.args = args
         else:
             self.args = args.split(",")
 
@@ -17,7 +17,7 @@ class arghelper:
     def get_project(self, session):
         conds = list()
         for arg in self.args:
-            conds.append(Chapter.project_id == searchproject(arg, session).id)
+            conds.append(Chapter.project_id == arg.id)
         return or_(*conds)
 
     def get_title(self):

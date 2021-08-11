@@ -6,17 +6,13 @@ from discord.ext import commands
 from src.util.exceptions import MissingRequiredParameter
 from prettytable import PrettyTable
 from sqlalchemy import func
-from sqlalchemy.orm import aliased
-
-from datetime import datetime, timedelta
 from src.model.chapter import Chapter
 from src.model.project import Project
 from src.model.staff import Staff
 from src.util import exceptions, misc
 from src.util.search import searchproject, searchstaff
-from src.util.misc import formatNumber, drawimage
+from src.util.misc import formatNumber
 from src.util.checks import is_admin
-import time
 
 with open('src/util/config.json', 'r') as f:
     config = json.load(f)
@@ -30,8 +26,6 @@ class Add(commands.Cog):
     """
     def __init__(self, client):
         self.bot = client
-
-
 
     async def cog_check(self, ctx):
         worker = ctx.guild.get_role(self.bot.config["neko_workers"])

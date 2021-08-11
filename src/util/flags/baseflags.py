@@ -1,8 +1,8 @@
 from typing import Optional
 
 from discord.ext.commands import FlagConverter
-from .converters import ChapterConverter, StaffConverter, DateTimeConverter, ProjectConverter
+from src.model.chapter import Chapter
 
 
 class ChapterFlags(FlagConverter):
-    chapter: ChapterConverter
+    chapter: Chapter

@@ -4,101 +4,28 @@ import json
 import discord
 from discord.ext import commands
 from sqlalchemy import func
-from sqlalchemy.orm import aliased
-from src.util.exceptions import MissingRequiredParameter
 from src.model.chapter import Chapter
 from src.model.message import Message
-from src.model.project import Project
-from src.model.staff import Staff
 from src.util import exceptions
-from src.util.search import searchproject, searchstaff, fakesearch, dbstaff
-from src.util.misc import FakeUser, formatNumber, make_mentionable, toggle_mentionable
-from src.util.checks import is_pr, is_rd, is_tl, is_ts
+from src.util.flags.doneflags import DoneFlags
+from src.util.search import fakesearch, dbstaff
+from src.util.misc import formatNumber, make_mentionable
+from src.util.context import CstmContext
 from abc import abstractmethod
 
 with open('src/util/help.json', 'r') as f:
     jsonhelp = json.load(f)
 
-class General_helper:
-    def __init__(self, bot: discord.ext.commands.Bot, ctx: discord.ext.commands.Context, arg: str):
-        self.bot = bot
-        self.ctx = ctx
-        self.session = self.bot.Session()
-        arg = arg[1:]
-        d = dict(x.split('=', 1) for x in arg.split(' -'))
-        if "link" not in d:
-            raise MissingRequiredParameter("Link")
-        if "id" not in d and "p" in d and "c" in d:
-            ts_alias = aliased(Staff)
-            rd_alias = aliased(Staff)
-            tl_alias = aliased(Staff)
-            pr_alias = aliased(Staff)
-            query = self.session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id). \
-                outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id). \
-                outerjoin(tl_alias, Chapter.translator_id == tl_alias.id). \
-                outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id). \
-                join(Project, Chapter.project_id == Project.id)
-            proj = searchproject(d["p"], self.session)
-            self.chapter = query.filter(Chapter.project_id == proj.id).filter(float(d["c"]) == Chapter.number).one()
-        elif "id" in d:
-            ts_alias = aliased(Staff)
-            rd_alias = aliased(Staff)
-            tl_alias = aliased(Staff)
-            pr_alias = aliased(Staff)
-            query = self.session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id). \
-                outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id). \
-                outerjoin(tl_alias, Chapter.translator_id == tl_alias.id). \
-                outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id). \
-                join(Project, Chapter.project_id == Project.id)
-            self.chapter = query.filter(int(d["id"]) == Chapter.id).one()
-        else:
-            raise MissingRequiredParameter("Project and Chapter or ID")
-        if "note" in d:
-            self.chapter.notes = f'{self.chapter.notes if self.chapter.notes else ""}\n{d.get("note")}'
-        if 'skipconfirm' in d:
-            if d['skipconfirm'] == 'mention':
-                self.confirm = True
-            else:
-                self.confirm = False
-        else:
-            self.confirm = None
-        self.message = discord.AllowedMentions(everyone=False, roles=False, users=False)
-        self.link = d.get("link")
-
-    def get_chapter(self):
-        return self.chapter
-
-    def get_message(self):
-        return self.message
-
-    def get_session(self):
-        return self.session
-
-    def get_channel(self):
-        return self.ctx.guild.get_channel(self.bot.config.get("file_room", 408848958232723467))
-
-    def get_context(self):
-        return self.ctx
-
-    def get_link(self):
-        return self.link
-
-    def get_bot(self):
-        return self.bot
-
-    def get_confirm(self):
-        return self.confirm
-
 class command_helper:
-    def __init__(self, helper: General_helper):
-        self.helper = helper
-        self.bot = helper.get_bot()
-        self.ctx = helper.get_context()
-        self.channel = helper.get_channel()
-        self.message = helper.get_message()
-        self.chapter = helper.get_chapter()
-        self.session = helper.get_session()
-        self.skip_confirm = helper.get_confirm()
+    def __init__(self, ctx: CstmContext, flags: DoneFlags):
+        self.bot = ctx.bot
+        self.ctx = ctx
+        self.channel = ctx.guild.get_channel(self.bot.config.get("file_room", 408848958232723467))
+        self.message = ctx.message
+        self.chapter = flags.chapter
+        self.session = ctx.session
+        self.skip_confirm = flags.skipconfirm
+        self.flags = flags
 
     @abstractmethod
     async def execute(self):
@@ -143,7 +70,6 @@ class command_helper:
 
     def get_emojis(self, chapter):
         em = self.bot.em
-        s = ""
         if chapter.link_tl in (None, ""):
             tl = em.get("tlw")
         else:
@@ -172,7 +98,6 @@ class command_helper:
         notes = chapter.notes
         number = chapter.number
         links = {}
-        emojis = self.get_emojis(chapter)
         if next_step == "TS":
             links["Redraws"] = chapter.link_rd
             links["Translation"] = chapter.link_ts
@@ -196,23 +121,15 @@ class command_helper:
         e.set_footer(text=f"Step finished by {author.display_name}", icon_url=author.avatar_url)
         return e
 
-    @staticmethod
-    def missing_embed(project: str, number: float, author: discord.User, step: str):
-        return discord.Embed(color=discord.Colour.red())
-
 
 class TL_helper(command_helper):
-    def __init__(self, helper: General_helper):
-        super().__init__(helper)
-        self.helper = helper
-
     async def execute(self):
         """
         Checks and execute action here.
         """
         try:
             await self._set_translator()
-            self.chapter.link_tl = self.helper.get_link()
+            self.chapter.link_tl = self.flags.link
             self.chapter.date_tl = func.now()
             if self.chapter.link_rd is None or self.chapter.link_rd == "":
                 if self.chapter.redrawer is not None:
@@ -284,12 +201,12 @@ class TL_helper(command_helper):
         """
         if self.chapter.project.typesetter is None:
             self.message = await self.confirm("Notify Typesetter Role")
-            ts = await make_mentionable(self.ctx.guild.get_role(int(self.helper.bot.config["ts_id"])))
+            ts = await make_mentionable(self.ctx.guild.get_role(int(self.bot.config["ts_id"])))
             msg = await self.channel.send(
                 f"{ts}\nTypesetter required for `{self.chapter.project.title} {formatNumber(self.chapter.number)}`. React below to assign yourself.", allowed_mentions=self.message)
             await msg.add_reaction("🙋")
             await msg.pin()
-            msgdb = Message(msg.id, self.helper.bot.config["ts_id"], "🙋")
+            msgdb = Message(msg.id, self.bot.config["ts_id"], "🙋")
             msgdb.chapter = self.chapter.id
             msgdb.created_on = func.now()
             self.session.add(msgdb)
@@ -302,18 +219,14 @@ class TL_helper(command_helper):
 
     async def _set_translator(self):
         if self.chapter.translator is None:
-            translator = await dbstaff(self.ctx.author.id, self.helper.get_session())
+            translator = await dbstaff(self.ctx.author.id, self.session)
             self.chapter.translator = translator
 
 class TS_helper(command_helper):
-    def __init__(self, helper: General_helper):
-        self.helper = helper
-        super().__init__(helper)
-
     async def execute(self):
         try:
             await self.__set_typesetter()
-            self.chapter.link_ts = self.helper.get_link()
+            self.chapter.link_ts = self.flags.link
             self.chapter.date_ts = func.now()
             if self.chapter.proofreader is None:
                 await self.__no_proofreader()
@@ -327,7 +240,7 @@ class TS_helper(command_helper):
 
     async def __set_typesetter(self):
         if self.chapter.typesetter is None:
-            typesetter = await dbstaff(self.ctx.author.id, self.helper.get_session())
+            typesetter = await dbstaff(self.ctx.author.id, self.session)
             self.chapter.typesetter = typesetter
 
     async def __no_proofreader(self):
@@ -357,14 +270,10 @@ class TS_helper(command_helper):
         await self.channel.send(content=ts, embed=embed, allowed_mentions=self.message)
 
 class PR_helper(command_helper):
-    def __init__(self, helper: General_helper):
-        super().__init__(helper)
-        self.helper = helper
-
     async def execute(self):
         try:
             await self.__set_proofreader()
-            self.chapter.link_pr = self.helper.get_link()
+            self.chapter.link_pr = self.flags.link
             self.chapter.date_pr = func.now()
             if self.chapter.typesetter is not None:
                 await self.__typesetter()
@@ -378,7 +287,7 @@ class PR_helper(command_helper):
 
     async def __set_proofreader(self):
         if self.chapter.proofreader is None:
-            proofreader = await dbstaff(self.ctx.author.id, self.helper.get_session())
+            proofreader = await dbstaff(self.ctx.author.id, self.session)
             self.chapter.proofreader = proofreader
 
     async def __no_typesetter(self):
@@ -393,13 +302,9 @@ class PR_helper(command_helper):
         await self.channel.send(content=ts, embed=embed, allowed_mentions=self.message)
 
 class QCTS_helper(command_helper):
-    def __init__(self, helper):
-        self.helper = helper
-        super().__init__(helper)
-
     async def execute(self):
         try:
-            self.chapter.link_rl = self.helper.get_link()
+            self.chapter.link_rl = self.flags.link
             self.chapter.date_rl = func.now()
             if self.chapter.proofreader is not None:
                 await self.__proofreader()
@@ -424,13 +329,10 @@ class QCTS_helper(command_helper):
         await self.ctx.message.add_reaction("❓")
 
 class RD_helper(command_helper):
-    def __init__(self, helper):
-        self.helper = helper
-        super().__init__(self.helper)
 
     async def execute(self):
         try:
-            self.chapter.link_rd = self.helper.get_link()
+            self.chapter.link_rd = self.flags.link
             self.chapter.date_rd = func.now()
             await self.__set_redrawer()
             if self.chapter.link_tl in (None, ""):
@@ -514,123 +416,39 @@ class Done(commands.Cog):
     @commands.command(description=jsonhelp["donetl"]["description"],
                       usage=jsonhelp["donetl"]["usage"], brief=jsonhelp["donetl"]["brief"], help=jsonhelp["donetl"]["help"])
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.guild, wait=True)
-    async def donetl(self, ctx, *, arg):
-        general = General_helper(self.bot, ctx, arg)
-        TL = TL_helper(general)
+    async def donetl(self, ctx, *, flags: DoneFlags):
+        TL = TL_helper(ctx, flags)
         await TL.execute()
 
 
     @commands.command(description=jsonhelp["donets"]["description"],
                       usage=jsonhelp["donets"]["usage"], brief=jsonhelp["donets"]["brief"], help=jsonhelp["donets"]["help"])
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.guild, wait=True)
-    async def donets(self, ctx, *, arg):
-        general = General_helper(self.bot, ctx, arg)
-        TS = TS_helper(general)
+    async def donets(self, ctx, *, flags: DoneFlags):
+        TS = TS_helper(ctx, flags)
         await TS.execute()
 
 
     @commands.command(description=jsonhelp["donepr"]["description"],
                       usage=jsonhelp["donepr"]["usage"], brief=jsonhelp["donepr"]["brief"], help=jsonhelp["donepr"]["help"])
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.guild, wait=True)
-    async def donepr(self, ctx, *, arg):
-        helper = General_helper(self.bot, ctx, arg)
-        PR = PR_helper(helper)
+    async def donepr(self, ctx, *, flags: DoneFlags):
+        PR = PR_helper(ctx, flags)
         await PR.execute()
 
     @commands.command(description=jsonhelp["doneqcts"]["description"],
                       usage=jsonhelp["doneqcts"]["usage"], brief=jsonhelp["doneqcts"]["brief"], help=jsonhelp["doneqcts"]["help"])
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.guild, wait=True)
-    async def doneqcts(self, ctx, *, arg):
-        helper = General_helper(self.bot, ctx, arg)
-        QCTS = QCTS_helper(helper)
+    async def doneqcts(self, ctx, *, flags: DoneFlags):
+        QCTS = QCTS_helper(ctx, flags)
         await QCTS.execute()
 
     @commands.command(description=jsonhelp["donerd"]["description"],
                       usage=jsonhelp["donerd"]["usage"], brief=jsonhelp["donerd"]["brief"], help=jsonhelp["donerd"]["help"])
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.guild, wait=True)
-    async def donerd(self, ctx, *, arg):
-        helper = General_helper(self.bot, ctx, arg)
-        RD = RD_helper(helper)
+    async def donerd(self, ctx, *, flags: DoneFlags):
+        RD = RD_helper(ctx, flags)
         await RD.execute()
-
-    @commands.command(description="All done commands in one singular guided command.")
-    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.guild, wait=True)
-    async def done(self, ctx: commands.Context):
-        def check(message):
-            if message.content in ["cancel", "c", "Cancel", "C"]:
-                raise exceptions.CancelError
-            return message.author == ctx.message.author and message.channel == ctx.channel
-
-        await ctx.send("What's the title of the chapter's manga/project?\n*(Type 'c' or 'cancel' at any time to cancel)*")
-        try:
-            project_message = await self.bot.wait_for('message', timeout=30, check=check)
-        except TimeoutError:
-            await ctx.send("Sorry, your time ran out. Please try again.")
-        project = project_message.content
-
-
-        await ctx.send("What's the chapter number of the finished chapter?")
-        try:
-            chapter_message = await self.bot.wait_for('message', timeout=30, check=check)
-        except TimeoutError:
-            await ctx.send("Sorry, your time ran out. Please try again.")
-        chapter = chapter_message.content
-
-        await ctx.send("What's the link to your finished step?")
-        try:
-            link_message = await self.bot.wait_for('message', timeout=30, check=check)
-        except TimeoutError:
-            await ctx.send("Sorry, your time ran out. Please try again.")
-        link = link_message.content
-
-        em = discord.Embed()
-        em.description = "What Step did you complete?"
-        msg = await ctx.send(embed=em)
-        await msg.add_reaction(emoji='<:tl:710847978386096229>')
-        await msg.add_reaction(emoji='<:rd:710847978356605029>')
-        await msg.add_reaction(emoji='<:ts:710848908263424021>')
-        await msg.add_reaction(emoji='<:pr:710848907931811911>')
-        await msg.add_reaction(emoji='<:qcts:710848908020154388>')
-        await msg.add_reaction(emoji='❌')
-
-        def check(reaction, user):
-            if str(reaction.emoji) == '❌':
-                raise exceptions.CancelError
-            return user == ctx.message.author and (
-            str(reaction.emoji) in ('<:ts:710848908263424021>','<:tl:710847978386096229>','<:rd:710847978356605029>','<:pr:710848907931811911>','<:qcts:710848908020154388>', '❌'))
-
-        try:
-            reaction, _ = await self.bot.wait_for('reaction_add', timeout=30, check=check)
-        except TimeoutError:
-            await ctx.send("Sorry, your time ran out. Please try again.")
-        step = None
-        arg = f'-c={chapter} -p={project} -link={link}'
-        helper = General_helper(self.bot, ctx, arg)
-
-        if str(reaction) == '<:tl:710847978386096229>':
-            await msg.clear_reaction(emoji='<:tl:710847978386096229>')
-            await msg.add_reaction(emoji='<:tlw:710847978470113351>')
-            step = TL_helper(helper)
-        elif str(reaction) == '<:rd:710847978356605029>':
-            await msg.clear_reaction(emoji='<:rd:710847978356605029>')
-            await msg.add_reaction(emoji='<:rdw:710847978293690389>')
-            step = RD_helper(helper)
-        elif str(reaction) == '<:ts:710848908263424021>':
-            await msg.clear_reaction(emoji='<:ts:710848908263424021>')
-            await msg.add_reaction(emoji='<:tsw:710848908015829035>')
-            step = TS_helper(helper)
-        elif str(reaction) == '<:pr:710848907931811911>':
-            await msg.clear_reaction(emoji='<:pr:710848907931811911>')
-            await msg.add_reaction(emoji='<:prw:710848907999182869>')
-            step = PR_helper(helper)
-        elif str(reaction) == '<:qcts:710848908020154388>':
-            await msg.clear_reaction(emoji='<:qcts:710848908020154388>')
-            await msg.add_reaction(emoji='<:qctsw:710848908192120924>')
-            step = QCTS_helper(helper)
-        await step.execute()
-        await ctx.send("Thanks for your work!")
-
-
 
 def setup(Bot):
     Bot.add_cog(Done(Bot))

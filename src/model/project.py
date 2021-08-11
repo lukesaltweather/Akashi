@@ -1,6 +1,7 @@
 from sqlalchemy import String, Integer, Column, ForeignKey
 from sqlalchemy.orm import relationship
 from ..util.db import Base
+from ..util.search import searchproject
 
 icon_default = 'https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128'
 
@@ -33,3 +34,7 @@ class Project(Base):
         self.link = link
         self.altNames = altNames
         self.icon = icon
+
+    @classmethod
+    async def convert(cls, ctx, arg):
+        return searchproject(arg, ctx.session)

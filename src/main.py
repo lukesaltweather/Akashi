@@ -15,6 +15,7 @@ import datetime
 
 from src.util.checks import is_admin
 from src.model.message import Message
+from src.util.context import CstmContext
 
 from src.util.db import loadDB
 from src.model import testdb
@@ -44,6 +45,10 @@ logger.addHandler(handler)
 class Bot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+    async def on_message(self, message):
+        ctx = await self.get_context(message, cls=CstmContext)
+        await self.invoke(ctx)
 
     def get_cog_insensitive(self, name):
         """Gets the cog instance requested.
@@ -87,6 +92,11 @@ bot.debug = False
 print(discord.version_info)
 bot.uptime = datetime.datetime.now()
 
+@bot.after_invoke
+async def after_invoke_hook(ctx: CstmContext):
+    ctx.session.commit()
+    ctx.session.close()
+
 @bot.check
 async def globally_block_dms(ctx):
     return ctx.guild is not None
@@ -101,13 +111,15 @@ async def on_ready():
 
 @bot.event
 async def on_command_error(ctx, error):
+    # rollback command's db session
+    ctx.session.rollback()
     # This prevents any commands with local handlers being handled here in on_command_error.
     if hasattr(ctx.command, 'on_error'):
         return
     error = getattr(error, 'original', error)
-    await ctx.message.add_reaction("❌")
+    await ctx.message.add_reaction("⚠")
     if isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send("Please enter at least one argument.")
+        await ctx.send("Missing Argument.")
     elif isinstance(error, commands.CommandNotFound):
         # await ctx.send("Command doesn't exist.")
         pass

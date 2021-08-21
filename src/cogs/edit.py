@@ -26,6 +26,9 @@ with open('src/util/help.json', 'r') as f:
     jsonhelp = json.load(f)
 
 class Edit(commands.Cog):
+    """
+    Test description
+    """
 
     def __init__(self, client):
         self.bot = client

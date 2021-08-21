@@ -1,5 +1,12 @@
+import os
+import subprocess
 from typing import List
-import docutils
+import docutils.nodes
+import docutils.parsers.rst
+import docutils.utils
+import docutils.frontend
+from pathlib import Path
+
 
 if __name__ == "__main__":
     from discord.ext import commands
@@ -8,11 +15,40 @@ if __name__ == "__main__":
             super().__init__(*args, **kwargs)
 
         def build_docs(self, path="docs/"):
-            cmds = self.walk_commands()
-            cmds: List[commands.Command]
-            for command in cmds:
-                docstr = command.help
+            for cogname, cog in self.cogs.items():
+                Path(f"docs/{cogname}").mkdir(parents=True, exist_ok=True)
+                with open(f"docs/{cogname}/index.rst", "w+") as file:
+                    file.write("==============================\n")
+                    file.write(cogname)
+                    file.write("""\n==============================
 
-    bot = Bot()
+Commands
+^^^^^^^^^^
+""")
+                    commands = '\n    '.join(command.name for command in cog.walk_commands())
+                    file.write(f""".. toctree::
+    :maxdepth: 2
+
+    {commands}
+    
+""")
+                    file.write(cog.__cog_description__)
+                for command in cog.walk_commands():
+                    command: commands.Command
+                    with open(f"docs/{cogname}/{command.name}.rst", "w+") as file:
+                        file.write("======================================================================\n")
+                        file.write(f"{command.name}\n")
+                        file.write("======================================================================\n")
+                        if command.help:
+                            file.write(command.help)
+
+    bot = Bot(command_prefix="?")
+    bot.load_extension('src.cogs.edit')
+    bot.load_extension('src.cogs.misc')
+    bot.load_extension('src.cogs.info')
+    bot.load_extension('src.cogs.add')
+    bot.load_extension('src.cogs.done')
+    bot.load_extension('src.cogs.note')
+    bot.load_extension('src.cogs.help')
+    bot.load_extension('src.cogs.stats')
     bot.build_docs()
-

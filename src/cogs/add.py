@@ -43,18 +43,54 @@ class Add(commands.Cog):
             raise exceptions.MissingRequiredPermission("Missing permission `Server Member`")
 
 
-    @commands.command(description=jsonhelp["addstaff"]["description"], usage=jsonhelp["addstaff"]["usage"], brief=jsonhelp["addstaff"]["brief"], help=jsonhelp["addstaff"]["help"])
+    @commands.command()
     @is_admin()
     async def addstaff(self, ctx: CstmContext, *, flags: AddStaffFlags):
+        """
+        Description
+        ==============
+        Add a staffmember to the database.
+
+        Required Role
+        =====================
+        Role `Neko Herder`.
+
+        Parameters
+        ===========
+        :member: The Member to be added by Mention, ID, or Name
+        """
         member =  flags.member
         st = Staff(member.id, member.name)
         ctx.session.add(st)
         await ctx.send("Successfully added {} to staff. ".format(member.name))
 
-    @commands.command(aliases=["ap", "addp", "addproj"], description=jsonhelp["addproject"]["description"],
-                      usage=jsonhelp["addproject"]["usage"], brief=jsonhelp["addproject"]["brief"], help=jsonhelp["addproject"]["help"])
+    @commands.command(aliases=["ap", "addp", "addproj"])
     @is_admin()
     async def addproject(self, ctx, *, flags: AddProjectFlags):
+        """
+        Description
+        ==============
+        Add a project to the database.
+
+        Required Role
+        =====================
+        Role `Neko Herder`.
+
+        Parameters
+        ===========
+        Required
+        ---------
+        :title: Title of the Project.
+        :link: Link to the project on box.
+        :thumbnail: Large picture for the entry in the status board.
+
+        Optional
+        ------------
+        :icon: Small Image for the status board in the upper left corner.
+        :ts, rd, pr, tl: Default staff for the project.
+        :status: Current status of the project, defaults to "active".
+        :altnames: Aliases for the project, divided by comma.
+        """
         session = ctx.session
         if searchproject(flags.title, session):
             raise discord.ext.commands.CommandError(f"Project {flags.title} already exists.")

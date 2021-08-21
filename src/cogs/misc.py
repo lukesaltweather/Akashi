@@ -324,5 +324,11 @@ class Misc(commands.Cog):
     # async def add_release(self, date: CustomDateConverter, *, text: str):
     #     pass
 
+    @commands.command()
+    async def test(self, ctx):
+        """
+        I like turtles
+        """
+
 def setup(Bot):
     Bot.add_cog(Misc(Bot))

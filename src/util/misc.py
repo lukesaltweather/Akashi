@@ -3,6 +3,7 @@ import functools
 import io
 import json
 from time import strftime
+from typing import Any
 
 import aiohttp
 import discord
@@ -355,3 +356,15 @@ def completed_embed(chapter, author: discord.Member, mem: discord.Member, step: 
     e.set_footer(text=f"Step finished by {author.display_name}", icon_url=author.avatar_url)
     return e
 
+class _MissingSentinel:
+    # stolen from https://github.com/Rapptz/discord.py/blob/master/discord/utils.py
+    def __eq__(self, other):
+        return False
+
+    def __bool__(self):
+        return False
+
+    def __repr__(self):
+        return '...'
+
+MISSING: Any = _MissingSentinel()

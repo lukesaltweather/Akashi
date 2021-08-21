@@ -14,7 +14,7 @@ python-dateutil = "^2.8.2"
 jishaku = "*"
 "discord.py" = {git = "https://github.com/Rapptz/discord.py", tag="v1.7.2"}
 "discord-ext-menus" = {git = "https://github.com/Rapptz/discord-ext-menus"}
-"discord-ext-ipc" = "^2.0.0"
+"discord-ext-ipc" = "^2.1.1"
 asyncpg = "^0.23.0"
 prettytable = "^2.1.0"
 pygit2 = "^1.6.1"

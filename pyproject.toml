@@ -10,7 +10,7 @@ python = "^3.8"
 sqlalchemy = "^1.4.22"
 psycopg2-binary = "^2.9.1"
 pillow = "^8.2.0"
-python-dateutil = "^2.8.1"
+python-dateutil = "^2.8.2"
 jishaku = "*"
 "discord.py" = {git = "https://github.com/Rapptz/discord.py", tag="v1.7.2"}
 "discord-ext-menus" = {git = "https://github.com/Rapptz/discord-ext-menus"}

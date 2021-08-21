@@ -177,13 +177,14 @@ version = "1.0.0a31+gfbb8803"
 reference = "fbb8803779373357e274e1540b368365fd9d8074"
 type = "git"
 url = "https://github.com/Rapptz/discord-ext-menus"
+
 [[package]]
 category = "main"
 description = "A Python wrapper for the Discord API"
 name = "discord.py"
 optional = false
 python-versions = ">=3.8.0"
-version = "2.0.0a3453+g58ca9e99"
+version = "2.0.0a3501+gfbc4a51c"
 
 [package.dependencies]
 aiohttp = ">=3.6.0,<3.8.0"
@@ -194,9 +195,17 @@ speed = ["orjson (>=3.5.4)"]
 voice = ["PyNaCl (>=1.3.0,<1.5)"]
 
 [package.source]
-reference = "58ca9e99325ac2678a51cd63afd7ae917f14bc8d"
+reference = "fbc4a51c355c029af61363038d0a8a9ac0bd8ace"
 type = "git"
 url = "https://github.com/Rapptz/discord.py"
+[[package]]
+category = "main"
+description = "Docutils -- Python Documentation Utilities"
+name = "docutils"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+version = "0.17.1"
+
 [[package]]
 category = "main"
 description = "Lightweight in-process concurrent programming"
@@ -447,7 +456,7 @@ idna = ">=2.0"
 multidict = ">=4.0"
 
 [metadata]
-content-hash = "970056ed85862524b75bb4803be0a58dbd555d7b318007b7211e389653d282f3"
+content-hash = "af1cc6385b2975e71736545e78ca9d5a57030782ef2361f8d9da70ca9f891911"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -600,6 +609,10 @@ discord-ext-ipc = [
 ]
 discord-ext-menus = []
 "discord.py" = []
+docutils = [
+    {file = "docutils-0.17.1-py2.py3-none-any.whl", hash = "sha256:cf316c8370a737a022b72b56874f6602acf974a37a9fba42ec2876387549fc61"},
+    {file = "docutils-0.17.1.tar.gz", hash = "sha256:686577d2e4c32380bb50cbb22f575ed742d58168cee37e99117a854bcd88f125"},
+]
 greenlet = [
     {file = "greenlet-1.1.0-cp27-cp27m-macosx_10_14_x86_64.whl", hash = "sha256:60848099b76467ef09b62b0f4512e7e6f0a2c977357a036de602b653667f5f4c"},
     {file = "greenlet-1.1.0-cp27-cp27m-manylinux1_x86_64.whl", hash = "sha256:f42ad188466d946f1b3afc0a9e1a266ac8926461ee0786c06baac6bd71f8a6f3"},

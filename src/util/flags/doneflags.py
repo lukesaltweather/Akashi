@@ -2,7 +2,7 @@ from typing import Optional
 
 from discord.ext.commands import flag
 
-from baseflags import ChapterFlags
+from .baseflags import ChapterFlags
 
 class DoneFlags(ChapterFlags):
     link: str

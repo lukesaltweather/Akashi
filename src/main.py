@@ -13,6 +13,8 @@ from sqlalchemy.orm import sessionmaker, aliased
 
 import datetime
 
+from src.model.chapter import Chapter
+from src.model.staff import Staff
 from src.util.checks import is_admin
 from src.model.message import Message
 from src.util.context import CstmContext
@@ -65,6 +67,11 @@ class Bot(commands.Bot):
         a_lower = {k.lower():v for k,v in self.cogs.items()}
         return a_lower.get(name.lower())
 
+    def build_docs(self, path = "docs/"):
+        commands = self.walk_commands()
+        for command in commands:
+            pass
+
 if config["online"]:
     bot = Bot(command_prefix='$', intents=discord.Intents.all())
 else:
@@ -86,7 +93,6 @@ bot.load_extension('src.cogs.stats')
 bot.load_extension("jishaku")
 bot.load_extension('src.cogs.tags')
 bot.load_extension('src.cogs.mangadex')
-# bot.load_extension('src.cogs.halloween')
 bot.em = emojis
 bot.debug = False
 print(discord.version_info)
@@ -146,7 +152,6 @@ async def on_command_error(ctx, error):
         await ctx.send("Command cancelled.")
     else:
         await ctx.send(error)
-
 
 @bot.command(hidden=True)
 @is_admin()
@@ -266,77 +271,6 @@ async def on_raw_reaction_add(payload):
             print(e)
         finally:
             session.close()
-
-
-@is_admin()
-@bot.command(enable=False, hidden=True)
-async def allcommands(ctx):
-    list = ""
-    for command in bot.commands:
-        list= f"{command.name}, {list}"
-    await ctx.send(list)
-
-
-
-@is_admin()
-@bot.command(enable=False, hidden=True)
-async def createtables(ctx):
-    await testdb.createtables()
-
-
-@bot.command(hidden=True)
-@is_admin()
-async def deletechapter(ctx, *, arg):
-    arg = arg[1:]
-    d = dict(x.split('=', 1) for x in arg.split(' -'))
-    try:
-        session = bot.Session()
-        query = session.query(Chapter)
-        if "id" in d:
-            record = query.filter(Chapter.id == float(d["id"])).one()
-        else:
-            raise MissingRequiredArgument
-        session.delete(record)
-        session.commit()
-    finally:
-        session.close()
-
-
-@is_admin()
-@bot.command(hidden=True)
-async def editconfig(ctx, *, arg):
-    arg = arg[1:]
-    d = dict(x.split('=', 1) for x in arg.split(' -'))
-    if "neko_workers" in d:
-        config["neko_workers"] = d["neko_workers"]
-    if "neko_herders" in d:
-        config["neko_herders"] = d["neko_herders"]
-    if "board_channel" in d:
-        config["board_channel"] = d["board_channel"]
-    if "command_channel" in d:
-        config["command_channel"] = d["command_channel"]
-    if "ts_id" in d:
-        config["ts_id"] = d["ts_id"]
-    if "rd_id" in d:
-        config["rd_id"] = d["rd_id"]
-    if "tl_id" in d:
-        config["tl_id"] = d["tl_id"]
-    if "pr_id" in d:
-        config["pr_id"] = d["pr_id"]
-    with open('src/util/config.json', 'w') as f:
-        json.dump(config, f, indent=4)
-
-
-@is_admin()
-@bot.command(hidden=True)
-async def displayconfig(ctx):
-    with open('src/util/config.json', 'r') as f:
-        r = json.load(f)
-        del r["heroku_key"]
-        del r["offline_key"]
-        j = json.dumps(r, indent=4, sort_keys=True)
-        await ctx.author.send(j)
-
 
 if config["online"]:
     bot.run(config["heroku_key"])

@@ -4,12 +4,9 @@ from discord.ext.commands import FlagConverter, flags
 from .converters import DateTimeConverter
 
 from src.model.staff import Staff
-from src.model.project import Project
-
-from .baseflags import ChapterFlags
 
 class InfoChapter(FlagConverter):
-    project: List[Project] = flags.flag(default=[])
+    project: List[str] = flags.flag(default=[])
     title: List[str] = flags.flag(default=[])
     chapter_from: Optional[float]
     chapter_upto: Optional[float]

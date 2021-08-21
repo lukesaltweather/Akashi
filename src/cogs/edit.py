@@ -51,96 +51,73 @@ class Edit(commands.Cog):
         session = ctx.session
         async with ctx.channel.typing():
             record = flags.chapter
-            table = PrettyTable()
-            table.add_column("", ["ORIGINAL", "EDIT"])
-
             if flags.title:
                 if flags.title in ("None", "none"):
-                    table.add_column("Title", [record.title, ""])
                     record.title = None
                 else:
-                    table.add_column("Title", [record.title, flags.title])
                     record.title = flags.title
             if flags.tl:
                 tl = flags.tl
                 if tl in ("None", "none"):
-                    table.add_column("Translator", [record.translator.name, "None"])
                     record.translator = None
                 else:
-                    table.add_column("Translator", [record.translator.name, tl.name])
                     record.translator = tl
             if flags.rd:
                 rd = flags.rd
                 if rd in ("None", "none"):
-                    table.add_column("Redrawer", [record.redrawer, "None"])
                     record.redrawer = None
                 else:
-                    table.add_column("Redrawer", [record.redrawer.name, rd.name])
                     record.redrawer = rd
             if flags.ts:
                 ts = flags.ts
                 if ts in ("None", "none"):
-                    table.add_column("Typesetter", [record.typesetter.name, "None"])
                     record.typesetter = None
                 else:
-                    table.add_column("Typesetter", [record.typesetter.name, ts.name])
                     record.typesetter = ts
             if flags.pr:
                 pr = flags.pr
                 if pr in ("None", "none"):
-                    table.add_column("Proofreader", [record.proofreader.name, "None"])
                     record.proofreader = None
                 else:
-                    table.add_column("Proofreader", [record.proofreader.name, pr.name])
                     record.proofreader = pr
             if flags.link_ts:
-                table.add_column("Link TS", [record.link_ts, flags.link_ts])
                 if flags.link_ts in ("None", "none"):
                     record.link_ts = None
                 else:
                     record.link_ts = flags.link_ts
             if flags.link_tl:
-                table.add_column("Link TL", [record.link_tl, flags.link_tl])
                 if flags.link_tl in ("None", "none"):
                     record.link_tl = None
                 else:
                     record.link_tl = flags.link_tl
             if flags.link_rd:
-                table.add_column("Link RD", [record.link_rd, flags.link_rd])
                 if flags.link_rd in ("None", "none"):
                     record.link_rd = None
                 else:
                     record.link_rd = flags.link_rd
             if flags.link_pr:
-                table.add_column("Link PR", [record.link_pr, flags.link_pr])
                 if flags.link_pr in ("None", "none"):
                     record.link_pr = None
                 else:
                     record.link_pr = flags.link_pr
             if flags.link_qcts:
-                table.add_column("Link QCTS", [record.link_rl, flags.link_qcts])
                 if flags.link_qcts in ("None", "none"):
                     record.link_rl = None
                 else:
                     record.link_rl = flags.link_qcts
             if flags.link_raw:
-                table.add_column("Link Raw", [record.link_raw, flags.link_raw])
                 if flags.link_raw in ("None", "none"):
                     record.link_raw = None
                 else:
                     record.link_raw = flags.link_raw
             if flags.to_project:
                 proj = flags.to_project
-                table.add_column("New Project", [record.project.title, proj.title])
                 record.project = proj
             if flags.to_chapter:
-                table.add_column("New Ch. Number", [record.number, flags.to_chapter])
                 record.number = flags.to_chapter
             if flags.notes:
                 record.notes = flags.notes
-                table.add_column("Notes", [record.notes, flags.notes])
-            t = table.get_string(title=f"{record.project.title} {formatNumber(record.number)}")
-            image = await drawimage(t)
+            image = await record.get_report(f"{record.project.title} {formatNumber(record.number)}")
             embed1 = discord.Embed(
                 color=discord.Colour.dark_red()
             )
@@ -176,74 +153,53 @@ class Edit(commands.Cog):
     async def editproject(self, ctx, *, flags: EditProjectFlags):
         session = ctx.session
         record = flags.project
-        table = PrettyTable()
-        table.add_column("", ["ORIGINAL", "EDIT"])
         if flags.title:
-            table.add_column("Title", [record.title, flags.title])
             record.title = flags.title
         if flags.status:
-            table.add_column("Status", [record.status, flags.status])
             record.status = flags.status
         if flags.color:
             if isinstance(flags.color, str):
                 record.color = None
-                table.add_column("Color", [record.color, "None"])
             else:
-                table.add_column("Color", [record.color, flags.color])
                 record.color = str(flags.color)[1:]
         if flags.position:
             if flags.position in ("None", "none"):
-                table.add_column("Pos", [record.position, "None"])
                 record.position = None
             else:
-                table.add_column("Pos", [record.position, flags.position])
                 record.position = flags.position
         if flags.tl:
             tl = flags.tl
             if tl in ("None", "none"):
-                table.add_column("Translator", [record.translator.name, "None"])
                 record.translator = None
             else:
-                table.add_column("Translator", [record.translator.name, tl.name])
                 record.translator = tl
         if flags.rd:
             rd = flags.rd
             if rd in ("None", "none"):
-                table.add_column("Redrawer", [record.redrawer, "None"])
                 record.redrawer = None
             else:
-                table.add_column("Redrawer", [record.redrawer.name, rd.name])
                 record.redrawer = rd
         if flags.ts:
             ts = flags.ts
             if ts in ("None", "none"):
-                table.add_column("Typesetter", [record.typesetter.name, "None"])
                 record.typesetter = None
             else:
-                table.add_column("Typesetter", [record.typesetter.name, ts.name])
                 record.typesetter = ts
         if flags.pr:
             pr = flags.pr
             if pr in ("None", "none"):
-                table.add_column("Proofreader", [record.proofreader.name, "None"])
                 record.proofreader = None
             else:
-                table.add_column("Proofreader", [record.proofreader.name, pr.name])
                 record.proofreader = pr
         if flags.altnames:
-            table.add_column("AltNames", [record.altNames, flags.altnames])
             record.altNames = flags.altnames
         if flags.thumbnail:
-            table.add_column("Thumbnail", [record.thumbnail, flags.thumbnail])
             record.thumbnail = flags.thumbnail
         if flags.icon:
-            table.add_column("Icon", [record.icon, flags.icon])
             record.icon = flags.icon
         if flags.link:
-            table.add_column("Link", [record.link, flags.link])
             record.link = flags.link
-        t = table.get_string(title=f"{record.title}")
-        image = await drawimage(t)
+        image = await record.get_report(f"{record.title}")
         embed1 = discord.Embed(
             color=discord.Colour.dark_red()
         )

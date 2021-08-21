@@ -1,11 +1,16 @@
 from sqlalchemy import String, Integer, Column, ForeignKey
 from sqlalchemy.orm import relationship
+
+from .ReportMixin import ReportMixin
 from ..util.db import Base
-from ..util.search import searchproject
+from ..util.exceptions import NoResultFound
+import src.util.search as search
+
+
 
 icon_default = 'https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128'
 
-class Project(Base):
+class Project(Base, ReportMixin):
     __tablename__ = "projects"
     id = Column(Integer, primary_key=True)
     title = Column(String, nullable=False)
@@ -23,10 +28,10 @@ class Project(Base):
     proofreader_id = Column(Integer, ForeignKey("staff.id", ondelete='SET NULL'))
 
     chapters = relationship("Chapter", back_populates="project")
-    typesetter = relationship("Staff", foreign_keys=[typesetter_id], backref='project_typesetter')
-    translator = relationship("Staff", foreign_keys=[translator_id], backref='project_translator')
-    redrawer = relationship("Staff", foreign_keys=[redrawer_id], backref="project_redrawer")
-    proofreader = relationship("Staff", foreign_keys=[proofreader_id], backref="project_proofreader")
+    typesetter = relationship("Staff", foreign_keys=[typesetter_id], backref='project_typesetter', lazy='joined')
+    translator = relationship("Staff", foreign_keys=[translator_id], backref='project_translator', lazy='joined')
+    redrawer = relationship("Staff", foreign_keys=[redrawer_id], backref="project_redrawer", lazy='joined')
+    proofreader = relationship("Staff", foreign_keys=[proofreader_id], backref="project_proofreader", lazy='joined')
 
     def __init__(self, title: str, status: str, link: str, altNames: str, icon=icon_default):
         self.title = title
@@ -37,4 +42,4 @@ class Project(Base):
 
     @classmethod
     async def convert(cls, ctx, arg):
-        return searchproject(arg, ctx.session)
+        return search.searchproject(arg, ctx.session)

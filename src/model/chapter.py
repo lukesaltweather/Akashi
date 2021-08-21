@@ -1,13 +1,15 @@
 from discord.ext.commands import BadArgument
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float
 from sqlalchemy.orm import relationship, aliased
+
+from .ReportMixin import ReportMixin
 from ..util.db import Base
 from src.model.staff import Staff
 from src.model.project import Project
 from ..util.search import searchproject
 
 
-class Chapter(Base):
+class Chapter(Base, ReportMixin):
     __tablename__ = "chapters"
     id = Column(Integer, primary_key=True)
     number = Column(Float)
@@ -34,11 +36,11 @@ class Chapter(Base):
     proofreader_id = Column(Integer, ForeignKey("staff.id", ondelete='SET NULL'))
     project_id = Column(Integer, ForeignKey("projects.id"))
 
-    typesetter = relationship("Staff", foreign_keys=[typesetter_id], backref='chapters_typesetter', uselist=False)
-    translator = relationship("Staff", foreign_keys=[translator_id], backref='chapters_translator', uselist=False)
-    redrawer = relationship("Staff", foreign_keys=[redrawer_id], backref="chapters_redrawer", uselist=False)
-    proofreader = relationship("Staff", foreign_keys=[proofreader_id], backref="chapters_proofreader", uselist=False)
-    project = relationship("Project", back_populates="chapters", uselist=False)
+    typesetter = relationship("Staff", foreign_keys=[typesetter_id], backref='chapters_typesetter', uselist=False, lazy='joined')
+    translator = relationship("Staff", foreign_keys=[translator_id], backref='chapters_translator', uselist=False, lazy='joined')
+    redrawer = relationship("Staff", foreign_keys=[redrawer_id], backref="chapters_redrawer", uselist=False, lazy='joined')
+    proofreader = relationship("Staff", foreign_keys=[proofreader_id], backref="chapters_proofreader", uselist=False, lazy='joined')
+    project = relationship("Project", back_populates="chapters", uselist=False, lazy='joined')
 
     def __init__(self, number, link_raw):
         self.number = number

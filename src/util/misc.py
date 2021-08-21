@@ -12,8 +12,6 @@ from PIL import Image, ImageDraw, ImageFont
 from sqlalchemy import or_
 from sqlalchemy.orm import sessionmaker
 
-from src.model.chapter import Chapter
-
 
 async def get_roles(member: discord.Member):
     """
@@ -112,12 +110,12 @@ async def webhook(string):
         await webhook.send(embed=embed, username="Akashi")
 
 
-async def async_drawimage(string):
+def drawimage(string):
     loop = asyncio.get_event_loop()
-    thing = functools.partial(async_drawimage1, string)
-    return await loop.run_in_executor(None, thing)
+    thing = functools.partial(async_drawimage, string)
+    return loop.run_in_executor(None, thing)
 
-def async_drawimage1(string):
+def async_drawimage(string):
     fontsize = 25  # starting font size
     font = ImageFont.truetype('src/util/fonts/DroidSansMono.ttf', fontsize)
     lines = string.split("\n")
@@ -133,9 +131,6 @@ def async_drawimage1(string):
     arr.seek(0)
     file = discord.File(arr, "image.png")
     return file
-
-async def drawimage(string):
-    return await async_drawimage(string)
 
 def formatNumber(num):
     if num % 1 == 0:
@@ -329,7 +324,9 @@ def get_emojis(bot, chapter):
 
     return f"<:{tl}> - <:{rd}> - <:{ts}> - <:{pr}> - <:{qcts}>"
 
-def completed_embed(chapter: Chapter, author: discord.Member, mem: discord.Member, step: str, next_step: str, bot) -> discord.Embed:
+
+
+def completed_embed(chapter, author: discord.Member, mem: discord.Member, step: str, next_step: str, bot) -> discord.Embed:
     project = chapter.project.title
     notes = chapter.notes
     number = chapter.number

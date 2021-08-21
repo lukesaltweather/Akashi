@@ -4,10 +4,10 @@ import discord
 import discord.ext
 from sqlalchemy.orm.exc import MultipleResultsFound
 
-from src.model.project import Project
-from src.model.staff import Staff
+import src.model.staff as staff
+import src.model.project as project
 from src.util import exceptions, misc
-from src.util.exceptions import StaffNotFoundError
+from src.util.exceptions import StaffNotFoundError, NoResultFound
 
 with open('src/util/config.json', 'r') as f:
     config = json.load(f)
@@ -24,9 +24,9 @@ async def discordstaff(sti: str, ctx):
 
 
 async def dbstaff(passid: int, session2):
-    staff = session2.query(Staff).filter(Staff.discord_id == passid).first()
-    if staff is not None:
-        return staff
+    st = session2.query(staff.Staff).filter(staff.Staff.discord_id == passid).first()
+    if st is not None:
+        return st
     else:
         raise StaffNotFoundError
 
@@ -62,13 +62,13 @@ async def searchstaffpayload(passstr, sessions):
 
 def searchproject(sti, session):
     if sti.isdigit():
-        return session.query(Project).filter(int(sti) == Project.id).one()
+        return session.query(project.Project).filter(int(sti) == project.Project.id).one()
     for i in range(1, 3):
         try:
             if i == 1:
-                return session.query(Project).filter(Project.title.ilike("%" + sti + "%")).one()
+                return session.query(project.Project).filter(project.Project.title.ilike("%" + sti + "%")).one()
             if i == 2:
-                return session.query(Project).filter(Project.altNames.ilike("%"+sti+",%")).one()
+                return session.query(project.Project).filter(project.Project.altNames.ilike("%"+sti+",%")).one()
         except:
             pass
-    raise exceptions.NoResultFound(message="Couldn't find a project like this.")
+    raise NoResultFound(message="Couldn't find a project like this.")

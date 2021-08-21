@@ -1,11 +1,12 @@
 ==============================
 Misc
 ==============================
+Miscellaneous Commands
 
 Commands
 ^^^^^^^^^^
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     reload
     hello
@@ -23,5 +24,3 @@ Commands
     cat
     embed
     test
-    
-Miscellaneous Commands

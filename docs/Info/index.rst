@@ -2,10 +2,11 @@
 Info
 ==============================
 
+
 Commands
 ^^^^^^^^^^
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     infochapter
     infoproject
@@ -13,4 +14,3 @@ Commands
     allstaff
     mycurrent
     current
-    

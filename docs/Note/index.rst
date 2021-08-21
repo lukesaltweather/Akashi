@@ -2,11 +2,11 @@
 Note
 ==============================
 
+
 Commands
 ^^^^^^^^^^
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     addnote
     note
-    

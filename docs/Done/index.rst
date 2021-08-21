@@ -2,14 +2,10 @@
 Done
 ==============================
 
+
 Commands
 ^^^^^^^^^^
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
-    donetl
-    donets
-    donepr
-    doneqcts
-    donerd
-    
+    done

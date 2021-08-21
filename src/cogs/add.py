@@ -15,7 +15,7 @@ from src.util import exceptions, misc
 from src.util.flags.addflags import AddStaffFlags, AddProjectFlags, AddChapterFlags, MassAddFlags
 from src.util.search import searchproject, searchstaff
 from src.util.misc import formatNumber
-from src.util.checks import is_admin
+from src.util.checks import is_admin, is_pu
 
 with open('src/util/config.json', 'r') as f:
     config = json.load(f)
@@ -65,7 +65,7 @@ class Add(commands.Cog):
         await ctx.send("Successfully added {} to staff. ".format(member.name))
 
     @commands.command(aliases=["ap", "addp", "addproj"])
-    @is_admin()
+    @is_pu()
     async def addproject(self, ctx, *, flags: AddProjectFlags):
         """
         Description
@@ -74,7 +74,7 @@ class Add(commands.Cog):
 
         Required Role
         =====================
-        Role `Neko Herder`.
+        Role `Akashi's Minions`.
 
         Parameters
         ===========
@@ -104,9 +104,32 @@ class Add(commands.Cog):
         pr.thumbnail = flags.thumbnail
         session.add(pr)
 
-    @commands.command(aliases=["mac", "massaddchapters", "addchapters", 'bigmac'], description=jsonhelp["massaddchapter"]["description"],
-                      usage=jsonhelp["massaddchapter"]["usage"], brief=jsonhelp["massaddchapter"]["brief"], help=jsonhelp["massaddchapter"]["help"])
+    @commands.command(aliases=["mac", "massaddchapters", "addchapters", 'bigmac'])
+    @is_pu()
     async def massaddchapter(self, ctx: CstmContext, *, flags: MassAddFlags):
+        """
+        Description
+        ==============
+        Add multiple chapters at once.
+
+        Required Role
+        =====================
+        Role `Neko Workers`.
+
+        Example
+        ========
+        .. image:: /images/bigmac.png
+          :width: 400
+          :alt: bigmac Example
+
+
+        Parameters
+        ===========
+        Required
+        ---------
+        :chapter: Chapter on which to start on. Chapter to end on is determined by amount of links sent.
+        :project: Project the chapters belong to.
+        """
         start_chp = flags.chapter
         date_created = func.now()
         project = flags.project
@@ -130,9 +153,29 @@ class Add(commands.Cog):
                 session.add(chp)
             await ctx.send(f'Successfully added {str(len(content))} chapters of `{project.title}`!')
 
-    @commands.command(aliases=["ac", "addch", "addc"], description=jsonhelp["addchapter"]["description"],
-                      usage=jsonhelp["addchapter"]["usage"], brief=jsonhelp["addchapter"]["brief"], help=jsonhelp["addchapter"]["help"])
+    @commands.command(aliases=["ac", "addch", "addc"])
     async def addchapter(self, ctx: CstmContext, *, flags: AddChapterFlags):
+        """
+        Description
+        ==============
+        Add a project to the database.
+
+        Required Role
+        =====================
+        Role `Akashi's Minions`.
+
+        Parameters
+        ===========
+        Required
+        ---------
+        :chapter: Chapter number of the chapter to add.
+        :project: Project the chapter belongs to.
+        :raws: Link to raws on Box.
+
+        Optional
+        ------------
+        :tl, rd, ts, pr: Staff for the chapter.
+        """
         table = PrettyTable()
         chp = Chapter(flags.chapter, flags.raws)
         chp.project = flags.project

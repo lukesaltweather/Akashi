@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Literal
 
 from discord.ext.commands import flag
 
@@ -8,3 +8,4 @@ class DoneFlags(ChapterFlags):
     link: str
     note: Optional[str]
     skipconfirm: bool = flag(default=False)
+    step: Literal["tl", "ts", "rd", "pr", "qcts"]

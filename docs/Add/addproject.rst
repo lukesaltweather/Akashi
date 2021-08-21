@@ -7,7 +7,7 @@ Add a project to the database.
 
 Required Role
 =====================
-Role `Neko Herder`.
+Role `Akashi's Minions`.
 
 Parameters
 ===========

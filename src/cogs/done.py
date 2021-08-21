@@ -413,42 +413,47 @@ class Done(commands.Cog):
         elif not guild:
             raise exceptions.MissingRequiredPermission("Missing permission `Server Member`.")
 
-    @commands.command(description=jsonhelp["donetl"]["description"],
-                      usage=jsonhelp["donetl"]["usage"], brief=jsonhelp["donetl"]["brief"], help=jsonhelp["donetl"]["help"])
+    @commands.command()
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.guild, wait=True)
-    async def donetl(self, ctx, *, flags: DoneFlags):
-        TL = TL_helper(ctx, flags)
-        await TL.execute()
+    async def done(self, ctx, *, flags: DoneFlags):
+        """
+        Description
+        ==============
+        Mark a specific step of a chapter as finished.
+        Will prompt for an answer, click on the corresponding emoji reaction.
 
+        [FURTHER EXPLAINING TODO]
 
-    @commands.command(description=jsonhelp["donets"]["description"],
-                      usage=jsonhelp["donets"]["usage"], brief=jsonhelp["donets"]["brief"], help=jsonhelp["donets"]["help"])
-    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.guild, wait=True)
-    async def donets(self, ctx, *, flags: DoneFlags):
-        TS = TS_helper(ctx, flags)
-        await TS.execute()
+        Required Role
+        =====================
+        Role `Neko Workers`.
 
+        Parameters
+        ===========
+        Required
+        ---------
+        :chapter: Project and chapter number of the chapter.
+        :step: The step that was finished. Can be one of: tl, rd, ts, pr or qcts.
 
-    @commands.command(description=jsonhelp["donepr"]["description"],
-                      usage=jsonhelp["donepr"]["usage"], brief=jsonhelp["donepr"]["brief"], help=jsonhelp["donepr"]["help"])
-    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.guild, wait=True)
-    async def donepr(self, ctx, *, flags: DoneFlags):
-        PR = PR_helper(ctx, flags)
-        await PR.execute()
-
-    @commands.command(description=jsonhelp["doneqcts"]["description"],
-                      usage=jsonhelp["doneqcts"]["usage"], brief=jsonhelp["doneqcts"]["brief"], help=jsonhelp["doneqcts"]["help"])
-    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.guild, wait=True)
-    async def doneqcts(self, ctx, *, flags: DoneFlags):
-        QCTS = QCTS_helper(ctx, flags)
-        await QCTS.execute()
-
-    @commands.command(description=jsonhelp["donerd"]["description"],
-                      usage=jsonhelp["donerd"]["usage"], brief=jsonhelp["donerd"]["brief"], help=jsonhelp["donerd"]["help"])
-    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.guild, wait=True)
-    async def donerd(self, ctx, *, flags: DoneFlags):
-        RD = RD_helper(ctx, flags)
-        await RD.execute()
+        Optional
+        ----------
+        :note: Add a note to the chapters notes.
+        """
+        if flags.step == "tl":
+            TL = TL_helper(ctx, flags)
+            await TL.execute()
+        elif flags.step == "ts":
+            TS = TS_helper(ctx, flags)
+            await TS.execute()
+        elif flags.step == "pr":
+            PR = PR_helper(ctx, flags)
+            await PR.execute()
+        elif flags.step == "qcts":
+            QCTS = QCTS_helper(ctx, flags)
+            await QCTS.execute()
+        elif flags.step == "rd":
+            RD = RD_helper(ctx, flags)
+            await RD.execute()
 
 def setup(Bot):
     Bot.add_cog(Done(Bot))

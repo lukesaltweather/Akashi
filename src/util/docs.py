@@ -20,19 +20,17 @@ if __name__ == "__main__":
                 with open(f"docs/{cogname}/index.rst", "w+") as file:
                     file.write("==============================\n")
                     file.write(cogname)
-                    file.write("""\n==============================
+                    file.write(f"""\n==============================
+{cog.__cog_description__}
 
 Commands
-^^^^^^^^^^
-""")
+^^^^^^^^^^\n""")
                     commands = '\n    '.join(command.name for command in cog.walk_commands())
                     file.write(f""".. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     {commands}
-    
 """)
-                    file.write(cog.__cog_description__)
                 for command in cog.walk_commands():
                     command: commands.Command
                     with open(f"docs/{cogname}/{command.name}.rst", "w+") as file:

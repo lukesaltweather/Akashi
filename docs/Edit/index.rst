@@ -1,15 +1,14 @@
 ==============================
 Edit
 ==============================
+Test description
 
 Commands
 ^^^^^^^^^^
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     editchapter
     editproject
     editstaff
     release
-    
-Test description

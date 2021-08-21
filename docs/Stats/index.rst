@@ -2,11 +2,11 @@
 Stats
 ==============================
 
+
 Commands
 ^^^^^^^^^^
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     get_csv
     read_only_user
-    

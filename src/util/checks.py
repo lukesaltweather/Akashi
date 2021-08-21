@@ -25,11 +25,21 @@ def is_admin():
     def predicate(ctx):
         admin = ctx.guild.get_role(config["neko_herders"])
         ia = admin in ctx.message.author.roles or ctx.message.author.id == 358244935041810443
-        ic = ctx.channel.id == config["command_channel"]
         if ia and ic:
             return True
         elif ic:
             raise exceptions.MissingRequiredPermission("Missing permission `admin`.")
+    return commands.check(predicate)
+
+def is_pu():
+    def predicate(ctx):
+        role = ctx.guild.get_role(702185392795025471)
+        admin = ctx.guild.get_role(config["neko_herders"])
+        ia = role in ctx.message.author.roles or admin in ctx.message.author.roles
+        if ia:
+            return True
+        raise exceptions.MissingRequiredPermission("Missing permission `admin`.")
+
     return commands.check(predicate)
 
 def is_tl(ctx):

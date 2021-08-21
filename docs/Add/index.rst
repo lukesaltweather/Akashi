@@ -1,15 +1,14 @@
 ==============================
 Add
 ==============================
+Cog with all of the commands used for adding to the database
 
 Commands
 ^^^^^^^^^^
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     addstaff
     addproject
     massaddchapter
     addchapter
-    
-Cog with all of the commands used for adding to the database

@@ -16,7 +16,7 @@ Parameters
 ===========
 Required
 ---------
-:chapter: Project and chapter number of the chapter.
+:chapter: The chapter to edit, in format: projectName chapterNbr
 :step: The step that was finished. Can be one of: tl, rd, ts, pr or qcts.
 
 Optional

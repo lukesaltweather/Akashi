@@ -18,7 +18,7 @@ from src.util.exceptions import MissingRequiredParameter
 from src.util.search import searchproject, searchstaff
 from src.util.misc import formatNumber, drawimage
 import time
-from src.util.checks import is_admin
+from src.util.checks import is_admin, is_pu
 
 from src.util.flags.editflags import EditStaffFlags, EditChapterFlags, EditProjectFlags, ReleaseFlags
 
@@ -172,10 +172,36 @@ class Edit(commands.Cog):
                     await ctx.message.add_reaction("❌")
             await message.delete()
 
-    @commands.command(aliases=["editproj", "editp", "ep"],description=jsonhelp["editproject"]["description"],
-                      usage=jsonhelp["editproject"]["usage"], brief=jsonhelp["editproject"]["brief"], help=jsonhelp["editproject"]["help"])
-    @is_admin()
+    @commands.command(aliases=["editproj", "editp", "ep"])
+    @is_pu()
     async def editproject(self, ctx, *, flags: EditProjectFlags):
+        """
+        Description
+        ==============
+        Edit a project's attributes.
+
+        Required Role
+        =====================
+        Role `Akashi's Minions`.
+
+        Parameters
+        ===========
+        Required
+        ---------
+        :project: The project to edit.
+
+        Optional
+        ------------
+        :title: The title of the project.
+        :link: Link to the project on box.
+        :thumbnail: Large picture for the entry in the status board.
+        :icon: Small Image for the status board in the upper left corner.
+        :ts, rd, pr, tl: Default staff for the project. Enter "none" to set the staff to none at all.
+        :status: Current status of the project, defaults to "active".
+        :altnames: Aliases for the project, divided by comma.
+        :color: The color the project's embed has in the info board. Can be a hex or one of these colors:
+        :position: Where the embed of the project appears in the info board.
+        """
         session = ctx.session
         record = flags.project
         if flags.title:
@@ -254,11 +280,30 @@ class Edit(commands.Cog):
         await message.delete()
 
 
-    @commands.command(description=jsonhelp["editstaff"]["description"],
-                      usage=jsonhelp["editstaff"]["usage"], brief=jsonhelp["editstaff"]["brief"], help=jsonhelp["editstaff"]["help"])
+    @commands.command()
     @is_admin()
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
     async def editstaff(self, ctx, *, flags: EditStaffFlags):
+        """
+        Description
+        ==============
+        Edit a staffmembers attributes.
+
+        Required Role
+        =====================
+        Role `Neko Herders`.
+
+        Parameters
+        ===========
+        Required
+        ---------
+        :member: Staffmember to edit.
+        Optional
+        ------------
+        :id: The staff's discord id.
+        :name: The staff's username.
+        :status: Can be "active" or "inactive".
+        """
         member = flags.member
         if flags.id:
             member.discord_id = flags.id
@@ -268,9 +313,26 @@ class Edit(commands.Cog):
             member.status = flags.status
         await ctx.message.add_reaction("👍")
 
-    @commands.command(description=jsonhelp["release"]["description"],
-                      usage=jsonhelp["release"]["usage"], brief=jsonhelp["release"]["brief"], help=jsonhelp["release"]["help"])
+    @commands.command()
     async def release(self, ctx, *, flags: ReleaseFlags):
+        """
+        Description
+        ==============
+        Mark a chapter as released.
+
+        Required Role
+        =====================
+        Role `Neko Workers`.
+
+        Parameters
+        ===========
+        Required
+        ---------
+        :chapter: The chapter to set as released, in format: projectName chapterNbr
+        Optional
+        ------------
+        :date: The date on which it was finished, defaults to current date and time.
+        """
         record = flags.chapter
         if flags.date:
             record.date_release = flags.date

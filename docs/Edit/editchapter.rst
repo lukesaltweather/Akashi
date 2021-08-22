@@ -11,9 +11,11 @@ Role `Neko Workers`.
 
 Parameters
 ===========
+
 Required
 ---------
 :chapter: The chapter to edit, in format: projectName chapterNbr
+
 Optional
 ------------
 :title: Title of the chapter.

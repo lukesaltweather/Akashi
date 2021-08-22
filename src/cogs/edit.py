@@ -61,9 +61,11 @@ class Edit(commands.Cog):
 
         Parameters
         ===========
+
         Required
         ---------
         :chapter: The chapter to edit, in format: projectName chapterNbr
+
         Optional
         ------------
         :title: Title of the chapter.
@@ -186,6 +188,7 @@ class Edit(commands.Cog):
 
         Parameters
         ===========
+
         Required
         ---------
         :project: The project to edit.
@@ -295,9 +298,11 @@ class Edit(commands.Cog):
 
         Parameters
         ===========
+
         Required
         ---------
         :member: Staffmember to edit.
+
         Optional
         ------------
         :id: The staff's discord id.
@@ -329,6 +334,7 @@ class Edit(commands.Cog):
         Required
         ---------
         :chapter: The chapter to set as released, in format: projectName chapterNbr
+
         Optional
         ------------
         :date: The date on which it was finished, defaults to current date and time.

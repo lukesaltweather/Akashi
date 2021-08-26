@@ -10,6 +10,7 @@ Welcome to Akashi's documentation!
    :maxdepth: 1
    :caption: Table of Contents
 
+   Tutorials/index
    Add/index
    Done/index
    Edit/index

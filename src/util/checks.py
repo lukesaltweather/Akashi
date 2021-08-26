@@ -24,11 +24,10 @@ def has_worker():
 def is_admin():
     def predicate(ctx):
         admin = ctx.guild.get_role(config["neko_herders"])
-        ia = admin in ctx.message.author.roles or ctx.message.author.id == 358244935041810443
-        if ia and ic:
+        ia = admin in ctx.message.author.roles
+        if ia:
             return True
-        elif ic:
-            raise exceptions.MissingRequiredPermission("Missing permission `admin`.")
+        raise exceptions.MissingRequiredPermission("Missing permission `admin`.")
     return commands.check(predicate)
 
 def is_pu():
@@ -38,7 +37,7 @@ def is_pu():
         ia = role in ctx.message.author.roles or admin in ctx.message.author.roles
         if ia:
             return True
-        raise exceptions.MissingRequiredPermission("Missing permission `admin`.")
+        raise exceptions.MissingRequiredPermission("Missing permission `power user`.")
 
     return commands.check(predicate)
 

@@ -8,6 +8,8 @@ from typing import List
 from discord.ext.commands.core import Group, Command
 
 from src.util import exceptions
+from src.util.docs import parse_rst, MyVisitor
+
 
 class Source(menus.ListPageSource):
     def __init__(self, embeds: List[discord.Embed]):
@@ -19,7 +21,6 @@ class Source(menus.ListPageSource):
 
 
 class MyHelpCommand(commands.MinimalHelpCommand):
-
     def __init__(self, **options):
         self.sort_commands = options.pop('sort_commands', True)
         self.commands_heading = options.pop('commands_heading', "Commands")
@@ -203,15 +204,15 @@ class EmbedHelper:
             self.embed[0].set_footer(
                 icon_url='https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Info_icon-72a7cf.svg/1200px-Info_icon-72a7cf.svg.png',
                 text="For more detailed help on a command, use $help <command>")
-            string = f"\n\n**{cog}**  |  Page: **{self.page+1}**\n"
-            first = True
-            for command in commands:
-                if first:
-                    string = f"{string} **`{command.name}`**"
-                else:
-                    string = f"{string} | **`{command.name}`**"
+            #string = f"\n\n**{cog}**  |  Page: **{self.page+1}**\n"
+            #first = True
+            #for command in commands:
+            #    if first:
+            #        string = f"{string} **`{command.name}`**"
+            #    else:
+            #        string = f"{string} | **`{command.name}`**"
 
-            self.embed[0].description = f"{string}"
+            #self.embed[0].description = f"{string}"
         else:
             string = f"\n\n**{cog}**  |  Page: **{self.page+1}**\n"
             first = True
@@ -242,8 +243,12 @@ class EmbedHelper:
         self.embed[-1].set_author(name=f"{emoji} {cogname}")
         string = ""
         for command in coms:
-            description = command.brief if command.description != "" else "No description"
-            string = f"{string}[**`{command.name}`**]({command.help})\n*{description}*\n\n"
+            if command.callback.__doc__:
+                docstring = inspect.cleandoc(command.callback.__doc__)
+                parsed = parse_rst(docstring)
+                v = MyVisitor(parsed)
+                parsed.walk(v)
+                string = f"{string}\n[**`{command.name}`**]({command.usage}){v.string}"
         self.embed[-1].description = string
         self.embed[-1].set_footer(icon_url='https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Info_icon-72a7cf.svg/1200px-Info_icon-72a7cf.svg.png', text=f"Page {self.cog_counter} | For more detailed help on a command, use $help <command>")
         self.cog_counter = self.cog_counter+1
@@ -256,10 +261,10 @@ class EmbedHelper:
         description = command.description if command.description != "" else "No description"
         usage = ""
         parameters = command.usage
-        for parameter in parameters:
-            usage = f"{usage}`{parameter['p']}` {parameter['e']}\n"
-        self.embed[-1].add_field(name='\u200b', value=f"__Description:__\n{description}", inline=False)
-        self.embed[-1].add_field(name='\u200b', value=f"__Usage:__\n{usage}", inline=False)
+        #for parameter in parameters:
+        #    usage = f"{usage}`{parameter['p']}` {parameter['e']}\n"
+        #self.embed[-1].add_field(name='\u200b', value=f"__Description:__\n{description}", inline=False)
+        #self.embed[-1].add_field(name='\u200b', value=f"__Usage:__\n{usage}", inline=False)
 
     def reset(self):
         self.embed = []

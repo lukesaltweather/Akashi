@@ -1,4 +1,23 @@
 ======================================================================
 allstaff
 ======================================================================
-https://docs.lukesaltweather.de/commands/allstaff
+Description
+==============
+Return a list of all staff members.
+
+.. error::
+   Currently not working.
+
+Required Role
+=====================
+Role `Neko Herders`.
+
+Parameters
+===========
+
+Optional
+------------
+
+
+Related Articles:
+^^^^^^^^^^^^^^^^^^^^

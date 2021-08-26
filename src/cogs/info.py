@@ -41,9 +41,41 @@ class Info(commands.Cog):
         elif not guild:
             raise exceptions.MissingRequiredPermission("Missing permission `Server Member`")
 
-    @commands.command(aliases=["infochapters", "ic", "infoc"], description=jsonhelp["infochapter"]["description"],
-                      usage=jsonhelp["infochapter"]["usage"], brief=jsonhelp["infochapter"]["brief"], help=jsonhelp["infochapter"]["help"])
+    @commands.command(aliases=["infochapters", "ic", "infoc"], usage="https://akashi.readthedocs.io/en/stable/Info/infochapter.html")
     async def infochapter(self, ctx, *, flags: InfoChapter):
+        """
+        Description
+        ==============
+        Get info on chapters.
+
+        Required Role
+        =====================
+        Role `Neko Workers`.
+
+        Parameters
+        ===========
+
+        Optional
+        ------------
+        :project: List of projects the chapters can belong to.
+        :tl, rd, ts, pr: List of staff working on respective steps.
+        :chapter_from, chapter_upto: Give a minimum and/or maximum chapter number to look for.
+        :chapter: A list of numbers the found chapters can have.
+        :id: A list of ids the found chapters can have.
+        :release_from, release_upto, release_on: Filter for release Date.
+        :status: Current status of the chapter. Can be one of "active", "tl", "ts", "rd", "pr", "qcts" or "ready".
+        :fields: What columns to include in the result table.
+        :links: Either true or false, whether the bot sends the links to each steps of the chapters.
+
+        Related Articles:
+        ^^^^^^^^^^^^^^^^^^^^
+
+        You can find a tutorial on how to pass a list of arguments here:
+        :doc:`/Tutorials/ParamListTut`
+
+        Dates have to be in following format:
+        :doc:`/Tutorials/DateTutorial`
+        """
         session = ctx.session
         async with ctx.channel.typing():
             ts_alias = aliased(Staff)
@@ -288,9 +320,33 @@ class Info(commands.Cog):
                 for e in embed.embeds:
                     await ctx.send(embed=e)
 
-    @commands.command(aliases=["infoprojects", "infop", "ip"], description=jsonhelp["infoproject"]["description"],
-                      usage=jsonhelp["infoproject"]["usage"], brief=jsonhelp["infoproject"]["brief"], help=jsonhelp["infoproject"]["help"])
+    @commands.command(aliases=["infoprojects", "infop", "ip"], usage="https://akashi.readthedocs.io/en/stable/Info/infoproject.html")
     async def infoproject(self, ctx, *, flags: InfoProject):
+        """
+        Description
+        ==============
+        Get info on projects.
+
+        Required Role
+        =====================
+        Role `Neko Workers`.
+
+        Parameters
+        ===========
+
+        Optional
+        ------------
+        :status: Filter by current status of the project.
+        :tl, rd, ts, pr: Filter by Staff working on project.
+        :project: Filter by name.
+        :fields: What columns to include in the result table.
+
+        Related Articles:
+        ^^^^^^^^^^^^^^^^^^^^
+
+        You can find a list of possible fields here:
+        :doc:`/Tutorials/Fields`
+        """
         session = ctx.session
         async with ctx.channel.typing():
             ts_alias = aliased(Staff)
@@ -395,10 +451,32 @@ class Info(commands.Cog):
                 await ctx.send(embed=embed)
 
 
-    @commands.command(description=jsonhelp["allprojects"]["description"],
-                      usage=jsonhelp["allprojects"]["usage"], brief=jsonhelp["allprojects"]["brief"], help=jsonhelp["allprojects"]["help"])
+    @commands.command(usage="https://akashi.readthedocs.io/en/stable/Info/allprojects.html")
     async def allprojects(self, ctx):
-        session = self.bot.Session()
+        """
+        Description
+        ==============
+        Return a list of all project.
+
+        .. caution::
+            This command doesn't take any arguments.
+
+        Required Role
+        =====================
+        Role `Neko Workers`.
+
+        Parameters
+        ===========
+
+        Optional
+        ------------
+
+
+        Related Articles:
+        ^^^^^^^^^^^^^^^^^^^^
+
+        """
+        session = ctx.session
         try:
             ts_alias = aliased(Staff)
             rd_alias = aliased(Staff)
@@ -439,10 +517,32 @@ class Info(commands.Cog):
             session.close()
 
     @is_admin()
-    @commands.command(description=jsonhelp["allstaff"]["description"],
-                      usage=jsonhelp["allstaff"]["usage"], brief=jsonhelp["allstaff"]["brief"], help=jsonhelp["allstaff"]["help"])
+    @commands.command(usage="https://akashi.readthedocs.io/en/stable/Info/allstaff.html")
     async def allstaff(self, ctx):
-        session = self.bot.Session()
+        """
+        Description
+        ==============
+        Return a list of all staff members.
+
+        .. error::
+           Currently not working.
+
+        Required Role
+        =====================
+        Role `Neko Herders`.
+
+        Parameters
+        ===========
+
+        Optional
+        ------------
+
+
+        Related Articles:
+        ^^^^^^^^^^^^^^^^^^^^
+
+        """
+        session = ctx.session
         try:
             staff = session.query(Staff).all()
             embed = discord.Embed(
@@ -459,9 +559,30 @@ class Info(commands.Cog):
         finally:
             session.close()
 
-    @commands.command(description=jsonhelp["mycurrent"]["description"],
-                      usage=jsonhelp["mycurrent"]["usage"], brief=jsonhelp["mycurrent"]["brief"], help=jsonhelp["mycurrent"]["help"])
+    @commands.command(usage="https://akashi.readthedocs.io/en/stable/Info/mycurrent.html")
     async def mycurrent(self, ctx):
+        """
+        Description
+        ==============
+        Get info on projects you are currently working on.
+
+        .. caution::
+           Doesn't take any arguments.
+
+        Required Role
+        =====================
+        Role `Neko Workers`.
+
+        Parameters
+        ===========
+
+        Optional
+        ------------
+
+        Related Articles:
+        ^^^^^^^^^^^^^^^^^^^^
+
+        """
         session = self.bot.Session()
         ts_alias = aliased(Staff)
         rd_alias = aliased(Staff)
@@ -505,10 +626,34 @@ class Info(commands.Cog):
         await ctx.send(embed=embed)
         session.close()
 
-    @commands.command(description=jsonhelp["current"]["description"],
-                      usage=jsonhelp["current"]["usage"], brief=jsonhelp["current"]["brief"], help=jsonhelp["current"]["help"])
+    @commands.command(usage="https://akashi.readthedocs.io/en/stable/Info/current.html")
     async def current(self, ctx, member: discord.Member):
-        session = self.bot.Session()
+        """
+        Description
+        ==============
+        See what the given staffmember is currently working on.
+
+        Required Role
+        =====================
+        Role `Neko Workers`.
+
+        Parameters
+        ===========
+
+        Required
+        ------------
+        :Member: The person to look for.
+
+        .. danger::
+            Doesn't use the "normal" way to do commands. Just write the member's name `directly` after the command name like so:
+
+            `$current lukesaltweather`
+
+        Related Articles:
+        ^^^^^^^^^^^^^^^^^^^^
+
+        """
+        session = ctx.session
         ts_alias = aliased(Staff)
         rd_alias = aliased(Staff)
         tl_alias = aliased(Staff)
@@ -553,11 +698,3 @@ class Info(commands.Cog):
 
 def setup(Bot):
     Bot.add_cog(Info(Bot))
-"""
-class order_parser:
-    def __init__(self, user_input):
-        self.input = user_input
-
-    def parse(self):
-        if self.input.like("p"):
-            return"""

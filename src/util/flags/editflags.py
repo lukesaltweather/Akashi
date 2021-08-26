@@ -1,4 +1,4 @@
-from typing import Optional, Literal, Union
+from typing import Optional, Literal, Union, TypeVar, Generic
 
 from discord import Colour
 from discord.ext.commands import FlagConverter, flag, ColourConverter
@@ -8,23 +8,28 @@ from .baseflags import ChapterFlags
 from src.model.staff import Staff
 from src.model.project import Project
 
+from src.util.misc import MISSING
+
 NoneLiteral = Literal["None", "none"]
 
+def NoneOr(t):
+    return Union[NoneLiteral, t]
+
 class EditChapterFlags(ChapterFlags):
-    title: Optional[str]
-    tl: Union[NoneLiteral,Staff] = flag(default=None)
-    rd: Union[NoneLiteral,Staff] = flag(default=None)
-    ts: Union[NoneLiteral,Staff] = flag(default=None)
-    pr: Union[NoneLiteral,Staff] = flag(default=None)
-    link_tl: Optional[str]
-    link_rd: Optional[str]
-    link_ts: Optional[str]
-    link_pr: Optional[str]
-    link_qcts: Optional[str]
-    link_raw: Optional[str]
+    title: NoneOr(str) = flag(default=MISSING)
+    tl: NoneOr(Staff) = flag(default=MISSING)
+    rd: NoneOr(Staff) = flag(default=MISSING)
+    ts: NoneOr(Staff) = flag(default=MISSING)
+    pr: NoneOr(Staff) = flag(default=MISSING)
+    link_tl: NoneOr(str) = flag(default=MISSING)
+    link_rd: NoneOr(str) = flag(default=MISSING)
+    link_ts: NoneOr(str) = flag(default=MISSING)
+    link_pr: NoneOr(str) = flag(default=MISSING)
+    link_qcts: NoneOr(str) = flag(default=MISSING)
+    link_raw: NoneOr(str) = flag(default=MISSING)
     to_project: Optional[Project]
     to_chapter: Optional[float]
-    notes: Optional[str]
+    notes: NoneOr(str) = flag(default=MISSING)
 
 class ReleaseFlags(ChapterFlags):
     date: Optional[DateTimeConverter]

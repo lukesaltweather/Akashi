@@ -413,7 +413,7 @@ class Done(commands.Cog):
         elif not guild:
             raise exceptions.MissingRequiredPermission("Missing permission `Server Member`.")
 
-    @commands.command()
+    @commands.command(usage="https://akashi.readthedocs.io/en/stable/Done/done.html")
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.guild, wait=True)
     async def done(self, ctx, *, flags: DoneFlags):
         """

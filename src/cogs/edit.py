@@ -47,7 +47,7 @@ class Edit(commands.Cog):
             raise exceptions.MissingRequiredPermission("Missing permission `Server Member`")
 
 
-    @commands.command(aliases=["editch", "editc", "ec"])
+    @commands.command(aliases=["editch", "editc", "ec"], usage="https://akashi.readthedocs.io/en/stable/Edit/editchapter.html")
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
     async def editchapter(self, ctx, *, flags: EditChapterFlags):
         """
@@ -174,7 +174,7 @@ class Edit(commands.Cog):
                     await ctx.message.add_reaction("❌")
             await message.delete()
 
-    @commands.command(aliases=["editproj", "editp", "ep"])
+    @commands.command(aliases=["editproj", "editp", "ep"], usage="https://akashi.readthedocs.io/en/stable/Edit/editproject.html")
     @is_pu()
     async def editproject(self, ctx, *, flags: EditProjectFlags):
         """
@@ -283,7 +283,7 @@ class Edit(commands.Cog):
         await message.delete()
 
 
-    @commands.command()
+    @commands.command(usage="https://akashi.readthedocs.io/en/stable/Edit/editstaff.html")
     @is_admin()
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
     async def editstaff(self, ctx, *, flags: EditStaffFlags):
@@ -318,7 +318,7 @@ class Edit(commands.Cog):
             member.status = flags.status
         await ctx.message.add_reaction("👍")
 
-    @commands.command()
+    @commands.command(usage="https://akashi.readthedocs.io/en/stable/Edit/release.html")
     async def release(self, ctx, *, flags: ReleaseFlags):
         """
         Description

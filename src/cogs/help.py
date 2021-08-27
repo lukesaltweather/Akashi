@@ -116,7 +116,7 @@ class MyHelpCommand(commands.MinimalHelpCommand):
                 self.helper.add_cog(commands, category)
 
         await self.send_pages()
-        self.helper.reset()
+        self.helper.clear()
 
     async def send_command_help(self, command):
         self.helper.clear()
@@ -236,10 +236,11 @@ class EmbedHelper:
             "Assign": "🙋",
             "Done": "👍",
             "Note": "🗒️",
-            "MangaDex": "📖",
             "ReminderCog": "📅",
             "Tags": "📓"
-        }.pop(cogname, "")
+        }.pop(cogname, False)
+        if not emoji:
+            return
         self.embed[-1].set_author(name=f"{emoji} {cogname}")
         string = ""
         for command in coms:
@@ -247,8 +248,8 @@ class EmbedHelper:
                 docstring = inspect.cleandoc(command.callback.__doc__)
                 parsed = parse_rst(docstring)
                 v = MyVisitor(parsed)
-                parsed.walk(v)
-                string = f"{string}\n[**`{command.name}`**]({command.usage}){v.string}"
+                parsed.walkabout(v)
+                string = f"{string}\n[**`{command.name}`**]({command.usage}){v.sections.get('Description', '')}"
         self.embed[-1].description = string
         self.embed[-1].set_footer(icon_url='https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Info_icon-72a7cf.svg/1200px-Info_icon-72a7cf.svg.png', text=f"Page {self.cog_counter} | For more detailed help on a command, use $help <command>")
         self.cog_counter = self.cog_counter+1
@@ -257,25 +258,19 @@ class EmbedHelper:
         self.embed.append(discord.Embed(color=discord.Colour.dark_blue()))
         self.embed[-1].set_author(name=command.name, icon_url="https://rei.animecharactersdatabase.com/uploads/chars/9225-1377974027.png")
         self.embed[-1].title = "Docs"
-        self.embed[-1].url = command.help
-        description = command.description if command.description != "" else "No description"
-        usage = ""
-        parameters = command.usage
-        #for parameter in parameters:
-        #    usage = f"{usage}`{parameter['p']}` {parameter['e']}\n"
-        #self.embed[-1].add_field(name='\u200b', value=f"__Description:__\n{description}", inline=False)
-        #self.embed[-1].add_field(name='\u200b', value=f"__Usage:__\n{usage}", inline=False)
-
-    def reset(self):
-        self.embed = []
-        # self.embed = [discord.Embed(color=discord.Colour.dark_blue())]
-        # self.embed[0].set_author(name="Help",
-        #                          icon_url="https://rei.animecharactersdatabase.com/uploads/chars/9225-1377974027.png")
-        # self.embed[0].title = "Akashi Help"
-        # self.embed[
-        #     0].description = "Bot created by lukesaltweather@Nekyou.\nIf this help command doesn't help you with a problem, try visiting the docs first.\n" \
-        #                      "All commands are described in detail on there, as well as how to write commands in general."
-        # self.embed[0].set_footer(text="© Created by lukesaltweather#1111", icon_url="https://cdn.discordapp.com/avatars/358244935041810443/0c7effd92795854ef836c9ebe6404ff2.webp?size=1024")
+        self.embed[-1].url = command.usage
+        if command.callback.__doc__:
+            docstring = inspect.cleandoc(command.callback.__doc__)
+            parsed = parse_rst(docstring)
+            v = MyVisitor(parsed)
+            parsed.walkabout(v)
+            description = v.sections['Description']
+            parameters = v.params
+        else:
+            return
+        for parameter, param_desc in parameters.items():
+            self.embed[-1].add_field(name=parameter, value=f"`{param_desc}`", inline=False)
+        self.embed[-1].description = f"**Description:**\n```{description}```"
 
     def clear(self):
         self.embed = []

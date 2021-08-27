@@ -11,7 +11,7 @@ class CstmContext(commands.Context):
         super().__init__(**kwargs)
         self.session = self.bot.Session(autoflush=False, autocommit=False)
 
-    async def confirm(self, text = "", color = discord.Color.blue(),*, embed = None, file = None):
+    async def prompt_and_commit(self, text = "", color = discord.Color.blue(),*, embed = None, file = None):
         if not embed:
             embed = discord.Embed(description=text, color=color)
         if file:

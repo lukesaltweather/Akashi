@@ -65,12 +65,14 @@ def parse_rst(text: str) -> docutils.nodes.document:
 class MyVisitor(docutils.nodes.NodeVisitor):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.string = ""
+        self.sections = dict()
+        self.params = dict()
+        self.curr_field = None
         self.current_section = None
+        self.required = False
 
     def visit_paragraph(self, node: docutils.nodes.paragraph):
-        if self.current_section == "Description":
-            self.string = f"{self.string}\n\t*{node.astext()}*\n"
+        self.sections[self.current_section] = node.astext()
 
     def visit_document(self, node):
         pass
@@ -88,16 +90,22 @@ class MyVisitor(docutils.nodes.NodeVisitor):
         pass
 
     def visit_field_list(self, node: docutils.nodes.field_list):
-        pass
+        if self.current_section == "Required":
+            self.required = True
+        elif self.current_section == "Optional":
+            self.required = False
+
+    def depart_field_list(self, node: docutils.nodes.field_list):
+        self.required = False
 
     def visit_field(self, node: docutils.nodes.field):
         pass
 
     def visit_field_name(self, node: docutils.nodes.field_name):
-        pass
+        self.curr_field = f"{node.astext()} {'(Required)' if self.required else ''}"
 
     def visit_field_body(self, node: docutils.nodes.field_body):
-        pass
+        self.params[self.curr_field] = node.astext()
 
     def visit_image(self, node: docutils.nodes.image):
         pass
@@ -116,4 +124,7 @@ class MyVisitor(docutils.nodes.NodeVisitor):
 
     def unknown_visit(self, node: docutils.nodes.Node) -> None:
         """Called for all other node types."""
+        pass
+
+    def unknown_departure(self, node):
         pass

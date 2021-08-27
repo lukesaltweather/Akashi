@@ -43,7 +43,7 @@ class Add(commands.Cog):
             raise exceptions.MissingRequiredPermission("Missing permission `Server Member`")
 
 
-    @commands.command()
+    @commands.command(usage="https://akashi.readthedocs.io/en/stable/Add/addstaff.html")
     @is_admin()
     async def addstaff(self, ctx: CstmContext, *, flags: AddStaffFlags):
         """
@@ -64,7 +64,7 @@ class Add(commands.Cog):
         ctx.session.add(st)
         await ctx.send("Successfully added {} to staff. ".format(member.name))
 
-    @commands.command(aliases=["ap", "addp", "addproj"])
+    @commands.command(aliases=["ap", "addp", "addproj"], usage="https://akashi.readthedocs.io/en/stable/Add/addproject.html")
     @is_pu()
     async def addproject(self, ctx, *, flags: AddProjectFlags):
         """
@@ -104,7 +104,7 @@ class Add(commands.Cog):
         pr.thumbnail = flags.thumbnail
         session.add(pr)
 
-    @commands.command(aliases=["mac", "massaddchapters", "addchapters", 'bigmac'])
+    @commands.command(aliases=["mac", "massaddchapters", "addchapters", 'bigmac'], usage="https://akashi.readthedocs.io/en/stable/Add/massaddchapters.html")
     @is_pu()
     async def massaddchapter(self, ctx: CstmContext, *, flags: MassAddFlags):
         """
@@ -153,7 +153,7 @@ class Add(commands.Cog):
                 session.add(chp)
             await ctx.send(f'Successfully added {str(len(content))} chapters of `{project.title}`!')
 
-    @commands.command(aliases=["ac", "addch", "addc"])
+    @commands.command(aliases=["ac", "addch", "addc"], usage="https://akashi.readthedocs.io/en/stable/Add/addchapter.html")
     async def addchapter(self, ctx: CstmContext, *, flags: AddChapterFlags):
         """
         Description

@@ -1,13 +1,14 @@
 
 import os
 
+import aiofiles
 import asyncpg
 
 import sqlalchemy
 
 from discord.ext import commands
-from discord.ext.commands import MissingRequiredArgument
-from discord.ext import ipc
+
+from sqlalchemy import create_engine
 
 from sqlalchemy.orm import sessionmaker, aliased
 
@@ -19,34 +20,45 @@ from src.util.checks import is_admin
 from src.model.message import Message
 from src.util.context import CstmContext
 
-from src.util.db import loadDB
-from src.model import testdb
-
-
 from src.util.exceptions import ReactionInvalidRoleError, TagAlreadyExists, CancelError
 from src.util.search import *
 from src.util.misc import *
 import logging
 
-with open('src/util/config.json', 'r') as f:
-    config = json.load(f)
-
-with open('src/util/help.json', 'r') as f:
-    jsonhelp = json.load(f)
+import toml
 
 with open('src/util/emojis.json', 'r') as f:
     emojis = json.load(f)
 
-engine = loadDB(config["db_uri"])
 logger = logging.getLogger('discord')
-logger.setLevel(logging.INFO)
-handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+logger.setLevel(logging.WARNING)
+handler = logging.FileHandler(filename='bot.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
 class Bot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.config = toml.load('config.toml')
+        self.pool = asyncio.get_event_loop().run_until_complete(
+            asyncpg.create_pool(self.config.get("general").get("uri"), min_size=1, max_size=10))
+        self.Session = sessionmaker(bind=create_engine(self.config['general']['uri'], pool_size=20))
+        self.em = emojis
+        self.uptime = datetime.datetime.now()
+        self.load_extension('src.cogs.loops')
+        self.load_extension('src.cogs.edit')
+        self.load_extension('src.cogs.misc')
+        self.load_extension('src.cogs.info')
+        self.load_extension('src.cogs.add')
+        self.load_extension('src.cogs.done')
+        self.load_extension('src.cogs.note')
+        self.load_extension('src.cogs.help')
+        self.load_extension('src.cogs.stats')
+        self.load_extension("jishaku")
+
+    async def store_config(self):
+        async with aiofiles.open('config.toml', mode='w') as file:
+            await file.write(toml.dumps(self.config))
 
     async def on_message(self, message):
         ctx = await self.get_context(message, cls=CstmContext)
@@ -67,53 +79,36 @@ class Bot(commands.Bot):
         a_lower = {k.lower():v for k,v in self.cogs.items()}
         return a_lower.get(name.lower())
 
-    def build_docs(self, path = "docs/"):
-        commands = self.walk_commands()
-        for command in commands:
-            pass
+bot = Bot(command_prefix='$', intents=discord.Intents.all())
 
-if config["online"]:
-    bot = Bot(command_prefix='$', intents=discord.Intents.all())
-else:
-    bot = Bot(command_prefix='-', intents=discord.Intents.all())
-
-bot.Session = sessionmaker(bind=engine)
-bot.config = config
-bot.pool = asyncio.get_event_loop().run_until_complete(asyncpg.create_pool(bot.config.get("db_uri"), min_size=1, max_size=10))
-bot.load_extension('src.cogs.loops')
-bot.load_extension('src.cogs.edit')
-bot.load_extension('src.cogs.misc')
-bot.load_extension('src.cogs.info')
-bot.load_extension('src.cogs.add')
-bot.load_extension('src.cogs.done')
-bot.load_extension('src.cogs.note')
-bot.load_extension('src.cogs.help')
-bot.load_extension('src.cogs.reminder')
-bot.load_extension('src.cogs.stats')
-bot.load_extension("jishaku")
-bot.load_extension('src.cogs.tags')
-bot.load_extension('src.cogs.mangadex')
-bot.em = emojis
-bot.debug = False
 print(discord.version_info)
-bot.uptime = datetime.datetime.now()
 
 @bot.after_invoke
 async def after_invoke_hook(ctx: CstmContext):
-    ctx.session.commit()
     ctx.session.close()
 
 @bot.check
 async def globally_block_dms(ctx):
     return ctx.guild is not None
 
+@bot.check
+async def only_members(ctx):
+    worker = ctx.guild.get_role(ctx.bot.config["server"]["roles"]["member"])
+    ia = worker in ctx.message.author.roles
+    ic = ctx.channel.id == ctx.bot.config["server"]["channels"]["commands"]
+    guild = ctx.guild is not None
+    if ia and ic and guild:
+        return True
+    elif ic:
+        raise exceptions.MissingRequiredPermission("Wrong Channel.")
+    elif not guild:
+        raise exceptions.MissingRequiredPermission("Missing permission `Server Member`")
+
 @bot.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
     activity = discord.Activity(name='$help', type=discord.ActivityType.playing)
     await bot.change_presence(activity=activity)
-    # Set-up the engine here.
-    # Create a session
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -174,106 +169,6 @@ async def on_member_update(before: discord.Member , after: discord.Member):
         finally:
             session1.close()
 
+bot.run(bot.config["general"]["bot_key"])
 
-@bot.event
-async def on_raw_reaction_add(payload):
-    guild = bot.get_guild(config["guild_id"])
-    nw = discord.utils.find(lambda r: r.id == config["neko_workers"], guild.roles)
-    has_role = nw in guild.get_member(payload.user_id).roles
-    channel = bot.get_channel(payload.channel_id)
-    user = guild.get_member(payload.user_id)
-    if payload.user_id != 603216263484801039 and has_role:
-        msg = None
-        session = bot.Session()
-        message = await channel.fetch_message(payload.message_id)
-        try:
-            msg = session.query(Message).filter(payload.message_id == Message.message_id).one()
-            print(msg)
-        except:
-            session.close()
-        try:
-            if int(msg.awaiting) == config["ts_id"]:
-                ts = (bot.get_guild(payload.guild_id)).get_role(config["ts_id"])
-                if ts not in await get_roles(user):
-                    raise ReactionInvalidRoleError
-                else:
-                    ts_alias = aliased(Staff)
-                    chp = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id).filter(Chapter.id == msg.chapter).one()
-                    chp.typesetter = await dbstaff(payload.user_id, session)
-                    author = bot.user
-                    embed = misc.completed_embed(chp, author, user, "RD", "TS", bot)
-                    session.delete(msg)
-                    msg2 = await channel.fetch_message(payload.message_id)
-                    await msg2.clear_reactions()
-                    await msg2.unpin()
-                    await msg2.edit(embed=embed)
-                    await msg2.add_reaction("✅")
-                    session.commit()
-                session.close()
-            elif int(msg.awaiting) == config["rd_id"]:
-                rd = (bot.get_guild(payload.guild_id)).get_role(config["rd_id"])
-                if rd not in await get_roles(user):
-                    raise ReactionInvalidRoleError
-                else:
-                    rd_alias = aliased(Staff)
-                    chp = session.query(Chapter).outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id).filter(
-                        Chapter.id == msg.chapter).one()
-                    chp.redrawer = await dbstaff(payload.user_id, session)
-                    author = bot.user
-                    embed = misc.completed_embed(chp, author, user, "TL", "RD", bot)
-                    session.delete(msg)
-                    msg2 = await channel.fetch_message(payload.message_id)
-                    await msg2.clear_reactions()
-                    await msg2.unpin()
-                    await msg2.edit(embed=embed)
-                    await msg2.add_reaction("✅")
-                    session.commit()
-                session.close()
-            elif int(msg.awaiting) == config["tl_id"]:
-                tl = (bot.get_guild(payload.guild_id)).get_role(config["tl_id"])
-                if tl not in await get_roles(user):
-                    raise ReactionInvalidRoleError
-                else:
-                    ts_alias = aliased(Staff)
-                    chp = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id).filter(
-                        Chapter.id == msg.chapter).one()
-                    chp.translator = await dbstaff(payload.user_id, session)
-                    author = bot.user
-                    embed = misc.completed_embed(chp, author, user, "RAW", "RD", bot)
-                    session.delete(msg)
-                    msg2 = await channel.fetch_message(payload.message_id)
-                    await msg2.clear_reactions()
-                    await msg2.unpin()
-                    await msg2.edit(embed=embed)
-                    await msg2.add_reaction("✅")
-                    session.commit()
-                session.close()
-            elif int(msg.awaiting) == config["pr_id"]:
-                pr = (bot.get_guild(payload.guild_id)).get_role(config["pr_id"])
-                if pr not in await get_roles(user):
-                    raise ReactionInvalidRoleError
-                else:
-                    pr_alias = aliased(Staff)
-                    chp = session.query(Chapter).outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id).filter(
-                        Chapter.id == msg.chapter).one()
-                    chp.proofreader = await dbstaff(payload.user_id, session)
-                    author = bot.user
-                    embed = misc.completed_embed(chp, author, user, "TS", "PR", bot)
-                    session.delete(msg)
-                    msg2 = await channel.fetch_message(payload.message_id)
-                    await msg2.clear_reactions()
-                    await msg2.unpin()
-                    await msg2.edit(embed=embed)
-                    await msg2.add_reaction("✅")
-                    session.commit()
-                session.close()
-        except Exception as e:
-            print(e)
-        finally:
-            session.close()
-
-if config["online"]:
-    bot.run(config["heroku_key"])
-else:
-    bot.run(config["offline_key"])
 

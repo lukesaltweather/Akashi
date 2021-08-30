@@ -17,31 +17,12 @@ from src.util.search import searchproject, searchstaff
 from src.util.misc import formatNumber
 from src.util.checks import is_admin, is_pu
 
-with open('src/util/config.json', 'r') as f:
-    config = json.load(f)
-
-with open('src/util/help.json', 'r') as f:
-    jsonhelp = json.load(f)
-
 class Add(commands.Cog):
     """
         Cog with all of the commands used for adding to the database
     """
     def __init__(self, client):
         self.bot = client
-
-    async def cog_check(self, ctx):
-        worker = ctx.guild.get_role(self.bot.config["neko_workers"])
-        ia = worker in ctx.message.author.roles
-        ic = ctx.channel.id == self.bot.config["command_channel"]
-        guild = ctx.guild is not None
-        if ia and ic and guild:
-            return True
-        elif ic:
-            raise exceptions.MissingRequiredPermission("Wrong Channel.")
-        elif not guild:
-            raise exceptions.MissingRequiredPermission("Missing permission `Server Member`")
-
 
     @commands.command(usage="https://akashi.readthedocs.io/en/stable/Add/addstaff.html")
     @is_admin()

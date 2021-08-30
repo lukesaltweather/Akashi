@@ -214,6 +214,12 @@ class BoardPaginator:
         self.embeds = list()
         self.thumbnail = ""
 
+    def __len__(self):
+        l = 0
+        for e in self.embeds:
+            l += len(e)
+        return l
+
     async def send_all(self, channel):
         for e in self.embeds:
             await channel.send(embed=e)

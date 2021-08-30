@@ -13,14 +13,11 @@ from src.util.misc import formatNumber, make_mentionable
 from src.util.context import CstmContext
 from abc import abstractmethod
 
-with open('src/util/help.json', 'r') as f:
-    jsonhelp = json.load(f)
-
 class command_helper:
     def __init__(self, ctx: CstmContext, flags: DoneFlags):
         self.bot = ctx.bot
         self.ctx = ctx
-        self.channel = ctx.guild.get_channel(self.bot.config.get("file_room", 408848958232723467))
+        self.channel = ctx.guild.get_channel(self.bot.config["server"]["channels"]["updates"])
         self.message = ctx.message
         self.chapter = flags.chapter
         self.session = ctx.session
@@ -32,7 +29,7 @@ class command_helper:
         pass
 
     async def confirm(self, preview):
-        if self.skip_confirm is None:
+        if not self.skip_confirm:
             embed = discord.Embed(color=discord.Colour.gold())
             embed.description = f"This will do the following:\n```{preview}```\n\n Press ✉ to mention, 📝 to not mention, ❌ to cancel."
 
@@ -64,8 +61,6 @@ class command_helper:
                     self.session.rollback()
                     raise RuntimeError("Command Cancelled.")
         else:
-            if self.skip_confirm:
-                return discord.AllowedMentions(everyone=True, users=True, roles=True)
             return discord.AllowedMentions(everyone=False, users=False, roles=False)
 
     def get_emojis(self, chapter):
@@ -113,12 +108,12 @@ class command_helper:
         elif next_step == "RL":
             links["QCTS"] = chapter.link_rl
         e = discord.Embed(color=discord.Colour.green())
-        e.set_author(name=f"Next up: {mem.display_name} | {next_step}", icon_url=mem.avatar_url)
+        e.set_author(name=f"Next up: {mem.display_name} | {next_step}", icon_url=mem.display_avatar.url)
         e.description=f"{author.mention} finished `{project}` Ch. `{formatNumber(number)}` | {step}\n"
         links = '\n'.join(['[%s](%s)' % (key, value) for (key, value) in links.items()])
         e.description=f"{e.description}\n{links}\n\n`Notes:`\n```{notes}```"
         e.description=f"{e.description}\n{self.get_emojis(chapter)}"
-        e.set_footer(text=f"Step finished by {author.display_name}", icon_url=author.avatar_url)
+        e.set_footer(text=f"Step finished by {author.display_name}", icon_url=author.display_avatar.url)
         return e
 
 
@@ -177,10 +172,10 @@ class TL_helper(command_helper):
         """
         if self.chapter.project.redrawer is None:
             self.message = await self.confirm("Notify Redrawer Role")
-            rd = await make_mentionable(self.ctx.guild.get_role(int(self.bot.config["rd_id"])))
+            rd = await make_mentionable(self.ctx.guild.get_role(self.bot.config["server"]["roles"]["rd"]))
             msg = await self.channel.send(f"{rd}\nRedrawer required for `{self.chapter.project.title} {formatNumber(self.chapter.number)}`. React below to assign yourself.", allowed_mentions=self.message)
             await msg.add_reaction("🙋")
-            msgdb = Message(msg.id, self.bot.config["rd_id"], "🙋")
+            msgdb = Message(msg.id, self.bot.config["server"]["roles"]["rd"], "🙋")
             await msg.pin()
             msgdb.chapter = self.chapter.id
             msgdb.created_on = func.now()
@@ -201,12 +196,12 @@ class TL_helper(command_helper):
         """
         if self.chapter.project.typesetter is None:
             self.message = await self.confirm("Notify Typesetter Role")
-            ts = await make_mentionable(self.ctx.guild.get_role(int(self.bot.config["ts_id"])))
+            ts = await make_mentionable(self.ctx.guild.get_role(self.bot.config["server"]["roles"]["ts"]))
             msg = await self.channel.send(
                 f"{ts}\nTypesetter required for `{self.chapter.project.title} {formatNumber(self.chapter.number)}`. React below to assign yourself.", allowed_mentions=self.message)
             await msg.add_reaction("🙋")
             await msg.pin()
-            msgdb = Message(msg.id, self.bot.config["ts_id"], "🙋")
+            msgdb = Message(msg.id, self.bot.config["server"]["roles"]["ts"], "🙋")
             msgdb.chapter = self.chapter.id
             msgdb.created_on = func.now()
             self.session.add(msgdb)
@@ -246,12 +241,12 @@ class TS_helper(command_helper):
     async def __no_proofreader(self):
         if self.chapter.project.proofreader is None:
             self.message = await self.confirm("Notify Proofreader Role")
-            pr = await make_mentionable(self.ctx.guild.get_role(int(self.bot.config["pr_id"])))
+            pr = await make_mentionable(self.ctx.guild.get_role(self.bot.config["server"]["roles"]["pr"]))
             msg = await self.channel.send(
                 f"{pr}\nProofreader required for `{self.chapter.project.title} {formatNumber(self.chapter.number)}`. React below to assign yourself.", allowed_mentions=self.message)
             await msg.add_reaction("🙋")
             await msg.pin()
-            msgdb = Message(msg.id, self.bot.config["pr_id"], "🙋")
+            msgdb = Message(msg.id, self.bot.config["server"]["roles"]["pr"], "🙋")
             msgdb.chapter = self.chapter.id
             msgdb.created_on = func.now()
             self.session.add(msgdb)
@@ -386,11 +381,11 @@ class RD_helper(command_helper):
 
         else:
             self.message = await self.confirm("Notify Typesetter Role")
-            ts = await make_mentionable(self.ctx.guild.get_role(int(self.bot.config["ts_id"])))
+            ts = await make_mentionable(self.ctx.guild.get_role(self.bot.config["server"]["roles"]["ts"]))
             msg = await self.channel.send(
                 f"{ts}\nTypesetter required for `{self.chapter.project.title} {formatNumber(self.chapter.number)}`.\nReact below to assign yourself.", allowed_mentions=self.message)
             await msg.add_reaction("🙋")
-            msgdb = Message(msg.id, self.bot.config["ts_id"], "🙋")
+            msgdb = Message(msg.id, self.bot.config["server"]["roles"]["ts"], "🙋")
             await msg.pin()
             msgdb.chapter = self.chapter.id
             msgdb.created_on = func.now()
@@ -400,22 +395,9 @@ class Done(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def cog_check(self, ctx):
-        worker = ctx.guild.get_role(self.bot.config["neko_workers"])
-        herder = ctx.guild.get_role(345798301322575882)
-        ia = (worker in ctx.message.author.roles) or (herder in ctx.message.author.roles)
-        ic = ctx.channel.id == self.bot.config["command_channel"]
-        guild = ctx.guild is not None
-        if ia and ic and guild:
-            return True
-        elif ic:
-            raise exceptions.MissingRequiredPermission("Missing permission `Neko Worker`.")
-        elif not guild:
-            raise exceptions.MissingRequiredPermission("Missing permission `Server Member`.")
-
     @commands.command(usage="https://akashi.readthedocs.io/en/stable/Done/done.html")
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.guild, wait=True)
-    async def done(self, ctx, *, flags: DoneFlags):
+    async def done(self, ctx: CstmContext, *, flags: DoneFlags):
         """
         Description
         ==============
@@ -454,6 +436,10 @@ class Done(commands.Cog):
         elif flags.step == "rd":
             RD = RD_helper(ctx, flags)
             await RD.execute()
+
+    @commands.command(aliases=["claim"])
+    async def take(self, ctx: CstmContext):
+        pass
 
 def setup(Bot):
     Bot.add_cog(Done(Bot))

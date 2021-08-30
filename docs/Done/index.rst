@@ -9,3 +9,4 @@ Commands
     :maxdepth: 1
 
     done
+    take

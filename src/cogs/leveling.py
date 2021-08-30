@@ -13,6 +13,11 @@ class Leveling(commands.Cog):
         self.pool = client.pool
         self.cdmanager = CooldownManager(client.loop)
 
+    @commands.Command()
+    async def store_current_levels(self):
+        pass
+
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         author_id = message.author.id

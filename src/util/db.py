@@ -7,5 +7,5 @@ from sqlalchemy.orm import sessionmaker
 Base = declarative_base()
 
 def loadDB(uri):
-    engine = create_engine(uri, pool_size=20)
+
     return engine

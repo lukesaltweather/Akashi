@@ -142,18 +142,6 @@ class MyCog(commands.Cog):
         bot.help_command = MyHelpCommand(dm_help=True)
         bot.help_command.cog = self
 
-    async def cog_check(self, ctx):
-        # worker = ctx.guild.get_role(self.bot.config["neko_workers"])
-        # ia = worker in ctx.message.author.roles
-        # ic = ctx.channel.id == self.bot.config["command_channel"]
-        guild = ctx.guild is not None
-        if guild:
-            return True
-        # elif ic:
-        #     raise exceptions.MissingRequiredPermission("Wrong Channel.")
-        elif not guild:
-            raise exceptions.MissingRequiredPermission("Missing permission `Server Member`")
-
     def cog_unload(self):
         self.bot.help_command = self._original_help_command
 

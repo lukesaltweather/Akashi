@@ -9,9 +9,6 @@ import src.model.project as project
 from src.util import exceptions, misc
 from src.util.exceptions import StaffNotFoundError, NoResultFound
 
-with open('src/util/config.json', 'r') as f:
-    config = json.load(f)
-
 async def discordstaff(sti: str, ctx):
     try:
         conv = discord.ext.commands.MemberConverter()

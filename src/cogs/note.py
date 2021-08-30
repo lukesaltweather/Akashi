@@ -13,8 +13,6 @@ from src.util import exceptions
 from src.util.search import searchproject, searchstaff, fakesearch
 from src.util.misc import FakeUser, formatNumber, make_mentionable, toggle_mentionable, strx
 
-with open('src/util/help.json', 'r') as f:
-    jsonhelp = json.load(f)
 
 
 class Note(commands.Cog):
@@ -22,22 +20,7 @@ class Note(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-
-    async def cog_check(self, ctx):
-        worker = ctx.guild.get_role(self.bot.config["neko_workers"])
-        ia = worker in ctx.message.author.roles
-        ic = ctx.channel.id == self.bot.config["command_channel"]
-        guild = ctx.guild is not None
-        if ia and ic and guild:
-            return True
-        elif ic:
-            raise exceptions.MissingRequiredPermission("Missing permission `Neko Worker`.")
-        elif not guild:
-            raise exceptions.MissingRequiredPermission("Missing permission `Server Member`.")
-
-
-    @commands.command(aliases=["an"], description=jsonhelp["addnote"]["description"],
-                      usage=jsonhelp["addnote"]["usage"], brief=jsonhelp["addnote"]["brief"], help=jsonhelp["addnote"]["help"])
+    @commands.command(aliases=["an"])
     async def addnote(self, ctx, *, arg):
         session = self.bot.Session()
         try:
@@ -54,8 +37,7 @@ class Note(commands.Cog):
             session.close()
 
 
-    @commands.command(aliases=["n", "notes"],description=jsonhelp["note"]["description"],
-                      usage=jsonhelp["note"]["usage"], brief=jsonhelp["note"]["brief"], help=jsonhelp["note"]["help"])
+    @commands.command()
     async def note(self, ctx, *, arg):
         session = self.bot.Session()
         try:

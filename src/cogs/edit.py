@@ -22,9 +22,6 @@ from src.util.checks import is_admin, is_pu
 
 from src.util.flags.editflags import EditStaffFlags, EditChapterFlags, EditProjectFlags, ReleaseFlags
 
-with open('src/util/help.json', 'r') as f:
-    jsonhelp = json.load(f)
-
 class Edit(commands.Cog):
     """
     Test description
@@ -32,20 +29,6 @@ class Edit(commands.Cog):
 
     def __init__(self, client):
         self.bot = client
-
-
-    async def cog_check(self, ctx):
-        worker = ctx.guild.get_role(self.bot.config["neko_workers"])
-        ia = worker in ctx.message.author.roles
-        ic = ctx.channel.id == self.bot.config["command_channel"]
-        guild = ctx.guild is not None
-        if ia and ic and guild:
-            return True
-        elif ic:
-            raise exceptions.MissingRequiredPermission("Wrong Channel.")
-        elif not guild:
-            raise exceptions.MissingRequiredPermission("Missing permission `Server Member`")
-
 
     @commands.command(aliases=["editch", "editc", "ec"], usage="https://akashi.readthedocs.io/en/stable/Edit/editchapter.html")
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)

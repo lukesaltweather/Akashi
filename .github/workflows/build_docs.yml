@@ -25,7 +25,7 @@ jobs:
         poetry run python -m src.util.docs
     - uses: EndBug/add-and-commit@v7 # You can change this to use a specific version.
       with:
-        add: 'src'
+        add: 'docs/*'
         author_name: Author Name
         message: 'Built docs.'
         pull_strategy: 'NO-PULL'

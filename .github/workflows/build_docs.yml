@@ -5,9 +5,9 @@ name: Build and commit docs.
 
 on:
   push:
-    branches: [ master, master ]
+    branches: [ master, v2 ]
   pull_request:
-    branches: [ master, master ]
+    branches: [ master, v2 ]
 
 jobs:
   build:

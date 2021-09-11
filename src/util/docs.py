@@ -53,7 +53,7 @@ Commands
                         file.write(
                             "------------------------------------------------------------\n"
                         )
-                        file.write(f"Aliases: {command.aliases}")
+                        file.write(f"Aliases: {', '.join(command.aliases)}\n")
                         file.write(
                             "------------------------------------------------------------\n"
                         )

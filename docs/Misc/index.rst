@@ -12,5 +12,4 @@ Commands
     apply
     stats
     addall
-    toggledebug
     avatar

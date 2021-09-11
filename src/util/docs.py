@@ -12,6 +12,7 @@ from pathlib import Path
 
 if __name__ == "__main__":
     from discord.ext import commands
+
     class Bot(commands.Bot):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -22,45 +23,66 @@ if __name__ == "__main__":
                 with open(f"docs/{cogname}/index.rst", "w+") as file:
                     file.write("==============================\n")
                     file.write(cogname)
-                    file.write(f"""\n==============================
+                    file.write(
+                        f"""\n==============================
 {cog.__cog_description__}
 
 Commands
-^^^^^^^^^^\n""")
-                    commands = '\n    '.join(command.name for command in cog.walk_commands())
-                    file.write(f""".. toctree::
+^^^^^^^^^^\n"""
+                    )
+                    commands = "\n    ".join(
+                        command.name for command in cog.walk_commands()
+                    )
+                    file.write(
+                        f""".. toctree::
     :maxdepth: 1
 
     {commands}
-""")
+"""
+                    )
                 for command in cog.walk_commands():
                     command: commands.Command
                     with open(f"docs/{cogname}/{command.name}.rst", "w+") as file:
-                        file.write("======================================================================\n")
+                        file.write(
+                            "======================================================================\n"
+                        )
                         file.write(f"{command.name}\n")
-                        file.write("======================================================================\n")
+                        file.write(
+                            "======================================================================\n"
+                        )
+                        file.write(
+                            "------------------------------------------------------------\n"
+                        )
+                        file.write(f"Aliases: {command.aliases}")
+                        file.write(
+                            "------------------------------------------------------------\n"
+                        )
                         if command.help:
                             file.write(command.help)
 
     bot = Bot(command_prefix="?")
-    bot.load_extension('src.cogs.edit')
-    bot.load_extension('src.cogs.misc')
-    bot.load_extension('src.cogs.info')
-    bot.load_extension('src.cogs.add')
-    bot.load_extension('src.cogs.done')
-    bot.load_extension('src.cogs.note')
-    bot.load_extension('src.cogs.help')
-    bot.load_extension('src.cogs.stats')
+    bot.load_extension("src.cogs.edit")
+    bot.load_extension("src.cogs.misc")
+    bot.load_extension("src.cogs.info")
+    bot.load_extension("src.cogs.add")
+    bot.load_extension("src.cogs.done")
+    bot.load_extension("src.cogs.note")
+    bot.load_extension("src.cogs.help")
+    bot.load_extension("src.cogs.stats")
+
     bot.build_docs()
 
 
 def parse_rst(text: str) -> docutils.nodes.document:
     parser = docutils.parsers.rst.Parser()
     components = (docutils.parsers.rst.Parser,)
-    settings = docutils.frontend.OptionParser(components=components).get_default_values()
-    document = docutils.utils.new_document('<rst-doc>', settings=settings)
+    settings = docutils.frontend.OptionParser(
+        components=components
+    ).get_default_values()
+    document = docutils.utils.new_document("<rst-doc>", settings=settings)
     parser.parse(text, document)
     return document
+
 
 class MyVisitor(docutils.nodes.NodeVisitor):
     def __init__(self, *args, **kwargs):

@@ -25,14 +25,15 @@ class AddProjectFlags(FlagConverter):
     icon: Optional[str]
     thumbnail: str
     title: str
-    status: str = flag(default = "active")
+    status: str = flag(default="active")
     altnames: str = flag(default=None)
     link: str
+
 
 class AddStaffFlags(FlagConverter):
     member: Member
 
+
 class MassAddFlags(FlagConverter):
     chapter: int
     project: Project
-

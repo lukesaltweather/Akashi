@@ -6,7 +6,7 @@ from src.model.project import Project
 
 
 class Tag(Base):
-    __tablename__="tag"
+    __tablename__ = "tag"
     tag = Column(String, primary_key=True, nullable=False)
     content = Column(String, nullable=False)
     author = Column(BigInteger, nullable=False)

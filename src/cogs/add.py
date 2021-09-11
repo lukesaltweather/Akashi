@@ -12,15 +12,22 @@ from src.model.chapter import Chapter
 from src.model.project import Project
 from src.model.staff import Staff
 from src.util import exceptions, misc
-from src.util.flags.addflags import AddStaffFlags, AddProjectFlags, AddChapterFlags, MassAddFlags
+from src.util.flags.addflags import (
+    AddStaffFlags,
+    AddProjectFlags,
+    AddChapterFlags,
+    MassAddFlags,
+)
 from src.util.search import searchproject, searchstaff
-from src.util.misc import formatNumber
+from src.util.misc import format_number
 from src.util.checks import is_admin, is_pu
+
 
 class Add(commands.Cog):
     """
-        Cog with all of the commands used for adding to the database
+    Cog with all of the commands used for adding to the database
     """
+
     def __init__(self, client):
         self.bot = client
 
@@ -40,14 +47,18 @@ class Add(commands.Cog):
         ===========
         :member: The Member to be added by Mention, ID, or Name
         """
-        member =  flags.member
+        member = flags.member
         st = Staff(member.id, member.name)
         ctx.session.add(st)
+        await ctx.session.commit()
         await ctx.send("Successfully added {} to staff. ".format(member.name))
 
-    @commands.command(aliases=["ap", "addp", "addproj"], usage="https://akashi.readthedocs.io/en/stable/Add/addproject.html")
+    @commands.command(
+        aliases=["ap", "addp", "addproj"],
+        usage="https://akashi.readthedocs.io/en/stable/Add/addproject.html",
+    )
     @is_pu()
-    async def addproject(self, ctx, *, flags: AddProjectFlags):
+    async def addproject(self, ctx: CstmContext, *, flags: AddProjectFlags):
         """
         Description
         ==============
@@ -74,7 +85,9 @@ class Add(commands.Cog):
         """
         session = ctx.session
         if searchproject(flags.title, session):
-            raise discord.ext.commands.CommandError(f"Project {flags.title} already exists.")
+            raise discord.ext.commands.CommandError(  # type: ignore
+                f"Project {flags.title} already exists."
+            )
 
         pr = Project(flags.title, flags.status, flags.link, flags.altnames)
         pr.tl = flags.tl
@@ -82,10 +95,18 @@ class Add(commands.Cog):
         pr.ts = flags.ts
         pr.pr = flags.pr
         pr.icon = flags.icon
-        pr.thumbnail = flags.thumbnail
+        pr.thumbnail = flags.thumbnail  # type: ignore
         session.add(pr)
+        await ctx.prompt_and_commit(
+            embed=discord.Embed(
+                title=f"Do you really want to add the project {pr.title}"
+            )
+        )
 
-    @commands.command(aliases=["mac", "massaddchapters", "addchapters", 'bigmac'], usage="https://akashi.readthedocs.io/en/stable/Add/massaddchapters.html")
+    @commands.command(
+        aliases=["mac", "massaddchapters", "addchapters", "bigmac"],
+        usage="https://akashi.readthedocs.io/en/stable/Add/massaddchapters.html",
+    )
     @is_pu()
     async def massaddchapter(self, ctx: CstmContext, *, flags: MassAddFlags):
         """
@@ -116,25 +137,35 @@ class Add(commands.Cog):
         project = flags.project
         session = ctx.session
 
-        message = await ctx.send('Please paste the links, with one link per line.')
+        message = await ctx.send("Please paste the links, with one link per line.")
 
         def check(message):
-            return message.author == ctx.message.author and message.channel == ctx.channel
+            return (
+                message.author == ctx.message.author and message.channel == ctx.channel
+            )
 
         try:
-            message2 = await self.bot.wait_for('message', timeout=30.0, check=check)
+            message2 = await self.bot.wait_for("message", timeout=30.0, check=check)
         except asyncio.TimeoutError:
-            await message.edit(content='No reaction from command author. Chapters was not added.')
+            await message.edit(
+                content="No reaction from command author. Chapters was not added."
+            )
         else:
-            content = message2.content.split('\n')
+            content = message2.content.split("\n")
             for i, link in enumerate(content, start_chp):
                 chp = Chapter(i, link)
                 chp.date_created = date_created
                 chp.project = project
                 session.add(chp)
-            await ctx.send(f'Successfully added {str(len(content))} chapters of `{project.title}`!')
+            await ctx.send(
+                f"Successfully added {str(len(content))} chapters of `{project.title}`!"
+            )
+            await session.commit()
 
-    @commands.command(aliases=["ac", "addch", "addc"], usage="https://akashi.readthedocs.io/en/stable/Add/addchapter.html")
+    @commands.command(
+        aliases=["ac", "addch", "addc"],
+        usage="https://akashi.readthedocs.io/en/stable/Add/addchapter.html",
+    )
     async def addchapter(self, ctx: CstmContext, *, flags: AddChapterFlags):
         """
         Description
@@ -161,7 +192,7 @@ class Add(commands.Cog):
         chp = Chapter(flags.chapter, flags.raws)
         chp.project = flags.project
         table.add_column("Project", [chp.project.title])
-        table.add_column("Chapter", [formatNumber(flags.chapter)])
+        table.add_column("Chapter", [format_number(flags.chapter)])
         table.add_column("Raws", [chp.link_raw])
         if flags.ts:
             chp.typesetter = flags.ts
@@ -178,31 +209,8 @@ class Add(commands.Cog):
         chp.date_created = func.now()
         ctx.session.add(chp)
         t = table.get_string(title="Chapter Preview")
-        message = await ctx.send(file=await misc.drawimage(t))
-        await message.add_reaction("✅")
-        await message.add_reaction("❌")
-        await asyncio.sleep(delay=0.5)
+        await ctx.prompt_and_commit(file=await misc.drawimage(t))
 
-        def check(reaction, user):
-            return user == ctx.message.author and (str(reaction.emoji) == '✅' or str(reaction.emoji) == '❌')
-
-        try:
-            reaction, user = await self.bot.wait_for('reaction_add', timeout=30.0, check=check)
-        except asyncio.TimeoutError:
-            await message.delete()
-            await ctx.channel.send('No reaction from command author. Chapter was not added.')
-            ctx.session.rollback()
-        else:
-            if str(reaction.emoji) == "✅":
-                num = formatNumber(chp.number)
-                await ctx.channel.send(f'Sucessfully added {chp.project.title} {num} to chapters.')
-                ctx.session.commit()
-                await message.clear_reactions()
-            else:
-                await message.delete()
-                await ctx.channel.send('Action cancelled by user.')
-                ctx.session.rollback()
-                await message.clear_reactions()
 
 def setup(Bot):
     Bot.add_cog(Add(Bot))

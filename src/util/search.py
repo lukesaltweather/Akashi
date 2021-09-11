@@ -3,11 +3,14 @@ import json
 import discord
 import discord.ext
 from sqlalchemy.orm.exc import MultipleResultsFound
+from sqlalchemy.sql.expression import select
 
 import src.model.staff as staff
 import src.model.project as project
 from src.util import exceptions, misc
 from src.util.exceptions import StaffNotFoundError, NoResultFound
+from src.util.db import get_first, get_one
+
 
 async def discordstaff(sti: str, ctx):
     try:
@@ -21,8 +24,9 @@ async def discordstaff(sti: str, ctx):
 
 
 async def dbstaff(passid: int, session2):
-    st = session2.query(staff.Staff).filter(staff.Staff.discord_id == passid).first()
-    if st is not None:
+    stmt = select(staff.Staff).filter(staff.Staff.discord_id == passid)
+    st = get_first(session2, stmt)
+    if st:
         return st
     else:
         raise StaffNotFoundError
@@ -57,15 +61,23 @@ async def searchstaffpayload(passstr, sessions):
         return None
     return await dbstaff(passstr, sessions)
 
-def searchproject(sti, session):
+
+async def searchproject(sti, session):
     if sti.isdigit():
-        return session.query(project.Project).filter(int(sti) == project.Project.id).one()
+        stmt = select(project.Project).filter(int(sti) == project.Project.id)
+        return get_one(session, stmt)
     for i in range(1, 3):
         try:
             if i == 1:
-                return session.query(project.Project).filter(project.Project.title.ilike("%" + sti + "%")).one()
+                stmt = select(project.Project).filter(
+                    project.Project.title.ilike("%" + sti + "%")
+                )
+                return await get_one(session, stmt)
             if i == 2:
-                return session.query(project.Project).filter(project.Project.altNames.ilike("%"+sti+",%")).one()
+                stmt = select(project.Project).filter(
+                    project.Project.altNames.ilike("%" + sti + ",%")
+                )
+                return await get_one(session, stmt)
         except:
             pass
     raise NoResultFound(message="Couldn't find a project like this.")

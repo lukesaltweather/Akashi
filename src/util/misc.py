@@ -1,4 +1,5 @@
 import asyncio
+from collections import namedtuple
 import functools
 import io
 import json
@@ -20,7 +21,7 @@ async def get_roles(member: discord.Member):
     @param member: discord user object
     @return: list of string, with possible entries ts, rd, pr and tl as string
     """
-    with open('src/util/config.json', 'r') as f:
+    with open("src/util/config.json", "r") as f:
         config = json.load(f)
     return member.roles
 
@@ -37,7 +38,8 @@ async def has_role(user, role, bot):
         return True
     return False
 
-async def toggle_mentionable(role:discord.Role):
+
+async def toggle_mentionable(role: discord.Role):
     """if not role.mentionable:
         await role.edit(mentionable=True)
     else:
@@ -45,14 +47,15 @@ async def toggle_mentionable(role:discord.Role):
     pass
 
 
-async def make_mentionable(role:discord.Role):
+async def make_mentionable(role: discord.Role):
     # await role.edit(mentionable=True)
     return role.mention
 
 
-async def disable_mentionable(role:discord.Role):
+async def disable_mentionable(role: discord.Role):
     # await role.edit(mentionable=False)
     pass
+
 
 def strx(sti):
     if sti is None:
@@ -60,7 +63,8 @@ def strx(sti):
     else:
         return sti
 
-def strlist(stl:str):
+
+def strlist(stl: str):
     stlist = []
     for l in stl:
         if l is None:
@@ -69,44 +73,50 @@ def strlist(stl:str):
             stlist.append(l)
     return stlist
 
+
 def is_ts(ctx):
-    with open('src/util/config.json', 'r') as f:
+    with open("src/util/config.json", "r") as f:
         config = json.load(f)
     ts = discord.utils.find(lambda r: r.id == config["ts_id"], ctx.message.guild.roles)
     if ts in ctx.member.roles:
         return True
     return False
 
+
 def is_tl(ctx):
-    with open('src/util/config.json', 'r') as f:
+    with open("src/util/config.json", "r") as f:
         config = json.load(f)
     tl = discord.utils.find(lambda r: r.id == config["tl_id"], ctx.message.guild.roles)
     if tl in ctx.member.roles:
         return True
     return False
 
+
 def is_rd(ctx):
-    with open('src/util/config.json', 'r') as f:
+    with open("src/util/config.json", "r") as f:
         config = json.load(f)
     rd = discord.utils.find(lambda r: r.id == config["rd_id"], ctx.message.guild.roles)
     if rd in ctx.member.roles:
         return True
     return False
 
+
 def is_pr(ctx):
-    with open('src/util/config.json', 'r') as f:
+    with open("src/util/config.json", "r") as f:
         config = json.load(f)
     pr = discord.utils.find(lambda r: r.id == config["pr_id"], ctx.message.guild.roles)
     if pr in ctx.member.roles:
         return True
     return False
 
+
 async def webhook(string):
     async with aiohttp.ClientSession() as session:
-        webhook = discord.Webhook.from_url('https://discordapp.com/api/webhooks/695781829353144350/5K5v6t590fqBynVLTGfS0vafI43vDsvNE3zzl6gOzMHwwS1dDaa9HK2Zn53VsqbMTHvh', adapter=discord.AsyncWebhookAdapter(session))
-        embed = discord.Embed(
-            colour=discord.Colour.green()
+        webhook = discord.Webhook.from_url(
+            "https://discordapp.com/api/webhooks/695781829353144350/5K5v6t590fqBynVLTGfS0vafI43vDsvNE3zzl6gOzMHwwS1dDaa9HK2Zn53VsqbMTHvh",
+            adapter=discord.AsyncWebhookAdapter(session),
         )
+        embed = discord.Embed(colour=discord.Colour.green())
         embed.add_field(name="\u200b", value=f"```{string}```")
         await webhook.send(embed=embed, username="Akashi")
 
@@ -116,28 +126,35 @@ def drawimage(string):
     thing = functools.partial(async_drawimage, string)
     return loop.run_in_executor(None, thing)
 
+
 def async_drawimage(string):
     fontsize = 25  # starting font size
-    font = ImageFont.truetype('src/util/fonts/DroidSansMono.ttf', fontsize)
+    font = ImageFont.truetype("src/util/fonts/DroidSansMono.ttf", fontsize)
     lines = string.split("\n")
-    img = Image.new('RGB', (font.getsize(lines[0])[0]+40, len(lines)*30+70), color=(255, 255, 255))
+    img = Image.new(
+        "RGB",
+        (font.getsize(lines[0])[0] + 40, len(lines) * 30 + 70),
+        color=(255, 255, 255),
+    )
     offset = 30
     margin = 20
     d = ImageDraw.Draw(img)
     for line in lines:
         d.text((margin, offset), line, font=font, fill="black")
-        offset+=font.getsize(line)[1]
+        offset += font.getsize(line)[1]
     arr = io.BytesIO()
-    img.save(arr, format='PNG')
+    img.save(arr, format="PNG")
     arr.seek(0)
     file = discord.File(arr, "image.png")
     return file
 
-def formatNumber(num):
+
+def format_number(num):
     if num % 1 == 0:
         return int(num)
     else:
         return num
+
 
 def table_one_chapter(**kwargs):
     session = kwargs["session"]
@@ -179,10 +196,18 @@ def table_one_chapter(**kwargs):
             table.add_column("Proofread on", strftime(value))
     return table
 
+
 class FakeUser(discord.Object):
     @property
     def avatar_url(self):
-        return 'https://cdn.discordapp.com/embed/avatars/0.png'
+        return "https://cdn.discordapp.com/embed/avatars/0.png"
+
+    @property
+    def avatar(self):
+        class Avatar:
+            url = "https://cdn.discordapp.com/embed/avatars/0.png"
+
+        return Avatar()
 
     @property
     def display_name(self):
@@ -203,7 +228,8 @@ class FakeUser(discord.Object):
 def divide_chunks(l, n):
     # looping till length l
     for i in range(0, len(l), n):
-        yield l[i:i + n]
+        yield l[i : i + n]
+
 
 class BoardPaginator:
     def __init__(self, color, title=None, url="https://nekyou.com"):
@@ -245,23 +271,25 @@ class BoardPaginator:
         """
         self.thumbnail = tn
 
-    def add_field(self, name: str, value: str, inline: bool=False):
-        if self.current_length + len(value)+len(name) >= 5000:
+    def add_field(self, name: str, value: str, inline: bool = False):
+        if self.current_length + len(value) + len(name) >= 5000:
             self.embeds.append(discord.Embed(color=self.color))
             self.embeds[-1].add_field(name=name, value=value, inline=inline)
-            self.current_length = (len(value)+len(name))
+            self.current_length = len(value) + len(name)
         else:
             if len(self.embeds) == 0:
                 self.embeds.append(discord.Embed(color=self.color))
                 self.embeds[-1].url = self.url
                 self.embeds[-1].title = self.title
-                self.embeds[-1].set_author(name=self.name, icon_url=self.icon_url, url=self.url)
+                self.embeds[-1].set_author(
+                    name=self.name, icon_url=self.icon_url, url=self.url
+                )
                 self.embeds[-1].set_thumbnail(url=self.thumbnail)
                 self.embeds[-1].add_field(name=name, value=value, inline=inline)
-                self.current_length += (len(value)+len(name))
+                self.current_length += len(value) + len(name)
             else:
                 self.embeds[-1].add_field(name=name, value=value, inline=inline)
-                self.current_length += (len(value)+len(name))
+                self.current_length += len(value) + len(name)
 
     def add_category(self, l, title):
         if len(l) > 1000:
@@ -270,7 +298,7 @@ class BoardPaginator:
             length = 0
             chunks.append("")
             for line in lines:
-                if length+len(line) > 1000:
+                if length + len(line) > 1000:
                     chunks.append("")
                     chunks[-1] = f"{chunks[-1]}\n{line}"
                     length = len(chunks[-1])
@@ -286,6 +314,7 @@ class BoardPaginator:
                     self.add_field(name="\u200b", value=chunk, inline=False)
         else:
             self.add_field(name=title, value=l)
+
 
 class Transaction:
     def __init__(self, maker: sessionmaker):
@@ -332,8 +361,9 @@ def get_emojis(bot, chapter):
     return f"<:{tl}> - <:{rd}> - <:{ts}> - <:{pr}> - <:{qcts}>"
 
 
-
-def completed_embed(chapter, author: discord.Member, mem: discord.Member, step: str, next_step: str, bot) -> discord.Embed:
+def completed_embed(
+    chapter, author: discord.Member, mem: discord.Member, step: str, next_step: str, bot
+) -> discord.Embed:
     project = chapter.project.title
     notes = chapter.notes
     number = chapter.number
@@ -354,13 +384,20 @@ def completed_embed(chapter, author: discord.Member, mem: discord.Member, step: 
     elif next_step == "RL":
         links["QCTS"] = chapter.link_rl
     e = discord.Embed(color=discord.Colour.green())
-    e.set_author(name=f"Next up: {mem.display_name} | {next_step}", icon_url=mem.avatar_url)
-    e.description=f"{author.mention} finished `{project}` Ch. `{formatNumber(number)}` | {step}\n"
-    links = '\n'.join(['[%s](%s)' % (key, value) for (key, value) in links.items()])
-    e.description=f"{e.description}\n{links}\n\n`Notes:`\n```{notes}```"
-    e.description=f"{e.description}\n{get_emojis(bot, chapter)}"
-    e.set_footer(text=f"Step finished by {author.display_name}", icon_url=author.avatar_url)
+    e.set_author(
+        name=f"Next up: {mem.display_name} | {next_step}",
+        icon_url=mem.display_avatar.url,
+    )
+    e.description = f"{author.mention} finished `{project}` Ch. `{format_number(number)}` | {step}\n"
+    links = "\n".join(["[%s](%s)" % (key, value) for (key, value) in links.items()])
+    e.description = f"{e.description}\n{links}\n\n`Notes:`\n```{notes}```"
+    e.description = f"{e.description}\n{get_emojis(bot, chapter)}"
+    e.set_footer(
+        text=f"Step finished by {author.display_name}",
+        icon_url=author.display_avatar.url,
+    )
     return e
+
 
 class _MissingSentinel:
     # stolen from https://github.com/Rapptz/discord.py/blob/master/discord/utils.py
@@ -371,6 +408,7 @@ class _MissingSentinel:
         return False
 
     def __repr__(self):
-        return '...'
+        return "..."
+
 
 MISSING: Any = _MissingSentinel()

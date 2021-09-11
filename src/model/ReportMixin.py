@@ -4,8 +4,10 @@ from sqlalchemy import inspect
 from src.util import misc
 import src.model as model
 
+
 class ReportMixin:
     def get_report(self, title):
+        title = str(title)
         table = PrettyTable()
         table.add_column("", ["ORIGINAL", "EDIT"])
         state = inspect(self)

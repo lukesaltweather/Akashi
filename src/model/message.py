@@ -1,4 +1,12 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, BigInteger, DateTime, Boolean
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    ForeignKey,
+    BigInteger,
+    DateTime,
+    Boolean,
+)
 from ..util.db import Base
 
 

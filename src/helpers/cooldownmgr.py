@@ -1,9 +1,9 @@
 import asyncio
 import typing
 
+
 class CooldownManager:
-    """Track XP cooldowns of members
-    """
+    """Track XP cooldowns of members"""
 
     __slots__ = ("__dict__", "_cooldown", "_tasks")
 

@@ -22,7 +22,7 @@ boto3 = "^1.17"
 aiofiles = "^0.7.0"
 docutils = "^0.17.1"
 toml = "^0.10"
-humanize = "^3.11.0"
+humanize = "*"
 
 [tool.poetry.dev-dependencies]
 

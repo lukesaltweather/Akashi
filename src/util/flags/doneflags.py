@@ -4,6 +4,7 @@ from discord.ext.commands import flag
 
 from .baseflags import ChapterFlags
 
+
 class DoneFlags(ChapterFlags):
     link: str
     note: Optional[str]

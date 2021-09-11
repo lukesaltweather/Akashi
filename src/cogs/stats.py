@@ -20,15 +20,18 @@ class Stats(commands.Cog):
                     LEFT OUTER JOIN staff proofreader ON chapters.proofreader_id = proofreader.id"""
         con = await asyncpg.connect(self.bot.config["db_uri"])
         i = uuid4()
-        await con.copy_from_query(query, output=f'files/{i}.csv', format='csv', delimiter=',', header=True)
+        await con.copy_from_query(
+            query, output=f"files/{i}.csv", format="csv", delimiter=",", header=True
+        )
         object = f"public/{str(i)}.csv"
-        s3.Bucket('akashi-csvs').upload_file(f"files/{str(i)}.csv", object)
+        s3.Bucket("akashi-csvs").upload_file(f"files/{str(i)}.csv", object)
         url = f"http://s3-eu-central-1.amazonaws.com/akashi-csvs/{object}"
         await ctx.author.send(url)
 
     @commands.command(enabled=False)
     async def read_only_user(self, ctx):
         pass
+
 
 def setup(bot):
     bot.add_cog(Stats(bot))

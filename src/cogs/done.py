@@ -3,21 +3,25 @@ import json
 
 import discord
 from discord.ext import commands
+from discord.ext.commands.errors import CommandError
 from sqlalchemy import func
 from src.model.chapter import Chapter
 from src.model.message import Message
 from src.util import exceptions
 from src.util.flags.doneflags import DoneFlags
 from src.util.search import fakesearch, dbstaff
-from src.util.misc import formatNumber, make_mentionable
+from src.util.misc import format_number, make_mentionable
 from src.util.context import CstmContext
 from abc import abstractmethod
+
 
 class command_helper:
     def __init__(self, ctx: CstmContext, flags: DoneFlags):
         self.bot = ctx.bot
         self.ctx = ctx
-        self.channel = ctx.guild.get_channel(self.bot.config["server"]["channels"]["updates"])
+        self.channel = ctx.guild.get_channel(
+            self.bot.config["server"]["channels"]["updates"]
+        )
         self.message = ctx.message
         self.chapter = flags.chapter
         self.session = ctx.session
@@ -41,25 +45,35 @@ class command_helper:
             await asyncio.sleep(delay=0.5)
 
             def check(reaction, user):
-                return user == self.ctx.message.author and (str(reaction.emoji) == '✉' or str(reaction.emoji) == '📝', str(reaction.emoji) == '❌')
+                return user == self.ctx.message.author and (
+                    str(reaction.emoji) == "✉" or str(reaction.emoji) == "📝",
+                    str(reaction.emoji) == "❌",
+                )
 
             try:
-                reaction, user = await self.bot.wait_for('reaction_add', timeout=30.0, check=check)
+                reaction, user = await self.bot.wait_for(
+                    "reaction_add", timeout=30.0, check=check
+                )
             except asyncio.TimeoutError:
                 self.session.rollback()
                 await message.delete()
-                raise RuntimeError("No reaction from command author. No action was taken.")
+                raise RuntimeError(
+                    "No reaction from command author. No action was taken."
+                )
             else:
                 await message.delete()
                 if str(reaction.emoji) == "✉":
                     await self.ctx.message.add_reaction("✅")
-                    return discord.AllowedMentions(everyone=True, users=True, roles=True)
+                    return discord.AllowedMentions(
+                        everyone=True, users=True, roles=True
+                    )
                 elif str(reaction.emoji) == "📝":
                     await self.ctx.message.add_reaction("✅")
-                    return discord.AllowedMentions(everyone=False, users=False, roles=False)
+                    return discord.AllowedMentions(
+                        everyone=False, users=False, roles=False
+                    )
                 else:
-                    self.session.rollback()
-                    raise RuntimeError("Command Cancelled.")
+                    raise CommandError("Command Cancelled.")
         else:
             return discord.AllowedMentions(everyone=False, users=False, roles=False)
 
@@ -88,7 +102,14 @@ class command_helper:
 
         return f"<:{tl}> - <:{rd}> - <:{ts}> - <:{pr}> - <:{qcts}>"
 
-    def completed_embed(self, chapter: Chapter, author: discord.Member, mem: discord.Member, step: str, next_step: str) -> discord.Embed:
+    def completed_embed(
+        self,
+        chapter: Chapter,
+        author: discord.Member,
+        mem: discord.Member,
+        step: str,
+        next_step: str,
+    ) -> discord.Embed:
         project = chapter.project.title
         notes = chapter.notes
         number = chapter.number
@@ -108,12 +129,18 @@ class command_helper:
         elif next_step == "RL":
             links["QCTS"] = chapter.link_rl
         e = discord.Embed(color=discord.Colour.green())
-        e.set_author(name=f"Next up: {mem.display_name} | {next_step}", icon_url=mem.display_avatar.url)
-        e.description=f"{author.mention} finished `{project}` Ch. `{formatNumber(number)}` | {step}\n"
-        links = '\n'.join(['[%s](%s)' % (key, value) for (key, value) in links.items()])
-        e.description=f"{e.description}\n{links}\n\n`Notes:`\n```{notes}```"
-        e.description=f"{e.description}\n{self.get_emojis(chapter)}"
-        e.set_footer(text=f"Step finished by {author.display_name}", icon_url=author.display_avatar.url)
+        e.set_author(
+            name=f"Next up: {mem.display_name} | {next_step}",
+            icon_url=mem.display_avatar.url,
+        )
+        e.description = f"{author.mention} finished `{project}` Ch. `{format_number(number)}` | {step}\n"
+        links = "\n".join(["[%s](%s)" % (key, value) for (key, value) in links.items()])
+        e.description = f"{e.description}\n{links}\n\n`Notes:`\n```{notes}```"
+        e.description = f"{e.description}\n{self.get_emojis(chapter)}"
+        e.set_footer(
+            text=f"Step finished by {author.display_name}",
+            icon_url=author.display_avatar.url,
+        )
         return e
 
 
@@ -122,25 +149,19 @@ class TL_helper(command_helper):
         """
         Checks and execute action here.
         """
-        try:
-            await self._set_translator()
-            self.chapter.link_tl = self.flags.link
-            self.chapter.date_tl = func.now()
-            if self.chapter.link_rd is None or self.chapter.link_rd == "":
-                if self.chapter.redrawer is not None:
-                    await self._no_redraws()
-                else:
-                    await self._no_redrawer()
+        await self._set_translator()
+        self.chapter.link_tl = self.flags.link
+        self.chapter.date_tl = func.now()
+        if self.chapter.link_rd is None or self.chapter.link_rd == "":
+            if self.chapter.redrawer is not None:
+                await self._no_redraws()
             else:
-                if self.chapter.typesetter is not None:
-                    await self._typesetter()
-                else:
-                    await self._no_typesetter()
-            self.session.commit()
-        except RuntimeError as e:
-            raise RuntimeError(str(e))
-        finally:
-            self.session.close()
+                await self._no_redrawer()
+        else:
+            if self.chapter.typesetter is not None:
+                await self._typesetter()
+            else:
+                await self._no_typesetter()
 
     async def _typesetter(self):
         """
@@ -149,9 +170,17 @@ class TL_helper(command_helper):
         @return: None
         """
         self.message = await self.confirm("Notify Typesetter")
-        embed = self.completed_embed(self.chapter, self.ctx.author, fakesearch(self.chapter.typesetter.discord_id, self.ctx), "TL", "TS")
+        embed = self.completed_embed(
+            self.chapter,
+            self.ctx.author,
+            fakesearch(self.chapter.typesetter.discord_id, self.ctx),
+            "TL",
+            "TS",
+        )
         ts = fakesearch(self.chapter.typesetter.discord_id, self.ctx).mention
-        await self.channel.send(content=f"{ts}", embed=embed, allowed_mentions=self.message)
+        await self.channel.send(
+            content=f"{ts}", embed=embed, allowed_mentions=self.message
+        )
 
     async def _no_redraws(self):
         """
@@ -160,9 +189,17 @@ class TL_helper(command_helper):
         @return: None
         """
         self.message = await self.confirm("Notify Redrawer")
-        embed = self.completed_embed(self.chapter, self.ctx.author, fakesearch(self.chapter.redrawer.discord_id, self.ctx), "TL", "RD")
+        embed = self.completed_embed(
+            self.chapter,
+            self.ctx.author,
+            fakesearch(self.chapter.redrawer.discord_id, self.ctx),
+            "TL",
+            "RD",
+        )
         rd = fakesearch(self.chapter.redrawer.discord_id, self.ctx).mention
-        await self.channel.send(content=f"{rd}", embed=embed, allowed_mentions=self.message)
+        await self.channel.send(
+            content=f"{rd}", embed=embed, allowed_mentions=self.message
+        )
 
     async def _no_redrawer(self):
         """
@@ -172,8 +209,13 @@ class TL_helper(command_helper):
         """
         if self.chapter.project.redrawer is None:
             self.message = await self.confirm("Notify Redrawer Role")
-            rd = await make_mentionable(self.ctx.guild.get_role(self.bot.config["server"]["roles"]["rd"]))
-            msg = await self.channel.send(f"{rd}\nRedrawer required for `{self.chapter.project.title} {formatNumber(self.chapter.number)}`. React below to assign yourself.", allowed_mentions=self.message)
+            rd = await make_mentionable(
+                self.ctx.guild.get_role(self.bot.config["server"]["roles"]["rd"])
+            )
+            msg = await self.channel.send(
+                f"{rd}\nRedrawer required for `{self.chapter.project.title} {format_number(self.chapter.number)}`. React below to assign yourself.",
+                allowed_mentions=self.message,
+            )
             await msg.add_reaction("🙋")
             msgdb = Message(msg.id, self.bot.config["server"]["roles"]["rd"], "🙋")
             await msg.pin()
@@ -183,11 +225,18 @@ class TL_helper(command_helper):
         else:
             self.message = await self.confirm("Notify Default Redrawer")
             rd = fakesearch(self.chapter.project.redrawer.discord_id, self.ctx).mention
-            embed = self.completed_embed(self.chapter, self.ctx.author, fakesearch(self.chapter.project.redrawer.discord_id, self.ctx), "TL", "RD")
-            await self.channel.send(content=f"{rd}", embed=embed, allowed_mentions=self.message)
+            embed = self.completed_embed(
+                self.chapter,
+                self.ctx.author,
+                fakesearch(self.chapter.project.redrawer.discord_id, self.ctx),
+                "TL",
+                "RD",
+            )
+            await self.channel.send(
+                content=f"{rd}", embed=embed, allowed_mentions=self.message
+            )
 
             self.chapter.redrawer = self.chapter.project.redrawer
-            self.session.commit()
 
     async def _no_typesetter(self):
         """
@@ -196,9 +245,13 @@ class TL_helper(command_helper):
         """
         if self.chapter.project.typesetter is None:
             self.message = await self.confirm("Notify Typesetter Role")
-            ts = await make_mentionable(self.ctx.guild.get_role(self.bot.config["server"]["roles"]["ts"]))
+            ts = await make_mentionable(
+                self.ctx.guild.get_role(self.bot.config["server"]["roles"]["ts"])
+            )
             msg = await self.channel.send(
-                f"{ts}\nTypesetter required for `{self.chapter.project.title} {formatNumber(self.chapter.number)}`. React below to assign yourself.", allowed_mentions=self.message)
+                f"{ts}\nTypesetter required for `{self.chapter.project.title} {format_number(self.chapter.number)}`. React below to assign yourself.",
+                allowed_mentions=self.message,
+            )
             await msg.add_reaction("🙋")
             await msg.pin()
             msgdb = Message(msg.id, self.bot.config["server"]["roles"]["ts"], "🙋")
@@ -207,9 +260,19 @@ class TL_helper(command_helper):
             self.session.add(msgdb)
         else:
             self.message = await self.confirm("Notify Default Typesetter")
-            ts = fakesearch(self.chapter.project.typesetter.discord_id, self.ctx).mention
-            embed = self.completed_embed(self.chapter, self.ctx.author, fakesearch(self.chapter.project.typesetter.discord_id, self.ctx), "TL", "TS")
-            await self.channel.send(content=ts, embed=embed, allowed_mentions=self.message)
+            ts = fakesearch(
+                self.chapter.project.typesetter.discord_id, self.ctx
+            ).mention
+            embed = self.completed_embed(
+                self.chapter,
+                self.ctx.author,
+                fakesearch(self.chapter.project.typesetter.discord_id, self.ctx),
+                "TL",
+                "TS",
+            )
+            await self.channel.send(
+                content=ts, embed=embed, allowed_mentions=self.message
+            )
             self.chapter.typesetter = self.chapter.project.typesetter
 
     async def _set_translator(self):
@@ -217,21 +280,16 @@ class TL_helper(command_helper):
             translator = await dbstaff(self.ctx.author.id, self.session)
             self.chapter.translator = translator
 
+
 class TS_helper(command_helper):
     async def execute(self):
-        try:
-            await self.__set_typesetter()
-            self.chapter.link_ts = self.flags.link
-            self.chapter.date_ts = func.now()
-            if self.chapter.proofreader is None:
-                await self.__no_proofreader()
-            else:
-                await self.__proofreader()
-            self.session.commit()
-        except RuntimeError as e:
-            raise RuntimeError(str(e))
-        finally:
-            self.session.close()
+        await self.__set_typesetter()
+        self.chapter.link_ts = self.flags.link
+        self.chapter.date_ts = func.now()
+        if self.chapter.proofreader is None:
+            await self.__no_proofreader()
+        else:
+            await self.__proofreader()
 
     async def __set_typesetter(self):
         if self.chapter.typesetter is None:
@@ -241,9 +299,13 @@ class TS_helper(command_helper):
     async def __no_proofreader(self):
         if self.chapter.project.proofreader is None:
             self.message = await self.confirm("Notify Proofreader Role")
-            pr = await make_mentionable(self.ctx.guild.get_role(self.bot.config["server"]["roles"]["pr"]))
+            pr = await make_mentionable(
+                self.ctx.guild.get_role(self.bot.config["server"]["roles"]["pr"])
+            )
             msg = await self.channel.send(
-                f"{pr}\nProofreader required for `{self.chapter.project.title} {formatNumber(self.chapter.number)}`. React below to assign yourself.", allowed_mentions=self.message)
+                f"{pr}\nProofreader required for `{self.chapter.project.title} {format_number(self.chapter.number)}`. React below to assign yourself.",
+                allowed_mentions=self.message,
+            )
             await msg.add_reaction("🙋")
             await msg.pin()
             msgdb = Message(msg.id, self.bot.config["server"]["roles"]["pr"], "🙋")
@@ -253,32 +315,42 @@ class TS_helper(command_helper):
         else:
             self.message = await self.confirm("Notify Default Proofreader")
             self.chapter.proofreader = self.chapter.project.proofreader
-            ts = fakesearch(self.chapter.project.proofreader.discord_id, self.ctx).mention
-            embed = self.completed_embed(self.chapter, self.ctx.author, fakesearch(self.chapter.project.proofreader.discord_id, self.ctx), "TS", "PR")
-            await self.channel.send(content=ts, embed=embed, allowed_mentions=self.message)
+            ts = fakesearch(
+                self.chapter.project.proofreader.discord_id, self.ctx
+            ).mention
+            embed = self.completed_embed(
+                self.chapter,
+                self.ctx.author,
+                fakesearch(self.chapter.project.proofreader.discord_id, self.ctx),
+                "TS",
+                "PR",
+            )
+            await self.channel.send(
+                content=ts, embed=embed, allowed_mentions=self.message
+            )
 
     async def __proofreader(self):
         self.message = await self.confirm("Notify Proofreader")
         ts = fakesearch(self.chapter.proofreader.discord_id, self.ctx).mention
-        embed = self.completed_embed(self.chapter, self.ctx.author,
-                                     fakesearch(self.chapter.proofreader.discord_id, self.ctx), "TS", "PR")
+        embed = self.completed_embed(
+            self.chapter,
+            self.ctx.author,
+            fakesearch(self.chapter.proofreader.discord_id, self.ctx),
+            "TS",
+            "PR",
+        )
         await self.channel.send(content=ts, embed=embed, allowed_mentions=self.message)
+
 
 class PR_helper(command_helper):
     async def execute(self):
-        try:
-            await self.__set_proofreader()
-            self.chapter.link_pr = self.flags.link
-            self.chapter.date_pr = func.now()
-            if self.chapter.typesetter is not None:
-                await self.__typesetter()
-            else:
-                await self.__no_typesetter()
-            self.session.commit()
-        except RuntimeError as e:
-            raise RuntimeError(str(e))
-        finally:
-            self.session.close()
+        await self.__set_proofreader()
+        self.chapter.link_pr = self.flags.link
+        self.chapter.date_pr = func.now()
+        if self.chapter.typesetter is not None:
+            await self.__typesetter()
+        else:
+            await self.__no_typesetter()
 
     async def __set_proofreader(self):
         if self.chapter.proofreader is None:
@@ -286,110 +358,145 @@ class PR_helper(command_helper):
             self.chapter.proofreader = proofreader
 
     async def __no_typesetter(self):
-        await self.channel.send(f"Something is wrong. Couldn't determine a typesetter. Updated chapter data anyway.")
+        await self.channel.send(
+            f"Something is wrong. Couldn't determine a typesetter. Updated chapter data anyway."
+        )
         await self.ctx.message.add_reaction("❓")
 
     async def __typesetter(self):
         self.message = await self.confirm("Notify OG Typesetter")
         ts = fakesearch(self.chapter.typesetter.discord_id, self.ctx).mention
-        embed = self.completed_embed(self.chapter, self.ctx.author,
-                                     fakesearch(self.chapter.typesetter.discord_id, self.ctx), "PR", "QCTS")
+        embed = self.completed_embed(
+            self.chapter,
+            self.ctx.author,
+            fakesearch(self.chapter.typesetter.discord_id, self.ctx),
+            "PR",
+            "QCTS",
+        )
         await self.channel.send(content=ts, embed=embed, allowed_mentions=self.message)
+
 
 class QCTS_helper(command_helper):
     async def execute(self):
-        try:
-            self.chapter.link_rl = self.flags.link
-            self.chapter.date_rl = func.now()
-            if self.chapter.proofreader is not None:
-                await self.__proofreader()
-            else:
-                await self.__no_proofreader()
-            self.session.commit()
-        except RuntimeError as e:
-            raise RuntimeError(str(e))
-        finally:
-            self.session.close()
+        self.chapter.link_rl = self.flags.link
+        self.chapter.date_rl = func.now()
+        if self.chapter.proofreader is not None:
+            await self.__proofreader()
+        else:
+            await self.__no_proofreader()
 
     async def __proofreader(self):
         self.message = await self.confirm("Notify Proofreader")
         pr = fakesearch(self.chapter.proofreader.discord_id, self.ctx).mention
-        embed = self.completed_embed(self.chapter, self.ctx.author,
-                                     fakesearch(self.chapter.proofreader.discord_id, self.ctx), "QCTS", "PR")
+        embed = self.completed_embed(
+            self.chapter,
+            self.ctx.author,
+            fakesearch(self.chapter.proofreader.discord_id, self.ctx),
+            "QCTS",
+            "PR",
+        )
         await self.channel.send(content=pr, embed=embed, allowed_mentions=self.message)
 
     async def __no_proofreader(self):
         self.message = await self.confirm("Error: No Proofreader to notify")
-        await self.channel.send(f"Something is wrong. Couldn't determine a Proofreader. Updated chapter data anyway.")
+        await self.channel.send(
+            f"Something is wrong. Couldn't determine a Proofreader. Updated chapter data anyway."
+        )
         await self.ctx.message.add_reaction("❓")
 
-class RD_helper(command_helper):
 
+class RD_helper(command_helper):
     async def execute(self):
-        try:
-            self.chapter.link_rd = self.flags.link
-            self.chapter.date_rd = func.now()
-            await self.__set_redrawer()
-            if self.chapter.link_tl in (None, ""):
-                if self.chapter.translator is not None:
-                    await self.__no_translation()
-                else:
-                    await self.__no_translator()
+        self.chapter.link_rd = self.flags.link
+        self.chapter.date_rd = func.now()
+        await self.__set_redrawer()
+        if self.chapter.link_tl in (None, ""):
+            if self.chapter.translator is not None:
+                await self.__no_translation()
             else:
-                if self.chapter.typesetter is not None:
-                    await self.__typesetter()
-                else:
-                    await self.__no_typesetter()
-            self.session.commit()
-        except RuntimeError as e:
-            raise RuntimeError(str(e))
-        finally:
-            self.session.close()
+                await self.__no_translator()
+        else:
+            if self.chapter.typesetter is not None:
+                await self.__typesetter()
+            else:
+                await self.__no_typesetter()
 
     async def __set_redrawer(self):
         if self.chapter.redrawer is None:
             self.chapter.redrawer = await dbstaff(self.ctx.author.id, self.session)
 
     async def __no_translation(self):
-        self.message = await self.confirm("No Translation available. Notifies Translator.")
+        self.message = await self.confirm(
+            "No Translation available. Notifies Translator."
+        )
         tl = fakesearch(self.chapter.translator.discord_id, self.ctx).mention
-        embed = self.completed_embed(self.chapter, self.ctx.author,
-                                     fakesearch(self.chapter.translator.discord_id, self.ctx), "RD", "TL")
-        await self.channel.send(content=tl,embed=embed,allowed_mentions=self.message)
+        embed = self.completed_embed(
+            self.chapter,
+            self.ctx.author,
+            fakesearch(self.chapter.translator.discord_id, self.ctx),
+            "RD",
+            "TL",
+        )
+        await self.channel.send(content=tl, embed=embed, allowed_mentions=self.message)
 
     async def __no_translator(self):
         calendar = self.ctx.guild.get_role(453730138056556544)
         self.message = await self.confirm("No Translator assigned. Notifies Calendars.")
         tl = calendar.mention
-        embed = self.completed_embed(self.chapter, self.ctx.author,
-                                     fakesearch(345845639663583252, self.ctx), "RD", "TL")
-        await self.channel.send(content=tl,embed=embed,allowed_mentions=self.message)
+        embed = self.completed_embed(
+            self.chapter,
+            self.ctx.author,
+            fakesearch(345845639663583252, self.ctx),
+            "RD",
+            "TL",
+        )
+        await self.channel.send(content=tl, embed=embed, allowed_mentions=self.message)
 
     async def __typesetter(self):
         self.message = await self.confirm("Notify Typesetter")
-        embed = self.completed_embed(self.chapter, self.ctx.author, fakesearch(self.chapter.typesetter.discord_id, self.ctx), "RD", "TS")
+        embed = self.completed_embed(
+            self.chapter,
+            self.ctx.author,
+            fakesearch(self.chapter.typesetter.discord_id, self.ctx),
+            "RD",
+            "TS",
+        )
         await self.channel.send(embed=embed)
 
     async def __no_typesetter(self):
         if self.chapter.project.typesetter is not None:
             self.message = await self.confirm("Mention Default Typesetter")
 
-            ts = fakesearch(self.chapter.project.typesetter.discord_id, self.ctx).mention
-            embed = self.completed_embed(self.chapter, self.ctx.author,
-                                         fakesearch(self.chapter.project.typesetter.discord_id, self.ctx), "PR", "QCTS")
-            await self.channel.send(content=ts, embed=embed, allowed_mentions=self.message)
+            ts = fakesearch(
+                self.chapter.project.typesetter.discord_id, self.ctx
+            ).mention
+            embed = self.completed_embed(
+                self.chapter,
+                self.ctx.author,
+                fakesearch(self.chapter.project.typesetter.discord_id, self.ctx),
+                "PR",
+                "QCTS",
+            )
+            await self.channel.send(
+                content=ts, embed=embed, allowed_mentions=self.message
+            )
 
         else:
             self.message = await self.confirm("Notify Typesetter Role")
-            ts = await make_mentionable(self.ctx.guild.get_role(self.bot.config["server"]["roles"]["ts"]))
+            ts = await make_mentionable(
+                self.ctx.guild.get_role(self.bot.config["server"]["roles"]["ts"])
+            )
             msg = await self.channel.send(
-                f"{ts}\nTypesetter required for `{self.chapter.project.title} {formatNumber(self.chapter.number)}`.\nReact below to assign yourself.", allowed_mentions=self.message)
+                f"{ts}\nTypesetter required for `{self.chapter.project.title} {format_number(self.chapter.number)}`.\nReact below to assign yourself.",
+                allowed_mentions=self.message,
+            )
             await msg.add_reaction("🙋")
             msgdb = Message(msg.id, self.bot.config["server"]["roles"]["ts"], "🙋")
             await msg.pin()
             msgdb.chapter = self.chapter.id
             msgdb.created_on = func.now()
             self.session.add(msgdb)
+
 
 class Done(commands.Cog):
     def __init__(self, bot):
@@ -436,10 +543,12 @@ class Done(commands.Cog):
         elif flags.step == "rd":
             RD = RD_helper(ctx, flags)
             await RD.execute()
+        await ctx.session.commit()
 
     @commands.command(aliases=["claim"])
     async def take(self, ctx: CstmContext):
         pass
+
 
 def setup(Bot):
     Bot.add_cog(Done(Bot))

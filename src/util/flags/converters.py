@@ -14,7 +14,7 @@ class ChapterConverter:
     @classmethod
     async def convert(cls, ctx, arg: str):
         chapter = float(arg.split(" ")[-1])
-        proj= arg[0:len(arg)-len(arg.split(" ")[-1])]
+        proj = arg[0 : len(arg) - len(arg.split(" ")[-1])]
 
         session = ctx.session
         try:
@@ -24,24 +24,34 @@ class ChapterConverter:
             rd_alias = aliased(Staff)
             tl_alias = aliased(Staff)
             pr_alias = aliased(Staff)
-            query = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id). \
-                outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id). \
-                outerjoin(tl_alias, Chapter.translator_id == tl_alias.id). \
-                outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id). \
-                join(Project, Chapter.project_id == Project.id)
-            return query.filter(Chapter.project_id == project.id).filter(Chapter.number == chapter).one()
+            query = (
+                session.query(Chapter)
+                .outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id)
+                .outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id)
+                .outerjoin(tl_alias, Chapter.translator_id == tl_alias.id)
+                .outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id)
+                .join(Project, Chapter.project_id == Project.id)
+            )
+            return (
+                query.filter(Chapter.project_id == project.id)
+                .filter(Chapter.number == chapter)
+                .one()
+            )
         except Exception as e:
             raise BadArgument(cls, e)
+
 
 class DateTimeConverter:
     @classmethod
     async def convert(cls, ctx, arg):
         return datetime.strptime(arg, "%Y %m %d")
 
+
 class StaffConverter:
     @classmethod
     async def convert(cls, ctx, arg):
         return await searchstaff(arg, ctx, ctx.session)
+
 
 class ProjectConverter:
     @classmethod

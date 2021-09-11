@@ -1,11 +1,19 @@
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 
 # TODO: Fix usage of global
 from sqlalchemy.orm import sessionmaker
 
 Base = declarative_base()
 
-def loadDB(uri):
 
-    return engine
+async def get_all(session, stmt):
+    return (await session.execute(stmt)).scalars().all()
+
+
+async def get_first(session, stmt):
+    return (await session.execute(stmt)).scalars().first()
+
+
+async def get_one(session, stmt):
+    return (await session.execute(stmt)).scalars().one()

@@ -64,9 +64,6 @@ class ProjectConverter:
 
 
 class __CommaListMeta(type):
-    def __new__(cls, *args, **kwargs):
-        cls.__type__ = str
-
     def __getitem__(cls, arg):
         cls.__type__ = arg
         return cls
@@ -75,4 +72,4 @@ class __CommaListMeta(type):
 class CommaList(metaclass=__CommaListMeta):
     @classmethod
     async def convert(cls, context, arg: str):
-        return [cls.__type__(item) for item in arg.strip(" ").split(",")]
+        return [cls.__type__(item) for item in arg.replace(" ", "").split(",")]

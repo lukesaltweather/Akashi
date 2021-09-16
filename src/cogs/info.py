@@ -525,7 +525,7 @@ class Info(commands.Cog):
         embed = None
         if flags.fields:
             fields = flags.fields
-            for field in fields:
+            for field in fields:  # type: ignore
                 if field == "title":
                     titles = [
                         project.title if project is not None else "None"

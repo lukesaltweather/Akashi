@@ -77,7 +77,6 @@ class Bot(commands.Bot):
 
     async def on_message(self, message):
         ctx = await self.get_context(message, cls=CstmContext)
-        await ctx.create_session()
         await self.invoke(ctx)
 
     def get_cog_insensitive(self, name):
@@ -103,7 +102,7 @@ print(version_info)
 
 @bot.after_invoke
 async def after_invoke_hook(ctx: CstmContext):
-    ctx.session.close()
+    await ctx.session.close()
 
 
 @bot.check
@@ -160,12 +159,11 @@ async def on_member_update(before: discord.Member, after: discord.Member):
         try:
             st = Staff(after.id, after.name)
             session1.add(st)
-            session1.commit()
-            session1.close()
+            await session1.commit()
             channel = before.guild.get_channel_or_thread(390395499355701249)
             await channel.send("Successfully added {} to staff. ".format(after.name))  # type: ignore
         finally:
-            session1.close()
+            await session1.close()
 
 
 bot.run(bot.config["general"]["bot_key"])

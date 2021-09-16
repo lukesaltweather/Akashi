@@ -62,9 +62,7 @@ class ConfirmationView(discord.ui.View):
 class CstmContext(commands.Context):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-    async def create_session(self):
-        self._session = await self.bot.Session(autoflush=False, autocommit=False)
+        self._session = self.bot.Session(autoflush=False, autocommit=False)
 
     @property
     def session(self):

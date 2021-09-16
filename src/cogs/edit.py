@@ -7,6 +7,8 @@ from src.util.misc import MISSING
 
 from src.util.checks import is_admin, is_pu
 
+from src.util.context import CstmContext
+
 from src.util.flags.editflags import (
     EditStaffFlags,
     EditChapterFlags,
@@ -27,8 +29,8 @@ class Edit(commands.Cog):
         aliases=["editch", "editc", "ec"],
         usage="https://akashi.readthedocs.io/en/stable/Edit/editchapter.html",
     )
-    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
-    async def editchapter(self, ctx, *, flags: EditChapterFlags):
+    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)  # type: ignore
+    async def editchapter(self, ctx: CstmContext, *, flags: EditChapterFlags):
         """
         Description
         ==============
@@ -103,7 +105,7 @@ class Edit(commands.Cog):
         usage="https://akashi.readthedocs.io/en/stable/Edit/editproject.html",
     )
     @is_pu()
-    async def editproject(self, ctx, *, flags: EditProjectFlags):
+    async def editproject(self, ctx: CstmContext, *, flags: EditProjectFlags):
         """
         Description
         ==============
@@ -138,7 +140,7 @@ class Edit(commands.Cog):
         if flags.status:
             record.status = flags.status
         if flags.color is not MISSING:
-            record.color = str(flags.color)[1:]
+            record.color = str(flags.color)[1:]  # type: ignore
         if flags.position is not MISSING:
             record.position = flags.position
         if flags.tl is not MISSING:
@@ -156,7 +158,7 @@ class Edit(commands.Cog):
         if flags.altnames is not MISSING:
             record.altNames = flags.altnames
         if flags.thumbnail:
-            record.thumbnail = flags.thumbnail
+            record.thumbnail = flags.thumbnail  # type: ignore
         if flags.icon is not MISSING:
             record.icon = flags.icon
         if flags.link:
@@ -173,8 +175,8 @@ class Edit(commands.Cog):
         usage="https://akashi.readthedocs.io/en/stable/Edit/editstaff.html"
     )
     @is_admin()
-    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)
-    async def editstaff(self, ctx, *, flags: EditStaffFlags):
+    @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)  # type: ignore
+    async def editstaff(self, ctx: CstmContext, *, flags: EditStaffFlags):
         """
         Description
         ==============
@@ -203,7 +205,7 @@ class Edit(commands.Cog):
         if flags.name:
             member.name = flags.name
         if flags.status:
-            member.status = flags.status
+            member.status = flags.status  # type: ignore
         image = await member.get_report(f"{member.name}")
         embed1 = discord.Embed(
             color=discord.Colour.dark_blue(),
@@ -235,7 +237,7 @@ class Edit(commands.Cog):
         """
         record = flags.chapter
         if flags.date:
-            record.date_release = flags.date
+            record.date_release = flags.date  # type: ignore
         else:
             record.date_release = func.now()
         image = await record.get_report(record)

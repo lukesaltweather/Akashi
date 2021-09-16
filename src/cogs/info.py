@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 
 from prettytable import PrettyTable
 from sqlalchemy import Date, text, or_, and_
+from sqlalchemy.sql.expression import select
 
 from src.helpers.arghelper import arghelper
 from src.util import exceptions
@@ -26,6 +27,7 @@ from src.model.staff import Staff
 
 from src.util.flags.infoflags import InfoChapter, InfoProject
 from src.util.context import CstmContext
+from src.util.db import get_all
 
 
 class Info(commands.Cog):
@@ -77,7 +79,7 @@ class Info(commands.Cog):
             tl_alias = aliased(Staff)
             pr_alias = aliased(Staff)
             query = (
-                session.query(Chapter)
+                select(Chapter)
                 .outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id)
                 .outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id)
                 .outerjoin(tl_alias, Chapter.translator_id == tl_alias.id)
@@ -194,7 +196,8 @@ class Info(commands.Cog):
                     )
                     query = query.filter(Chapter.date_release != None)
 
-            records = query.order_by(Project.title).order_by(Chapter.number).all()
+            stmt = query.order_by(Project.title).order_by(Chapter.number)
+            records = await get_all(session, stmt)
             embed = BoardPaginator(color=discord.Colour.blue(), title="Infochapter")
             embed.set_author(
                 name="Links",
@@ -488,173 +491,165 @@ class Info(commands.Cog):
         :doc:`/Tutorials/Fields`
         """
         session = ctx.session
-        async with ctx.channel.typing():
-            ts_alias = aliased(Staff)
-            rd_alias = aliased(Staff)
-            tl_alias = aliased(Staff)
-            pr_alias = aliased(Staff)
-            query = (
-                session.query(Project)
-                .outerjoin(ts_alias, Project.typesetter_id == ts_alias.id)
-                .outerjoin(rd_alias, Project.redrawer_id == rd_alias.id)
-                .outerjoin(tl_alias, Project.translator_id == tl_alias.id)
-                .outerjoin(pr_alias, Project.proofreader_id == pr_alias.id)
-            )
+        ts_alias = aliased(Staff)
+        rd_alias = aliased(Staff)
+        tl_alias = aliased(Staff)
+        pr_alias = aliased(Staff)
+        query = (
+            select(Project)
+            .outerjoin(ts_alias, Project.typesetter_id == ts_alias.id)
+            .outerjoin(rd_alias, Project.redrawer_id == rd_alias.id)
+            .outerjoin(tl_alias, Project.translator_id == tl_alias.id)
+            .outerjoin(pr_alias, Project.proofreader_id == pr_alias.id)
+        )
 
-            if flags.status:
-                query = query.filter(Project.status.match(flags.status))  # type: ignore
-            if flags.project:
-                query = query.filter(
-                    or_(
-                        Project.title.match(flags.project),  # type: ignore
-                        Project.altNames.contains(flags.project),  # type: ignore
-                    )
+        if flags.status is not MISSING:
+            query = query.filter(Project.status.match(flags.status))  # type: ignore
+        if flags.project:
+            query = query.filter(
+                or_(
+                    Project.title.match(flags.project),  # type: ignore
+                    Project.altNames.contains(flags.project),  # type: ignore
                 )
-            if flags.ts:
-                query = query.filter(ts_alias.id == flags.ts.id)
-            if flags.rd:
-                query = query.filter(rd_alias.id == flags.rd.id)
-            if flags.tl:
-                query = query.filter(tl_alias.id == flags.tl.id)
-            if flags.pr:
-                query = query.filter(pr_alias.id == flags.pr.id)
-            records = query.all()
-            table = PrettyTable()
-            embed = None
-            if flags.fields:
-                fields = flags.fields
-                for field in fields:
-                    if field == "title":
-                        titles = [
-                            project.title if project is not None else "None"
-                            for project in records
-                        ]
-                        table.add_column(fieldname="Title", column=titles)
-                    elif field == "status":
-                        states = [
-                            project.status if project is not None else "None"
-                            for project in records
-                        ]
-                        table.add_column(fieldname="Status", column=states)
-                    elif field == "id":
-                        ids = [project.id for project in records]
-                        table.add_column(fieldname="ID", column=ids)
-                    elif field == "altNames":
-                        altnames = [
-                            project.altNames if project is not None else "None"
-                            for project in records
-                        ]
-                        table.add_column(fieldname="AltNames", column=altnames)
-                    elif field == "link":
-                        links = [
-                            project.link if project is not None else "None"
-                            for project in records
-                        ]
-                        table.add_column(fieldname="Links", column=links)
-                    elif field == "ts":
-                        ts = [
-                            project.typesetter.name
-                            if project.typesetter is not None
-                            else "None"
-                            for project in records
-                        ]
-                        table.add_column(fieldname="Typesetters", column=ts)
-                    elif field == "rd":
-                        rd = [
-                            project.redrawer.name
-                            if project.redrawer is not None
-                            else "None"
-                            for project in records
-                        ]
-                        table.add_column(fieldname="Redrawers", column=rd)
-                    elif field == "pr":
-                        pr = [
-                            project.proofreader.name
-                            if project.proofreader is not None
-                            else "None"
-                            for project in records
-                        ]
-                        table.add_column(fieldname="Proofreaders", column=pr)
-                    elif field == "tl":
-                        tl = [
-                            project.translator.name
-                            if project.translator is not None
-                            else "None"
-                            for project in records
-                        ]
-                        table.add_column(fieldname="Translators", column=tl)
-                    elif field == "link":
-                        links = []
-                        for project in records:
-                            if project.link is not None:
-                                links.append(f"[`{project.title}`]({project.link})")
-                        if len(links) != 0:
-                            embed = discord.Embed(color=discord.Colour.greyple())
-                            embed.add_field(
-                                name="Links", value="\n".join(links), inline=False
-                            )
-            else:
-                ids = [project.id for project in records]
-                table.add_column(fieldname="ID", column=ids)
-                titles = [
-                    project.title if project is not None else "None"
-                    for project in records
-                ]
-                table.add_column("Title", titles)
-                states = [
-                    project.status if project.status is not None else "None"
-                    for project in records
-                ]
-                table.add_column("Status", states)
-                altnames = [
-                    project.altNames if project.altNames is not None else "None"
-                    for project in records
-                ]
-                table.add_column("AltNames", altnames)
-                links = []
-                for project in records:
-                    if project.link is not None:
-                        links.append(f"[`{project.title}`]({project.link})")
-                if len(links) != 0:
-                    embed = discord.Embed(color=discord.Colour.greyple())
-                    embed.add_field(name="Links", value="\n".join(links), inline=False)
-                tl = [
-                    project.translator.name
-                    if project.translator is not None
-                    else "None"
-                    for project in records
-                ]
-                table.add_column("Translators", tl)
-                rd = [
-                    project.redrawer.name if project.redrawer is not None else "None"
-                    for project in records
-                ]
-                table.add_column("Redrawers", rd)
-                ts = [
-                    project.typesetter.name
-                    if project.typesetter is not None
-                    else "None"
-                    for project in records
-                ]
-                table.add_column("Typesetters", ts)
-                pr = [
-                    project.proofreader.name
-                    if project.proofreader is not None
-                    else "None"
-                    for project in records
-                ]
-                table.add_column("Proofreaders", pr)
-
-            file = await drawimage(table.get_string(title="Projects"))
-            embed1 = discord.Embed(color=discord.Colour.greyple())
-            embed1.set_author(
-                name="Results",
-                icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128",
             )
-            embed1.set_image(url="attachment://image.png")
-            await ctx.send(file=file, embed=embed1)
-            if embed is not None:
-                await ctx.send(embed=embed)
+        if flags.ts is not MISSING:
+            query = query.filter(ts_alias == flags.ts)
+        if flags.rd is not MISSING:
+            query = query.filter(rd_alias == flags.rd)
+        if flags.tl is not MISSING:
+            query = query.filter(tl_alias == flags.tl)
+        if flags.pr is not MISSING:
+            query = query.filter(pr_alias == flags.pr)
+        records = await get_all(session, query)
+        table = PrettyTable()
+        embed = None
+        if flags.fields:
+            fields = flags.fields
+            for field in fields:
+                if field == "title":
+                    titles = [
+                        project.title if project is not None else "None"
+                        for project in records
+                    ]
+                    table.add_column(fieldname="Title", column=titles)
+                elif field == "status":
+                    states = [
+                        project.status if project is not None else "None"
+                        for project in records
+                    ]
+                    table.add_column(fieldname="Status", column=states)
+                elif field == "id":
+                    ids = [project.id for project in records]
+                    table.add_column(fieldname="ID", column=ids)
+                elif field == "altNames":
+                    altnames = [
+                        project.altNames if project is not None else "None"
+                        for project in records
+                    ]
+                    table.add_column(fieldname="AltNames", column=altnames)
+                elif field == "link":
+                    links = [
+                        project.link if project is not None else "None"
+                        for project in records
+                    ]
+                    table.add_column(fieldname="Links", column=links)
+                elif field == "ts":
+                    ts = [
+                        project.typesetter.name
+                        if project.typesetter is not None
+                        else "None"
+                        for project in records
+                    ]
+                    table.add_column(fieldname="Typesetters", column=ts)
+                elif field == "rd":
+                    rd = [
+                        project.redrawer.name
+                        if project.redrawer is not None
+                        else "None"
+                        for project in records
+                    ]
+                    table.add_column(fieldname="Redrawers", column=rd)
+                elif field == "pr":
+                    pr = [
+                        project.proofreader.name
+                        if project.proofreader is not None
+                        else "None"
+                        for project in records
+                    ]
+                    table.add_column(fieldname="Proofreaders", column=pr)
+                elif field == "tl":
+                    tl = [
+                        project.translator.name
+                        if project.translator is not None
+                        else "None"
+                        for project in records
+                    ]
+                    table.add_column(fieldname="Translators", column=tl)
+                elif field == "link":
+                    links = []
+                    for project in records:
+                        if project.link is not None:
+                            links.append(f"[`{project.title}`]({project.link})")
+                    if len(links) != 0:
+                        embed = discord.Embed(color=discord.Colour.greyple())
+                        embed.add_field(
+                            name="Links", value="\n".join(links), inline=False
+                        )
+        else:
+            ids = [project.id for project in records]
+            table.add_column(fieldname="ID", column=ids)
+            titles = [
+                project.title if project is not None else "None" for project in records
+            ]
+            table.add_column("Title", titles)
+            states = [
+                project.status if project.status is not None else "None"
+                for project in records
+            ]
+            table.add_column("Status", states)
+            altnames = [
+                project.altNames if project.altNames is not None else "None"
+                for project in records
+            ]
+            table.add_column("AltNames", altnames)
+            links = []
+            for project in records:
+                if project.link is not None:
+                    links.append(f"[`{project.title}`]({project.link})")
+            if len(links) != 0:
+                embed = discord.Embed(color=discord.Colour.greyple())
+                embed.add_field(name="Links", value="\n".join(links), inline=False)
+            tl = [
+                project.translator.name if project.translator is not None else "None"
+                for project in records
+            ]
+            table.add_column("Translators", tl)
+            rd = [
+                project.redrawer.name if project.redrawer is not None else "None"
+                for project in records
+            ]
+            table.add_column("Redrawers", rd)
+            ts = [
+                project.typesetter.name if project.typesetter is not None else "None"
+                for project in records
+            ]
+            table.add_column("Typesetters", ts)
+            pr = [
+                project.proofreader.name if project.proofreader is not None else "None"
+                for project in records
+            ]
+            table.add_column("Proofreaders", pr)
+
+        file = await drawimage(table.get_string(title="Projects"))
+        embed1 = discord.Embed(color=discord.Colour.greyple())
+        embed1.set_author(
+            name="Results",
+            icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128",
+        )
+        embed1.set_image(url="attachment://image.png")
+        await ctx.send(file=file, embed=embed1)
+        if embed:
+            await ctx.send(embed=embed)
 
     @commands.command(
         usage="https://akashi.readthedocs.io/en/stable/Info/allprojects.html"
@@ -684,65 +679,61 @@ class Info(commands.Cog):
 
         """
         session = ctx.session
-        try:
-            ts_alias = aliased(Staff)
-            rd_alias = aliased(Staff)
-            tl_alias = aliased(Staff)
-            pr_alias = aliased(Staff)
-            records = (
-                session.query(Project)
-                .outerjoin(ts_alias, Project.typesetter_id == ts_alias.id)
-                .outerjoin(rd_alias, Project.redrawer_id == rd_alias.id)
-                .outerjoin(tl_alias, Project.translator_id == tl_alias.id)
-                .outerjoin(pr_alias, Project.proofreader_id == pr_alias.id)
-                .all()
-            )
-            table = PrettyTable()
-            titles = [project.title for project in records]
-            table.add_column(fieldname="Titles", column=titles)
-            states = [
-                project.status if project is not None else "None" for project in records
-            ]
-            table.add_column("Status", states)
-            altnames = [
-                project.altNames if project is not None else "None"
-                for project in records
-            ]
-            table.add_column("Alternative Titles", altnames)
-            links = [f"[`{project.title}`]({project.link})" for project in records]
-            tl = [
-                project.translator.name if project.translator is not None else "None"
-                for project in records
-            ]
-            table.add_column("Translator", tl)
-            ts = [
-                project.typesetter.name if project.typesetter is not None else "None"
-                for project in records
-            ]
-            table.add_column("Typesetter", ts)
-            rd = [
-                project.redrawer.name if project.redrawer is not None else "None"
-                for project in records
-            ]
-            table.add_column("Redrawer", rd)
-            pr = [
-                project.proofreader.name if project.proofreader is not None else "None"
-                for project in records
-            ]
-            table.add_column("Proofreader", pr)
-            file = await drawimage(table.get_string(title="Projects"))
-            embed1 = discord.Embed(color=discord.Colour.greyple())
-            l = "\n".join(links)
+        ts_alias = aliased(Staff)
+        rd_alias = aliased(Staff)
+        tl_alias = aliased(Staff)
+        pr_alias = aliased(Staff)
+        stmt = (
+            select(Project)
+            .outerjoin(ts_alias, Project.typesetter_id == ts_alias.id)
+            .outerjoin(rd_alias, Project.redrawer_id == rd_alias.id)
+            .outerjoin(tl_alias, Project.translator_id == tl_alias.id)
+            .outerjoin(pr_alias, Project.proofreader_id == pr_alias.id)
+        )
+        records = await get_all(session, stmt)
+        table = PrettyTable()
+        titles = [project.title for project in records]
+        table.add_column(fieldname="Titles", column=titles)
+        states = [
+            project.status if project is not None else "None" for project in records
+        ]
+        table.add_column("Status", states)
+        altnames = [
+            project.altNames if project is not None else "None" for project in records
+        ]
+        table.add_column("Alternative Titles", altnames)
+        links = [f"[`{project.title}`]({project.link})" for project in records]
+        tl = [
+            project.translator.name if project.translator is not None else "None"
+            for project in records
+        ]
+        table.add_column("Translator", tl)
+        ts = [
+            project.typesetter.name if project.typesetter is not None else "None"
+            for project in records
+        ]
+        table.add_column("Typesetter", ts)
+        rd = [
+            project.redrawer.name if project.redrawer is not None else "None"
+            for project in records
+        ]
+        table.add_column("Redrawer", rd)
+        pr = [
+            project.proofreader.name if project.proofreader is not None else "None"
+            for project in records
+        ]
+        table.add_column("Proofreader", pr)
+        file = await drawimage(table.get_string(title="Projects"))
+        embed1 = discord.Embed(color=discord.Colour.greyple())
+        l = "\n".join(links)
 
-            embed1.set_author(
-                name="Results",
-                icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128",
-            )
-            embed1.set_image(url="attachment://image.png")
-            embed1.description = l
-            await ctx.send(file=file, embed=embed1)
-        finally:
-            session.close()
+        embed1.set_author(
+            name="Results",
+            icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128",
+        )
+        embed1.set_image(url="attachment://image.png")
+        embed1.description = l
+        await ctx.send(file=file, embed=embed1)
 
     @is_admin()
     @commands.command(
@@ -773,34 +764,31 @@ class Info(commands.Cog):
 
         """
         session = ctx.session
-        try:
-            staff = session.query(Staff).all()
-            embed = discord.Embed(colour=discord.Colour.purple())
-            embed.add_field(
-                name="\u200b",
-                value=("**ID\n**" + ("\n".join(str(person.id) for person in staff))),
-                inline=True,
-            )
-            embed.add_field(
-                name="\u200b",
-                value=("**Name\n**" + ("\n".join(person.name for person in staff))),
-                inline=True,
-            )
-            embed.add_field(
-                name="\u200b",
-                value=(
-                    "**Discord ID\n**"
-                    + (
-                        "\n".join(
-                            f"{person.discord_id}: {person.status}" for person in staff
-                        )
+        staff = await get_all(session, select(Staff))
+        embed = discord.Embed(colour=discord.Colour.purple())
+        embed.add_field(
+            name="\u200b",
+            value=("**ID\n**" + ("\n".join(str(person.id) for person in staff))),
+            inline=True,
+        )
+        embed.add_field(
+            name="\u200b",
+            value=("**Name\n**" + ("\n".join(person.name for person in staff))),
+            inline=True,
+        )
+        embed.add_field(
+            name="\u200b",
+            value=(
+                "**Discord ID\n**"
+                + (
+                    "\n".join(
+                        f"{person.discord_id}: {person.status}" for person in staff
                     )
-                ),
-                inline=True,
-            )
-            await ctx.send(embed=embed)
-        finally:
-            session.close()
+                )
+            ),
+            inline=True,
+        )
+        await ctx.send(embed=embed)
 
     @commands.command(
         usage="https://akashi.readthedocs.io/en/stable/Info/mycurrent.html"
@@ -828,13 +816,13 @@ class Info(commands.Cog):
         ^^^^^^^^^^^^^^^^^^^^
 
         """
-        session = self.bot.Session()
+        session = ctx.session
         ts_alias = aliased(Staff)
         rd_alias = aliased(Staff)
         tl_alias = aliased(Staff)
         pr_alias = aliased(Staff)
         query = (
-            session.query(Chapter)
+            select(Chapter)
             .outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id)
             .outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id)
             .outerjoin(tl_alias, Chapter.translator_id == tl_alias.id)
@@ -842,32 +830,46 @@ class Info(commands.Cog):
             .join(Project, Chapter.project_id == Project.id)
         )
         typ = await searchstaff(str(ctx.message.author.id), ctx, session)
-        to_tl = (
-            query.filter(Chapter.translator == typ)
-            .filter(Chapter.link_tl.is_(None))  # type: ignore
-            .all()
+        to_tl = await get_all(
+            session,
+            (
+                query.filter(Chapter.translator == typ).filter(
+                    Chapter.link_tl.is_(None)
+                )  # type: ignore
+            ),
         )
-        to_rd = (
-            query.filter(Chapter.redrawer == typ)
-            .filter(Chapter.link_rd.is_(None))  # type: ignore
-            .all()
+        to_rd = await get_all(
+            session,
+            (
+                query.filter(Chapter.redrawer == typ).filter(
+                    Chapter.link_rd.is_(None)
+                )  # type: ignore
+            ),
         )
-        to_ts = (
-            query.filter(Chapter.typesetter == typ)
-            .filter(Chapter.link_ts.is_(None))  # type: ignore
-            .all()
+        to_ts = await get_all(
+            session,
+            (
+                query.filter(Chapter.typesetter == typ).filter(
+                    Chapter.link_ts.is_(None)
+                )  # type: ignore
+            ),
         )
-        to_pr = (
-            query.filter(Chapter.proofreader == typ)
-            .filter(Chapter.link_pr.is_(None))  # type: ignore
-            .all()
+        to_pr = await get_all(
+            session,
+            (
+                query.filter(Chapter.proofreader == typ).filter(
+                    Chapter.link_pr.is_(None)
+                )  # type: ignore
+            ),
         )
-        to_qcts = (
-            query.filter(Chapter.typesetter == typ)
-            .filter(or_(Chapter.link_rl == None, Chapter.link_rl == ""))
-            .filter(Chapter.link_pr != None, Chapter.link_pr != "")
-            .filter(Chapter.link_ts != None, Chapter.link_ts != "")
-            .all()
+        to_qcts = await get_all(
+            session,
+            (
+                query.filter(Chapter.typesetter == typ)
+                .filter(or_(Chapter.link_rl == None, Chapter.link_rl == ""))
+                .filter(Chapter.link_pr != None, Chapter.link_pr != "")
+                .filter(Chapter.link_ts != None, Chapter.link_ts != "")
+            ),
         )
         desc = ""
         if len(to_tl) != 0:
@@ -893,7 +895,6 @@ class Info(commands.Cog):
         embed = discord.Embed(color=discord.Colour.gold(), description=desc)
         embed.set_author(name="Current chapters", icon_url=ctx.author.avatar_url)
         await ctx.send(embed=embed)
-        session.close()
 
     @commands.command(usage="https://akashi.readthedocs.io/en/stable/Info/current.html")
     async def current(self, ctx, member: discord.Member):
@@ -928,7 +929,7 @@ class Info(commands.Cog):
         tl_alias = aliased(Staff)
         pr_alias = aliased(Staff)
         query = (
-            session.query(Chapter)
+            select(Chapter)
             .outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id)
             .outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id)
             .outerjoin(tl_alias, Chapter.translator_id == tl_alias.id)
@@ -936,32 +937,46 @@ class Info(commands.Cog):
             .join(Project, Chapter.project_id == Project.id)
         )
         typ = await searchstaff(str(member.id), ctx, session)
-        to_tl = (
-            query.filter(Chapter.translator == typ)
-            .filter(Chapter.link_tl.is_(None))  # type: ignore
-            .all()
+        to_tl = await get_all(
+            session,
+            (
+                query.filter(Chapter.translator == typ).filter(
+                    Chapter.link_tl.is_(None)
+                )  # type: ignore
+            ),
         )
-        to_rd = (
-            query.filter(Chapter.redrawer == typ)
-            .filter(Chapter.link_rd.is_(None))  # type: ignore
-            .all()
+        to_rd = await get_all(
+            session,
+            (
+                query.filter(Chapter.redrawer == typ).filter(
+                    Chapter.link_rd.is_(None)
+                )  # type: ignore
+            ),
         )
-        to_ts = (
-            query.filter(Chapter.typesetter == typ)
-            .filter(Chapter.link_ts.is_(None))  # type: ignore
-            .all()
+        to_ts = await get_all(
+            session,
+            (
+                query.filter(Chapter.typesetter == typ).filter(
+                    Chapter.link_ts.is_(None)
+                )  # type: ignore
+            ),
         )
-        to_pr = (
-            query.filter(Chapter.proofreader == typ)
-            .filter(Chapter.link_pr.is_(None))  # type: ignore
-            .all()
+        to_pr = await get_all(
+            session,
+            (
+                query.filter(Chapter.proofreader == typ).filter(
+                    Chapter.link_pr.is_(None)
+                )  # type: ignore
+            ),
         )
-        to_qcts = (
-            query.filter(Chapter.typesetter == typ)
-            .filter(or_(Chapter.link_rl == None, Chapter.link_rl == ""))
-            .filter(Chapter.link_pr != None, Chapter.link_pr != "")
-            .filter(Chapter.link_ts != None, Chapter.link_ts != "")
-            .all()
+        to_qcts = await get_all(
+            session,
+            (
+                query.filter(Chapter.typesetter == typ)
+                .filter(or_(Chapter.link_rl == None, Chapter.link_rl == ""))
+                .filter(Chapter.link_pr != None, Chapter.link_pr != "")
+                .filter(Chapter.link_ts != None, Chapter.link_ts != "")
+            ),
         )
         desc = ""
         if len(to_tl) != 0:
@@ -990,7 +1005,6 @@ class Info(commands.Cog):
             icon_url=member.display_avatar.url,
         )
         await ctx.send(embed=embed)
-        session.close()
 
 
 def setup(Bot):

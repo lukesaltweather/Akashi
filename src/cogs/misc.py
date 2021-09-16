@@ -25,51 +25,51 @@ class Misc(commands.Cog):
     def __init__(self, client):
         self.bot = client
 
-    # @commands.Cog.listener()
-    # async def on_member_join(self, member):
-    #     channel = await self.bot.fetch_channel(345797456614785028)
-    #     rules = await self.bot.fetch_channel(345829173438316545)
-    #     await channel.send(  # type: ignore
-    #         "{0.mention} Welcome to the Land of Nekos. Please read all the information in {1.mention}".format(
-    #             member, rules
-    #         )
-    #     )
-    #     await self.bot.http.add_role(
-    #         345797456614785024, member.id, 440714683587231744, reason="Initial Role"
-    #     )
-    #
-    # @commands.Cog.listener()
-    # async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
-    #     if payload.message_id == 818205833220325404:
-    #         guild: discord.Guild = await self.bot.fetch_guild(345797456614785024)
-    #         member: discord.Member = await guild.fetch_member(payload.user_id)
-    #         print(payload.emoji.__str__())
-    #         if payload.emoji.__str__() == "⌨️":
-    #             await member.add_roles(discord.Object(717869431623254028))
-    #         elif payload.emoji.__str__() == "🎲":
-    #             await member.add_roles(discord.Object(717869655695425558))
-    #         elif payload.emoji.__str__() == "🎮":
-    #             await member.add_roles(discord.Object(717869966136967330))
-    #         elif payload.emoji.__str__() == "✉️":
-    #             await member.add_roles(discord.Object(345886396046770176))
-    #         elif payload.emoji.__str__() == "🍲":
-    #             await member.add_roles(discord.Object(464213892109828097))
-    #
-    # @commands.Cog.listener()
-    # async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
-    #     if payload.message_id == 818205833220325404:
-    #         guild: discord.Guild = await self.bot.fetch_guild(345797456614785024)
-    #         member: discord.Member = await guild.fetch_member(payload.user_id)
-    #         if payload.emoji.__str__() == "⌨️":
-    #             await member.remove_roles(discord.Object(717869431623254028))
-    #         elif payload.emoji.__str__() == "🎲":
-    #             await member.remove_roles(discord.Object(717869655695425558))
-    #         elif payload.emoji.__str__() == "🎮":
-    #             await member.remove_roles(discord.Object(717869966136967330))
-    #         elif payload.emoji.__str__() == "✉️":
-    #             await member.remove_roles(discord.Object(345886396046770176))
-    #         elif payload.emoji.__str__() == "🍲":
-    #             await member.remove_roles(discord.Object(464213892109828097))
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        channel = await self.bot.fetch_channel(345797456614785028)
+        rules = await self.bot.fetch_channel(345829173438316545)
+        await channel.send(  # type: ignore
+            "{0.mention} Welcome to the Land of Nekos. Please read all the information in {1.mention}".format(
+                member, rules
+            )
+        )
+        await self.bot.http.add_role(
+            345797456614785024, member.id, 440714683587231744, reason="Initial Role"
+        )
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        if payload.message_id == 818205833220325404:
+            guild: discord.Guild = await self.bot.fetch_guild(345797456614785024)
+            member: discord.Member = await guild.fetch_member(payload.user_id)
+            print(payload.emoji.__str__())
+            if payload.emoji.__str__() == "⌨️":
+                await member.add_roles(discord.Object(717869431623254028))
+            elif payload.emoji.__str__() == "🎲":
+                await member.add_roles(discord.Object(717869655695425558))
+            elif payload.emoji.__str__() == "🎮":
+                await member.add_roles(discord.Object(717869966136967330))
+            elif payload.emoji.__str__() == "✉️":
+                await member.add_roles(discord.Object(345886396046770176))
+            elif payload.emoji.__str__() == "🍲":
+                await member.add_roles(discord.Object(464213892109828097))
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+        if payload.message_id == 818205833220325404:
+            guild: discord.Guild = await self.bot.fetch_guild(345797456614785024)
+            member: discord.Member = await guild.fetch_member(payload.user_id)
+            if payload.emoji.__str__() == "⌨️":
+                await member.remove_roles(discord.Object(717869431623254028))
+            elif payload.emoji.__str__() == "🎲":
+                await member.remove_roles(discord.Object(717869655695425558))
+            elif payload.emoji.__str__() == "🎮":
+                await member.remove_roles(discord.Object(717869966136967330))
+            elif payload.emoji.__str__() == "✉️":
+                await member.remove_roles(discord.Object(345886396046770176))
+            elif payload.emoji.__str__() == "🍲":
+                await member.remove_roles(discord.Object(464213892109828097))
 
     @commands.command()
     async def hello(self, ctx):
@@ -121,6 +121,18 @@ class Misc(commands.Cog):
         aliases=["statistics", "status", "usage", "about", "uptime", "akashi"]
     )
     async def stats(self, ctx):
+        """
+        Description
+        ==============
+        Get info and stats on and of the bot.
+
+        Required Role
+        =====================
+        Role `Neko Workers`.
+
+        Parameters
+        ===========
+        """
         embed = discord.Embed(color=discord.Colour.blurple())
         cpu = psutil.cpu_percent()
         mem = psutil.virtual_memory()
@@ -155,20 +167,6 @@ class Misc(commands.Cog):
         )
         embed.add_field(name="Uptime", value=f"{self.get_bot_uptime()}")
         await ctx.send(embed=embed)
-
-    @commands.command(hidden=True, enabled=False)
-    @is_admin()
-    async def addall(self, ctx):
-        session = self.bot.Session()
-        members = ctx.guild.get_role(
-            self.bot.config["server"]["roles"]["members"]
-        ).members
-        for member in members:
-            st = Staff(member.id, member.name)
-            session.add(st)
-            await ctx.send("Successfully added {} to staff. ".format(member.name))
-        session.commit()
-        session.close()
 
     @commands.command()
     async def avatar(self, ctx: CstmContext, member: discord.Member):

@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy.orm import aliased
+from sqlalchemy import select
 
 from discord.ext.commands.errors import ConversionError, BadArgument
 
@@ -8,6 +9,8 @@ from src.model.chapter import Chapter
 from src.model.project import Project
 from src.model.staff import Staff
 from src.util.search import searchproject, searchstaff
+from src.util.db import get_one
+from src.util.misc import MISSING
 
 
 class ChapterConverter:
@@ -25,17 +28,18 @@ class ChapterConverter:
             tl_alias = aliased(Staff)
             pr_alias = aliased(Staff)
             query = (
-                session.query(Chapter)
+                select(Chapter)
                 .outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id)
                 .outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id)
                 .outerjoin(tl_alias, Chapter.translator_id == tl_alias.id)
                 .outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id)
                 .join(Project, Chapter.project_id == Project.id)
             )
-            return (
-                query.filter(Chapter.project_id == project.id)
-                .filter(Chapter.number == chapter)
-                .one()
+            return await get_one(
+                session,
+                query.filter(Chapter.project_id == project.id).filter(
+                    Chapter.number == chapter
+                ),
             )
         except Exception as e:
             raise BadArgument(cls, e)
@@ -56,4 +60,19 @@ class StaffConverter:
 class ProjectConverter:
     @classmethod
     async def convert(cls, ctx, arg):
-        return searchproject(arg, ctx.session)
+        return await searchproject(arg, ctx.session)
+
+
+class __CommaListMeta(type):
+    def __new__(cls, *args, **kwargs):
+        cls.__type__ = str
+
+    def __getitem__(cls, arg):
+        cls.__type__ = arg
+        return cls
+
+
+class CommaList(metaclass=__CommaListMeta):
+    @classmethod
+    async def convert(cls, context, arg: str):
+        return [cls.__type__(item) for item in arg.strip(" ").split(",")]

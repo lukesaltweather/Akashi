@@ -2,7 +2,7 @@ from typing import Optional, Literal
 
 from discord.ext.commands import flag
 
-from .baseflags import ChapterFlags
+from src.util.flags.flagutils import ChapterFlags
 
 
 class DoneFlags(ChapterFlags):

@@ -23,3 +23,4 @@ backupscript
 .aws/*
 **/_build
 **/__pycache__/*
+.idea/poetry.xml

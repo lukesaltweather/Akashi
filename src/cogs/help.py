@@ -278,6 +278,7 @@ class EmbedHelper:
             v = MyVisitor(parsed)
             parsed.walkabout(v)
             description = v.sections["Description"]
+            aliases = ", ".join(command.aliases)
             parameters = v.params
         else:
             return
@@ -285,7 +286,9 @@ class EmbedHelper:
             self.embed[-1].add_field(
                 name=parameter, value=f"`{param_desc}`", inline=False
             )
-        self.embed[-1].description = f"**Description:**\n```{description}```"
+        self.embed[
+            -1
+        ].description = f"*Aliases*: `{aliases}`\n**Description:**\n```{description}```"
 
     def clear(self):
         self.embed = []

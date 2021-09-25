@@ -16,6 +16,7 @@ Welcome to Akashi's documentation!
    Note/index
    Edit/index
    Info/index
+   Types/index
 
 
 

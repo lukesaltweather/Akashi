@@ -13,6 +13,7 @@ Welcome to Akashi's documentation!
    Tutorials/index
    Add/index
    Done/index
+   Note/index
    Edit/index
    Info/index
 

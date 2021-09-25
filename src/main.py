@@ -199,8 +199,7 @@ async def on_raw_reaction_add(payload):
                     msg2 = await channel.fetch_message(payload.message_id)
                     await msg2.clear_reactions()
                     await msg2.unpin()
-                    await msg2.edit(embed=embed)
-                    await msg2.add_reaction("✅")
+                    await msg2.edit(content=None, embed=embed)
                     session.commit()
                 session.close()
             elif int(msg.awaiting) == config["rd_id"]:
@@ -218,8 +217,7 @@ async def on_raw_reaction_add(payload):
                     msg2 = await channel.fetch_message(payload.message_id)
                     await msg2.clear_reactions()
                     await msg2.unpin()
-                    await msg2.edit(embed=embed)
-                    await msg2.add_reaction("✅")
+                    await msg2.edit(content=None, embed=embed)
                     session.commit()
                 session.close()
             elif int(msg.awaiting) == config["tl_id"]:
@@ -237,8 +235,7 @@ async def on_raw_reaction_add(payload):
                     msg2 = await channel.fetch_message(payload.message_id)
                     await msg2.clear_reactions()
                     await msg2.unpin()
-                    await msg2.edit(embed=embed)
-                    await msg2.add_reaction("✅")
+                    await msg2.edit(content=None, embed=embed)
                     session.commit()
                 session.close()
             elif int(msg.awaiting) == config["pr_id"]:
@@ -256,8 +253,7 @@ async def on_raw_reaction_add(payload):
                     msg2 = await channel.fetch_message(payload.message_id)
                     await msg2.clear_reactions()
                     await msg2.unpin()
-                    await msg2.edit(embed=embed)
-                    await msg2.add_reaction("✅")
+                    await msg2.edit(content=None, embed=embed)
                     session.commit()
                 session.close()
         except Exception as e:

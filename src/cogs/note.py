@@ -92,7 +92,7 @@ class Note(commands.Cog):
             The chapter to add the note to.
                 Type: :doc:`/Types/chapter`
         :text:
-            Thw actual text of the note to add.
+            The actual text of the note to add.
                 Type: :doc:`/Types/text`
         """
         session = ctx.session

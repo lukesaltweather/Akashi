@@ -13,5 +13,5 @@ Example:
 ----------------
 .. code-block:: none
     :emphasize-lines: 2
-$editchapter chapter: yankee 62 title: Yukiko-san is Fine ① ts: lukesaltweather
-                                                           ^ The title of type Text ends here.
+    $editchapter chapter: yankee 62 title: Yukiko-san is Fine ① ts: lukesaltweather
+                                                               ^ The title of type Text ends here.

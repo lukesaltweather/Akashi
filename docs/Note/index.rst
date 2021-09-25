@@ -9,4 +9,7 @@ Commands
     :maxdepth: 1
 
     addnote
-    note
+    notes
+    editnote
+    removenote
+    purgenotes

@@ -89,11 +89,9 @@ class Note(commands.Cog):
         Required
         ------------
         :chapter:
-            The chapter to add the note to.
-                Type: :doc:`/Types/chapter`
+            | The chapter to add the note to. [:doc:`/Types/chapter`]
         :text:
-            The actual text of the note to add.
-                Type: :doc:`/Types/text`
+            | The actual text of the note to add. [:doc:`/Types/text`]
         """
         session = ctx.session
         session.add(_Note(flags.chapter, flags.text, await searchstaff(str(ctx.author.id), ctx, ctx.session)))

@@ -49,8 +49,11 @@ html_logo = 'akashi.png'
 html_title = "Akashi Documentation"
 html_theme_options = {
     "use_download_button": False,
-    "use_fullscreen_button": False
+    "use_fullscreen_button": False,
+    "pygments_style": "paraiso-dark"
 }
+
+pygments_style = "paraiso-dark"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

@@ -1,14 +1,12 @@
 ==============================
-Misc
+Backup
 ==============================
-Miscellaneous Commands
+
 
 Commands
 ^^^^^^^^^^
 .. toctree::
     :maxdepth: 1
 
-    hello
-    apply
-    stats
-    avatar
+    backup
+    read_only_user

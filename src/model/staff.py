@@ -25,6 +25,7 @@ class Staff(Base):
         self.discord_id = discord_id
         self.name = name
 
+
     @classmethod
     async def convert(cls, ctx, arg):
         return await s.searchstaff(arg, ctx, ctx.session)

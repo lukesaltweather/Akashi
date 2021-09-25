@@ -88,9 +88,9 @@ class Note(commands.Cog):
 
         Required
         ------------
-        chapter: :type:`chapter`
+        chapter: :doc:`chapter`
             The chapter to add the note to.
-        text: :type:`text`
+        text: :doc:`text`
             Thw actual text of the note to add.
         """
         session = ctx.session

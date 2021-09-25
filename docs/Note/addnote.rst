@@ -17,7 +17,9 @@ Parameters
 
 Required
 ------------
-chapter: :doc:`chapter`
+chapter:
     The chapter to add the note to.
-text: :doc:`text`
+        Type: :doc:`Types/chapter`
+text:
     Thw actual text of the note to add.
+        Type: :doc:`Types/text`

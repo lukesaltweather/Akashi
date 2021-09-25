@@ -11,7 +11,7 @@ Text ends when the next argument starts, or when the command all-together ends.
 ----------------
 Example:
 ----------------
-.. code-block:: none
-   :emphasize-lines: 2
-   $editchapter chapter: yankee 62 title: Yukiko-san is Fine ① ts: lukesaltweather
-                                                              ^ The title of type Text ends here.
+.. code-block:: text
+
+    $editchapter chapter: yankee 62 title: Yukiko-san is Fine ① ts: lukesaltweather
+                                                               ^ The title of type Text ends here.

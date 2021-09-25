@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, BigInteger
 from sqlalchemy.orm import relationship
 
 from src.util.db import Base
-from src.util.search import searchstaff
+import src.util.search as s
 
 
 class Staff(Base):
@@ -27,4 +27,4 @@ class Staff(Base):
 
     @classmethod
     async def convert(cls, ctx, arg):
-        return await searchstaff(arg, ctx, ctx.session)
+        return await s.searchstaff(arg, ctx, ctx.session)

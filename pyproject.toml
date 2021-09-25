@@ -9,7 +9,7 @@ license = "Apache-2.0"
 python = "^3.8"
 sqlalchemy = "^1.4.25"
 psycopg2-binary = "^2.9.1"
-pillow = "^8.3.1"
+pillow = "^8.3.2"
 python-dateutil = "^2.8.2"
 jishaku = "*"
 "discord.py" = {git = "https://github.com/Rapptz/discord.py", tag="v1.7.2"}

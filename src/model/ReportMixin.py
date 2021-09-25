@@ -1,8 +1,8 @@
 from prettytable import PrettyTable
 from sqlalchemy import inspect
 
-from src.util import misc
 import src.model as model
+from src.util import misc
 
 
 class ReportMixin:

@@ -25,7 +25,7 @@ async def discordstaff(sti: str, ctx):
 
 async def dbstaff(passid: int, session2):
     stmt = select(staff.Staff).filter(staff.Staff.discord_id == passid)
-    st = get_first(session2, stmt)
+    st = await get_first(session2, stmt)
     if st:
         return st
     else:
@@ -78,6 +78,6 @@ async def searchproject(sti, session):
                     project.Project.altNames.ilike("%" + sti + ",%")
                 )
                 return await get_one(session, stmt)
-        except:
-            pass
+        except Exception as e:
+            print(e)
     raise NoResultFound(message="Couldn't find a project like this.")

@@ -1,12 +1,16 @@
 import asyncio
+import datetime
 import json
 
 import discord
+import humanize
 from discord.ext import commands
 from discord.ext.commands.errors import CommandError
 from sqlalchemy import func
 from src.model.chapter import Chapter
 from src.model.message import Message
+from src.model.note import Note
+from src.model.staff import Staff
 from src.util import exceptions
 from src.util.flags.doneflags import DoneFlags
 from src.util.search import fakesearch, dbstaff
@@ -102,7 +106,7 @@ class command_helper:
 
         return f"<:{tl}> - <:{rd}> - <:{ts}> - <:{pr}> - <:{qcts}>"
 
-    def completed_embed(
+    async def completed_embed(
         self,
         chapter: Chapter,
         author: discord.Member,
@@ -111,7 +115,7 @@ class command_helper:
         next_step: str,
     ) -> discord.Embed:
         project = chapter.project.title
-        notes = chapter.notes
+        notes = "\n".join([f"[{(await Staff.convert(self.ctx, note.author_id)).name} {humanize.naturaldelta(note.created_on - datetime.datetime.now())}] {note.text}" for note in chapter.notes])
         number = chapter.number
         links = {}
         if next_step == "TS":
@@ -152,13 +156,14 @@ class TL_helper(command_helper):
         await self._set_translator()
         self.chapter.link_tl = self.flags.link
         self.chapter.date_tl = func.now()
-        if self.chapter.link_rd is None or self.chapter.link_rd == "":
-            if self.chapter.redrawer is not None:
+        self.session.add(Note(self.chapter, self.flags.note, self.ctx.author))
+        if not self.chapter.link_rd:
+            if self.chapter.redrawer:
                 await self._no_redraws()
             else:
                 await self._no_redrawer()
         else:
-            if self.chapter.typesetter is not None:
+            if self.chapter.typesetter:
                 await self._typesetter()
             else:
                 await self._no_typesetter()
@@ -170,7 +175,7 @@ class TL_helper(command_helper):
         @return: None
         """
         self.message = await self.confirm("Notify Typesetter")
-        embed = self.completed_embed(
+        embed = await self.completed_embed(
             self.chapter,
             self.ctx.author,
             fakesearch(self.chapter.typesetter.discord_id, self.ctx),
@@ -189,7 +194,7 @@ class TL_helper(command_helper):
         @return: None
         """
         self.message = await self.confirm("Notify Redrawer")
-        embed = self.completed_embed(
+        embed = await self.completed_embed(
             self.chapter,
             self.ctx.author,
             fakesearch(self.chapter.redrawer.discord_id, self.ctx),
@@ -225,7 +230,7 @@ class TL_helper(command_helper):
         else:
             self.message = await self.confirm("Notify Default Redrawer")
             rd = fakesearch(self.chapter.project.redrawer.discord_id, self.ctx).mention
-            embed = self.completed_embed(
+            embed = await self.completed_embed(
                 self.chapter,
                 self.ctx.author,
                 fakesearch(self.chapter.project.redrawer.discord_id, self.ctx),
@@ -263,7 +268,7 @@ class TL_helper(command_helper):
             ts = fakesearch(
                 self.chapter.project.typesetter.discord_id, self.ctx
             ).mention
-            embed = self.completed_embed(
+            embed = await self.completed_embed(
                 self.chapter,
                 self.ctx.author,
                 fakesearch(self.chapter.project.typesetter.discord_id, self.ctx),
@@ -286,10 +291,12 @@ class TS_helper(command_helper):
         await self.__set_typesetter()
         self.chapter.link_ts = self.flags.link
         self.chapter.date_ts = func.now()
-        if self.chapter.proofreader is None:
-            await self.__no_proofreader()
-        else:
+        self.session.add(Note(self.chapter, self.flags.note, self.ctx.author))
+        if self.chapter.proofreader:
             await self.__proofreader()
+        else:
+
+            await self.__no_proofreader()
 
     async def __set_typesetter(self):
         if self.chapter.typesetter is None:
@@ -318,7 +325,7 @@ class TS_helper(command_helper):
             ts = fakesearch(
                 self.chapter.project.proofreader.discord_id, self.ctx
             ).mention
-            embed = self.completed_embed(
+            embed = await self.completed_embed(
                 self.chapter,
                 self.ctx.author,
                 fakesearch(self.chapter.project.proofreader.discord_id, self.ctx),
@@ -332,7 +339,7 @@ class TS_helper(command_helper):
     async def __proofreader(self):
         self.message = await self.confirm("Notify Proofreader")
         ts = fakesearch(self.chapter.proofreader.discord_id, self.ctx).mention
-        embed = self.completed_embed(
+        embed = await self.completed_embed(
             self.chapter,
             self.ctx.author,
             fakesearch(self.chapter.proofreader.discord_id, self.ctx),
@@ -347,7 +354,8 @@ class PR_helper(command_helper):
         await self.__set_proofreader()
         self.chapter.link_pr = self.flags.link
         self.chapter.date_pr = func.now()
-        if self.chapter.typesetter is not None:
+        self.session.add(Note(self.chapter, self.flags.note, self.ctx.author))
+        if self.chapter.typesetter:
             await self.__typesetter()
         else:
             await self.__no_typesetter()
@@ -366,7 +374,7 @@ class PR_helper(command_helper):
     async def __typesetter(self):
         self.message = await self.confirm("Notify OG Typesetter")
         ts = fakesearch(self.chapter.typesetter.discord_id, self.ctx).mention
-        embed = self.completed_embed(
+        embed = await self.completed_embed(
             self.chapter,
             self.ctx.author,
             fakesearch(self.chapter.typesetter.discord_id, self.ctx),
@@ -380,7 +388,8 @@ class QCTS_helper(command_helper):
     async def execute(self):
         self.chapter.link_rl = self.flags.link
         self.chapter.date_rl = func.now()
-        if self.chapter.proofreader is not None:
+        self.session.add(Note(self.chapter, self.flags.note, self.ctx.author))
+        if self.chapter.proofreader:
             await self.__proofreader()
         else:
             await self.__no_proofreader()
@@ -388,7 +397,7 @@ class QCTS_helper(command_helper):
     async def __proofreader(self):
         self.message = await self.confirm("Notify Proofreader")
         pr = fakesearch(self.chapter.proofreader.discord_id, self.ctx).mention
-        embed = self.completed_embed(
+        embed = await self.completed_embed(
             self.chapter,
             self.ctx.author,
             fakesearch(self.chapter.proofreader.discord_id, self.ctx),
@@ -430,7 +439,7 @@ class RD_helper(command_helper):
             "No Translation available. Notifies Translator."
         )
         tl = fakesearch(self.chapter.translator.discord_id, self.ctx).mention
-        embed = self.completed_embed(
+        embed = await self.completed_embed(
             self.chapter,
             self.ctx.author,
             fakesearch(self.chapter.translator.discord_id, self.ctx),
@@ -443,7 +452,7 @@ class RD_helper(command_helper):
         calendar = self.ctx.guild.get_role(453730138056556544)
         self.message = await self.confirm("No Translator assigned. Notifies Calendars.")
         tl = calendar.mention
-        embed = self.completed_embed(
+        embed = await self.completed_embed(
             self.chapter,
             self.ctx.author,
             fakesearch(345845639663583252, self.ctx),
@@ -454,7 +463,7 @@ class RD_helper(command_helper):
 
     async def __typesetter(self):
         self.message = await self.confirm("Notify Typesetter")
-        embed = self.completed_embed(
+        embed = await self.completed_embed(
             self.chapter,
             self.ctx.author,
             fakesearch(self.chapter.typesetter.discord_id, self.ctx),
@@ -470,7 +479,7 @@ class RD_helper(command_helper):
             ts = fakesearch(
                 self.chapter.project.typesetter.discord_id, self.ctx
             ).mention
-            embed = self.completed_embed(
+            embed = await self.completed_embed(
                 self.chapter,
                 self.ctx.author,
                 fakesearch(self.chapter.project.typesetter.discord_id, self.ctx),

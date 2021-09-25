@@ -15,6 +15,7 @@ class AddChapterFlags(FlagConverter):
     rd: Optional[Staff]
     pr: Optional[Staff]
     tl: Optional[Staff]
+    note: Optional[str]
 
 
 class AddProjectFlags(FlagConverter):

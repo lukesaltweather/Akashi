@@ -1,11 +1,9 @@
 from sqlalchemy import String, Integer, Column, ForeignKey
 from sqlalchemy.orm import relationship
 
-from .ReportMixin import ReportMixin
-from ..util.db import Base
-from ..util.exceptions import NoResultFound
+from src.util.db import Base
+from src.model.ReportMixin import ReportMixin
 import src.util.search as search
-
 
 icon_default = "https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128"
 

@@ -1,14 +1,14 @@
-from discord.ext.commands import BadArgument
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float
 from sqlalchemy.orm import relationship, aliased
 from sqlalchemy.sql.expression import select
 
-from .ReportMixin import ReportMixin
-from ..util.db import Base, get_one
-from src.model.staff import Staff
+from src.model.note import Note
 from src.model.project import Project
-from ..util.misc import format_number
-from ..util.search import searchproject
+from src.model.staff import Staff
+from src.model.ReportMixin import ReportMixin
+from src.util.db import Base, get_one
+from src.util.misc import format_number
+from src.util.search import searchproject
 
 
 class Chapter(Base, ReportMixin):
@@ -16,7 +16,6 @@ class Chapter(Base, ReportMixin):
     id = Column(Integer, primary_key=True)
     number = Column(Float)
     title = Column(String)
-    notes = Column(String)
     link_raw = Column(String)
     link_tl = Column(String)
     link_ts = Column(String)
@@ -69,6 +68,9 @@ class Chapter(Base, ReportMixin):
     project = relationship(
         "Project", back_populates="chapters", uselist=False, lazy="joined"
     )
+    # notes = relationship(
+    #     "Note", back_populates="chapter", innerjoin=False, lazy="selectin", cascade="all,delete"
+    # )
 
     def __init__(self, number, link_raw):
         self.number = number
@@ -78,7 +80,6 @@ class Chapter(Base, ReportMixin):
         self.link_rd = None
         self.link_pr = None
         self.link_rl = None
-        self.notes = ""
 
     @classmethod
     async def convert(cls, ctx, arg: str):
@@ -98,7 +99,6 @@ class Chapter(Base, ReportMixin):
             .outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id)
             .outerjoin(tl_alias, Chapter.translator_id == tl_alias.id)
             .outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id)
-            .join(Project, Chapter.project_id == Project.id)
             .filter(Chapter.project_id == project.id)
             .filter(Chapter.number == chapter)
         )

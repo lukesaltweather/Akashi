@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, BigInteger, DateTime
-from ..util.db import Base
+from sqlalchemy import Column, Integer, String, BigInteger, DateTime
+
+from src.util.db import Base
 
 
 class Reminder(Base):

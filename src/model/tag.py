@@ -1,8 +1,6 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float, BigInteger
-from sqlalchemy.orm import relationship
-from ..util.db import Base
-from src.model.staff import Staff
-from src.model.project import Project
+from sqlalchemy import Column, String, BigInteger
+
+from src.util.db import Base
 
 
 class Tag(Base):

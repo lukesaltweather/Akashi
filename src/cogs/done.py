@@ -12,11 +12,13 @@ from src.model.message import Message
 from src.model.note import Note
 from src.model.staff import Staff
 from src.util import exceptions
-from src.util.flags.doneflags import DoneFlags
-from src.util.search import fakesearch, dbstaff
-from src.util.misc import format_number, make_mentionable
+from src.util.flags.doneflags import DoneFlags, AssignFlags
+from src.util.search import fakesearch, dbstaff, searchstaff, discordstaff
+from src.util.misc import format_number, MISSING
 from src.util.context import CstmContext
 from abc import abstractmethod
+
+from src.util.types import staffroles
 
 
 class command_helper:
@@ -554,9 +556,47 @@ class Done(commands.Cog):
             await RD.execute()
         await ctx.session.commit()
 
-    @commands.command(aliases=["claim"])
-    async def take(self, ctx: CstmContext):
-        pass
+    @commands.command(aliases=["claim", "take"], usage="https://akashi.readthedocs.io/en/latest/Done/assign.html")
+    async def assign(self, ctx: CstmContext, *, flags: AssignFlags):
+        """
+        Description
+        ==============
+        Assign a staffmember or yourself for a step on a chapter.
+
+        Required Role
+        =====================
+        Role `Neko Workers`.
+
+        Parameters
+        ===========
+        Required
+        ---------
+        :chapter: The chapter to edit, in format: projectName chapterNbr
+        :step: The step to assign the staffmember to. Can be one of: tl, rd, ts, pr or qc.
+
+        Optional
+        ----------
+        :staff: The person that is assigned. If omitted, the command's author is assigned instead.
+        """
+        chapter = flags.chapter
+        staff = flags.staff
+        step = flags.step
+        if not staff:
+            staff = await Staff.convert(ctx, ctx.author.id)
+        if step == "tl" and not chapter.translator:
+            chapter.translator = staff
+        elif step == "rd"  and not chapter.redrawer:
+            chapter.redrawer = staff
+        elif step == "ts"  and not chapter.typesetter:
+            chapter.typesetter = staff
+        elif step in ("qc", "pr")  and not chapter.proofreader:
+            chapter.proofreader = staff
+        else:
+            raise CommandError("A staffmember has already been assigned for this step.\nConsider using $editchapter to edit the staffmember for a step.")
+        await ctx.prompt_and_commit(text=f"Do you really want to assign {'yourself' if staff.discord_id == ctx.author.id else staff.name} "
+        f"as the {staffroles.get(step, 'Proofreader')} for {chapter}?", color=discord.Colour.dark_magenta())
+
+
 
 
 def setup(Bot):

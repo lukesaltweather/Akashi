@@ -16,8 +16,7 @@ Parameters
 ===========
 Required
 ---------
-:chapter: Chapter number of the chapter to add.
-:project: Project the chapter belongs to.
+:chapter: Project and chapter number of the chapter to add.
 :raws: Link to raws on Box.
 
 Optional

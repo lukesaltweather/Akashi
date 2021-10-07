@@ -36,7 +36,7 @@ class Info(commands.Cog):
 
     @commands.command(
         aliases=["infochapters", "ic", "infoc"],
-        usage="https://akashi.readthedocs.io/en/stable/Info/infochapter.html",
+        extras={"doc": "https://akashi.readthedocs.io/en/stable/Info/infochapter.html"}
     )
     async def infochapter(self, ctx: CstmContext, *, flags: InfoChapter):
         """
@@ -92,7 +92,7 @@ class Info(commands.Cog):
                     pro = helper.get_project(session)
                 else:
                     pro = flags.project[0] == Chapter.project
-                if pro is not None:
+                if pro:
                     query = query.filter(pro)
                 else:
                     pass

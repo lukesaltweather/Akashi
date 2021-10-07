@@ -19,31 +19,30 @@ from sqlalchemy import create_engine
 from src.model.staff import Staff
 from src.util.checks import is_admin
 from src.util.context import CstmContext
-from src.util.exceptions import (
-    MissingRequiredPermission,
-    NoResultFound,
-    StaffNotFoundError,
-    MissingRequiredParameter,
-    TagAlreadyExists,
-    CancelError,
-)
 
 with open("src/util/emojis.json", "r") as f:
     emojis = json.load(f)
 
 logger = logging.getLogger("discord")
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.INFO)
 handler = logging.FileHandler(filename="bot.log", encoding="utf-8", mode="w")
 handler.setFormatter(
     logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
 )
 logger.addHandler(handler)
 
+loggerBot = logging.getLogger("akashi")
+loggerBot.setLevel(logging.INFO)
+loggerBot.addHandler(handler)
+
 
 class Bot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.logger = loggerBot
         self.config = toml.load("config.toml")
+        self.logger.info(msg="Loaded Config.")
+        self.logger.info(msg="Creating asnypg pool...")
         self.pool = self.loop.run_until_complete(
             asyncpg.create_pool(
                 "postgres://Akashi:CWyYxRCvRg5hs@51.15.107.70:5432/akashitest",
@@ -51,14 +50,18 @@ class Bot(commands.Bot):
                 max_size=10,
             )
         )
+        self.logger.info(msg="Finished setting up asyncpg connection pool.")
+        self.logger.info(msg="Setting up SQLAlchemy Sessionmaker...")
         self.Session = sessionmaker(
             create_async_engine(
                 self.config["general"]["uri"], pool_size=20, future=True
             ),
             class_=AsyncSession,
         )
+        self.logger.info(msg="Finished setting up SQLAlchemy Sessionmaker.")
         self.em = emojis
         self.uptime = datetime.datetime.now()
+        self.logger.info(msg="Loading Cogs...")
         self.load_extension("src.cogs.loops")
         self.load_extension("src.cogs.edit")
         self.load_extension("src.cogs.misc")
@@ -69,15 +72,20 @@ class Bot(commands.Bot):
         self.load_extension("src.cogs.help")
         self.load_extension("src.cogs.stats")
         self.load_extension("jishaku")
+        self.logger.info(msg="Finished loading Cogs.")
+        self.logger.info(msg="Init complete.")
 
     async def store_config(self):
         async with aiofiles.open("config.toml.new", mode="w") as file:
             await file.write(toml.dumps(self.config))
         os.replace("config.toml.new", "config.toml")
+        self.logger.info(msg="Config File overridden.")
 
     async def on_message(self, message):
         ctx = await self.get_context(message, cls=CstmContext)
+        logging.getLogger("akashi.commands").info(f"Calling Command {ctx.command.name} with message {ctx.message.content}")
         await self.invoke(ctx)
+        logging.getLogger("akashi.commands").info(f"Finished processing command {ctx.command.name}.")
 
     def get_cog_insensitive(self, name):
         """Gets the cog instance requested.
@@ -103,6 +111,7 @@ print(version_info)
 @bot.after_invoke
 async def after_invoke_hook(ctx: CstmContext):
     await ctx.session.close()
+    logging.getLogger("akashi.db").debug(f"Closing SQLAlchemy Session.")
 
 
 @bot.check
@@ -128,26 +137,38 @@ async def only_members(ctx):
 async def on_ready():
     activity = discord.Activity(name="$help", type=discord.ActivityType.playing)
     await bot.change_presence(activity=activity)
+    await bot.wait_until_ready()
+    logging.getLogger("akashi").info(f"Login and startup complete.")
 
 
-# @bot.event
-# async def on_command_error(ctx, error):
-#     # rollback command's db session
-#     ctx.session.rollback()
-#     # This prevents any commands with local handlers being
-#     # handled here in on_command_error.
-#     print(error)
-#     if hasattr(ctx.command, "on_error"):
-#         return
-#     error = getattr(error, "original", error)
-#     # match error:
-#     #    case commands.CommandError:
-#     #        await ctx.send(error)
+@bot.event
+async def on_command_error(ctx, error):
+    logging.getLogger("akashi.commands").warning(f"Now handling error in main error handler for command {ctx.command.name}.")
+    # rollback command's db session
+    await ctx.session.rollback()
+    await ctx.session.close()
+    # This prevents any commands with local handlers being
+    # handled here in on_command_error.
+    if hasattr(ctx.command, "on_error"):
+        logging.getLogger("akashi.commands").info(f"Error for command {ctx.command.name} has already been dealt with in local error handler.")
+        return
+    error = getattr(error, "original", error)
+    logging.getLogger("akashi.commands").error(f"The error that occured for {ctx.command.name}: {type(error)} / {getattr(error, 'message', 'No Message')}.")
+    if error is commands.CommandNotFound:
+        pass
+    elif error is commands.CommandError:
+        await ctx.send(error.message or error.__str__)
+    elif error is commands.FlagError:
+        await ctx.send(error.message or error.__str__)
+    else:
+        await ctx.send("An unknown error ocurred...")
+        logging.getLogger("akashi.commands").critical(f"Error for {ctx.command.name} couldn't be resolved gracefully: Message: {getattr(error, 'message', 'No Message')}; \n Type: {type(error)}; \n String: {str(error)}.")
 
 
 @bot.command(hidden=True)
 @is_admin()
 async def restart(ctx):
+    logging.getLogger("akashi").info(f"Restarting bot...")
     os.system("systemctl restart akashi")
 
 
@@ -162,8 +183,8 @@ async def on_member_update(before: discord.Member, after: discord.Member):
             await session1.commit()
             channel = before.guild.get_channel_or_thread(390395499355701249)
             await channel.send("Successfully added {} to staff. ".format(after.name))  # type: ignore
+            logging.getLogger("akashi").info(f"Added staffmember {before.display_name}.")
         finally:
             await session1.close()
-
 
 bot.run(bot.config["general"]["bot_key"])

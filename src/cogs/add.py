@@ -1,11 +1,13 @@
 import asyncio
 import json
 
+import asyncpg.exceptions
 import discord
+import sqlalchemy
 from discord.ext import commands
 
 from src.util.context import CstmContext
-from src.util.exceptions import MissingRequiredParameter
+from src.util.exceptions import ProjectAlreadyExists, ChapterAlreadyExists
 from prettytable import PrettyTable
 from sqlalchemy import func
 from src.model.chapter import Chapter
@@ -85,9 +87,7 @@ class Add(commands.Cog):
         """
         session = ctx.session
         if searchproject(flags.title, session):
-            raise discord.ext.commands.CommandError(  # type: ignore
-                f"Project {flags.title} already exists."
-            )
+            raise ProjectAlreadyExists()
 
         pr = Project(flags.title, flags.status, flags.link, flags.altnames)
         pr.tl = flags.tl
@@ -180,19 +180,22 @@ class Add(commands.Cog):
         ===========
         Required
         ---------
-        :chapter: Chapter number of the chapter to add.
-        :project: Project the chapter belongs to.
+        :chapter: Project and chapter number of the chapter to add.
         :raws: Link to raws on Box.
 
         Optional
         ------------
         :tl, rd, ts, pr: Staff for the chapter.
         """
+        arg = flags.chapter
+        project_str = arg[0: len(arg) - len(arg.split(' ')[-1])]
+        chapter_nbr = float(arg.split(' ')[-1])
+
         table = PrettyTable()
-        chp = Chapter(flags.chapter, flags.raws)
-        chp.project = flags.project
+        chp = Chapter(chapter_nbr, flags.raws)
+        chp.project = await Project.convert(ctx, project_str)
         table.add_column("Project", [chp.project.title])
-        table.add_column("Chapter", [format_number(flags.chapter)])
+        table.add_column("Chapter", [format_number(chp.number)])
         table.add_column("Raws", [chp.link_raw])
         if flags.ts:
             chp.typesetter = flags.ts
@@ -211,6 +214,10 @@ class Add(commands.Cog):
         t = table.get_string(title="Chapter Preview")
         await ctx.prompt_and_commit(file=await misc.drawimage(t))
 
+    @addchapter.error
+    async def on_chapter_error(self, ctx, error):
+        if isinstance(error.original, sqlalchemy.exc.IntegrityError):
+            await ctx.send("Chapter couldn't be added, as it already exists.")
 
 def setup(Bot):
     Bot.add_cog(Add(Bot))

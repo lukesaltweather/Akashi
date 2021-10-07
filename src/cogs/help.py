@@ -256,7 +256,7 @@ class EmbedHelper:
                 parsed = parse_rst(docstring)
                 v = MyVisitor(parsed)
                 parsed.walkabout(v)
-                string = f"{string}\n[**`{command.name}`**]({command.usage}){v.sections.get('Description', '')}"
+                string = f"{string}\n[**`{command.name}`**]({command.extras.get('doc', command.usage)}) {v.sections.get('Description', '')}\n```{command.signature}```\n"
         self.embed[-1].description = string
         self.embed[-1].set_footer(
             icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Info_icon-72a7cf.svg/1200px-Info_icon-72a7cf.svg.png",
@@ -271,7 +271,7 @@ class EmbedHelper:
             icon_url="https://rei.animecharactersdatabase.com/uploads/chars/9225-1377974027.png",
         )
         self.embed[-1].title = "Docs"
-        self.embed[-1].url = command.usage
+        self.embed[-1].url = command.extras.get('doc', command.usage)
         if command.callback.__doc__:
             docstring = inspect.cleandoc(command.callback.__doc__)
             parsed = parse_rst(docstring)

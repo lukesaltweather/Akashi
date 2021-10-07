@@ -2,13 +2,13 @@ import json
 
 import discord
 import discord.ext
+from discord.ext.commands import CommandError
 from sqlalchemy.orm.exc import MultipleResultsFound
 from sqlalchemy.sql.expression import select
 
 import src.model.staff as staff
 import src.model.project as project
 from src.util import exceptions, misc
-from src.util.exceptions import StaffNotFoundError, NoResultFound
 from src.util.db import get_first, get_one
 
 
@@ -29,7 +29,7 @@ async def dbstaff(passid: int, session2):
     if st:
         return st
     else:
-        raise StaffNotFoundError
+        raise CommandError("Staff doesn't exist.")
 
 
 def fakesearch(did, ctx):
@@ -52,7 +52,7 @@ async def searchstaff(passstr: str, ctx, sessions):
             if staff is not None:
                 return staff
         except ValueError:
-            raise StaffNotFoundError
+            raise CommandError("Staff doesn't exist.")
     return await dbstaff(dst.id, sessions)
 
 
@@ -80,4 +80,4 @@ async def searchproject(sti, session):
                 return await get_one(session, stmt)
         except Exception as e:
             print(e)
-    raise NoResultFound(message="Couldn't find a project like this.")
+    raise CommandError("This project doesn't exist.")

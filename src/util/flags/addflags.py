@@ -8,8 +8,7 @@ from src.model.staff import Staff
 
 
 class AddChapterFlags(FlagConverter):
-    chapter: float
-    project: Project
+    chapter: str
     raws: str
     ts: Optional[Staff]
     rd: Optional[Staff]

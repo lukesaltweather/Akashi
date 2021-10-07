@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from typing import Optional
 
 from discord.ext import commands
@@ -62,6 +63,7 @@ class ConfirmationView(discord.ui.View):
 class CstmContext(commands.Context):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        logging.getLogger("akashi.db").debug(f"Starting SQLAlchemy Session.")
         self._session = self.bot.Session(autoflush=False, autocommit=False)
 
     @property
@@ -85,11 +87,11 @@ class CstmContext(commands.Context):
         await self.send(embed=embed, file=file, view=view)
         await view.wait()
         if view.value:
-            await self.reply("Commited changes.", mention_author=False)
             await self.session.commit()
+            await self.reply("Commited changes.", mention_author=False)
         else:
-            await self.reply("Discarded changes.", mention_author=False)
             await self.session.rollback()
+            await self.reply("Discarded changes.", mention_author=False)
 
     async def prompt(self, *, color=discord.Color.blue(), embed=None, file=None, text="Do you want to confirm?"):
         if not embed:

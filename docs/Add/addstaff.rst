@@ -12,6 +12,6 @@ Required Role
 =====================
 Role `Neko Herder`.
 
-Parameters
+Arguments
 ===========
 :member: The Member to be added by Mention, ID, or Name

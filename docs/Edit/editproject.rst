@@ -12,7 +12,7 @@ Required Role
 =====================
 Role `Akashi's Minions`.
 
-Parameters
+Arguments
 ===========
 
 Required

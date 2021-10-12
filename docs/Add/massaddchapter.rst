@@ -19,7 +19,7 @@ Example
   :alt: bigmac Example
 
 
-Parameters
+Arguments
 ===========
 Required
 ---------

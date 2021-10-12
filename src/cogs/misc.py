@@ -130,7 +130,7 @@ class Misc(commands.Cog):
         =====================
         Role `Neko Workers`.
 
-        Parameters
+        Arguments
         ===========
         """
         embed = discord.Embed(color=discord.Colour.blurple())

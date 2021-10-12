@@ -528,7 +528,7 @@ class Done(commands.Cog):
         =====================
         Role `Neko Workers`.
 
-        Parameters
+        Arguments
         ===========
         Required
         ---------
@@ -567,7 +567,7 @@ class Done(commands.Cog):
         =====================
         Role `Neko Workers`.
 
-        Parameters
+        Arguments
         ===========
         Required
         ---------

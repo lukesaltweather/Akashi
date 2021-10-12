@@ -48,7 +48,7 @@ class Info(commands.Cog):
         =====================
         Role `Neko Workers`.
 
-        Parameters
+        Arguments
         ===========
 
         Optional
@@ -474,7 +474,7 @@ class Info(commands.Cog):
         =====================
         Role `Neko Workers`.
 
-        Parameters
+        Arguments
         ===========
 
         Optional
@@ -667,7 +667,7 @@ class Info(commands.Cog):
         =====================
         Role `Neko Workers`.
 
-        Parameters
+        Arguments
         ===========
 
         Optional
@@ -752,7 +752,7 @@ class Info(commands.Cog):
         =====================
         Role `Neko Herders`.
 
-        Parameters
+        Arguments
         ===========
 
         Optional
@@ -806,7 +806,7 @@ class Info(commands.Cog):
         =====================
         Role `Neko Workers`.
 
-        Parameters
+        Arguments
         ===========
 
         Optional
@@ -907,7 +907,7 @@ class Info(commands.Cog):
         =====================
         Role `Neko Workers`.
 
-        Parameters
+        Arguments
         ===========
 
         Required

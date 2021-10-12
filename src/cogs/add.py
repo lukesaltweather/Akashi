@@ -45,7 +45,7 @@ class Add(commands.Cog):
         =====================
         Role `Neko Herder`.
 
-        Parameters
+        Arguments
         ===========
         :member: The Member to be added by Mention, ID, or Name
         """
@@ -70,7 +70,7 @@ class Add(commands.Cog):
         =====================
         Role `Akashi's Minions`.
 
-        Parameters
+        Arguments
         ===========
         Required
         ---------
@@ -125,7 +125,7 @@ class Add(commands.Cog):
           :alt: bigmac Example
 
 
-        Parameters
+        Arguments
         ===========
         Required
         ---------
@@ -176,7 +176,7 @@ class Add(commands.Cog):
         =====================
         Role `Akashi's Minions`.
 
-        Parameters
+        Arguments
         ===========
         Required
         ---------

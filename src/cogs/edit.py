@@ -40,7 +40,7 @@ class Edit(commands.Cog):
         =====================
         Role `Neko Workers`.
 
-        Parameters
+        Arguments
         ===========
 
         Required
@@ -115,7 +115,7 @@ class Edit(commands.Cog):
         =====================
         Role `Akashi's Minions`.
 
-        Parameters
+        Arguments
         ===========
 
         Required
@@ -186,7 +186,7 @@ class Edit(commands.Cog):
         =====================
         Role `Neko Herders`.
 
-        Parameters
+        Arguments
         ===========
 
         Required
@@ -225,7 +225,7 @@ class Edit(commands.Cog):
         =====================
         Role `Neko Workers`.
 
-        Parameters
+        Arguments
         ===========
         Required
         ---------

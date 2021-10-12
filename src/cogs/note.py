@@ -83,7 +83,7 @@ class Note(commands.Cog):
         =====================
         Role `Neko Workers`.
 
-        Parameters
+        Arguments
         ===========
 
         Required

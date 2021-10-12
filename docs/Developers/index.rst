@@ -1,15 +1,12 @@
 ==============================
-Note
+Developers
 ==============================
 
 
-Commands
+Articles
 ^^^^^^^^^^
 .. toctree::
     :maxdepth: 1
 
-    addnote
-    notes
-    editnote
-    removenote
-    purgenotes
+    setup
+    restore_backup

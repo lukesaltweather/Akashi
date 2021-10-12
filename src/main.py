@@ -70,22 +70,19 @@ class Bot(commands.Bot):
         self.load_extension("src.cogs.done")
         self.load_extension("src.cogs.note")
         self.load_extension("src.cogs.help")
-        self.load_extension("src.cogs.stats")
+        self.load_extension("src.cogs.database")
         self.load_extension("jishaku")
         self.logger.info(msg="Finished loading Cogs.")
         self.logger.info(msg="Init complete.")
+
+    async def get_context(self, message, *, cls=None):
+        return await super().get_context(message, cls=CstmContext)
 
     async def store_config(self):
         async with aiofiles.open("config.toml.new", mode="w") as file:
             await file.write(toml.dumps(self.config))
         os.replace("config.toml.new", "config.toml")
         self.logger.info(msg="Config File overridden.")
-
-    async def on_message(self, message):
-        ctx = await self.get_context(message, cls=CstmContext)
-        logging.getLogger("akashi.commands").info(f"Calling Command {ctx.command.name} with message {ctx.message.content}")
-        await self.invoke(ctx)
-        logging.getLogger("akashi.commands").info(f"Finished processing command {ctx.command.name}.")
 
     def get_cog_insensitive(self, name):
         """Gets the cog instance requested.

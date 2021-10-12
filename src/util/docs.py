@@ -68,7 +68,7 @@ Commands
     bot.load_extension("src.cogs.done")
     bot.load_extension("src.cogs.note")
     bot.load_extension("src.cogs.help")
-    bot.load_extension("src.cogs.stats")
+    bot.load_extension("src.cogs.database")
 
     bot.build_docs()
 

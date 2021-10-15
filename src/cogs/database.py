@@ -47,7 +47,8 @@ class Database(commands.Cog):
             buffer, datetime.datetime.utcnow().strftime("akashi-backup-%Y-%m-%d.dump")
         )
         await channel.send(
-            "Here's todays backup! See https://docs.akashi.app/developers/restore_backup.html for info on how to restore the backup.",
+            "Here's todays backup.\n"
+            "See https://docs.akashi.app/developers/restore_backup.html for info on how to restore the backup.",
             file=file,
         )
         await initial_msg.delete()
@@ -79,7 +80,8 @@ class Database(commands.Cog):
             buffer, datetime.datetime.utcnow().strftime("akashi-manual-backup-%Y-%m-%d.dump")
         )
         await ctx.send(
-            "Backup complete! See https://docs.akashi.app/developers/restore_backup.html for info on how to restore the backup.",
+            "Backup complete.\n"
+            "See https://docs.akashi.app/en/stable/Developers/restore_backup.html for info on how to restore the backup.",
             file=file,
         )
         await initial_msg.delete()

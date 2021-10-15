@@ -7,7 +7,6 @@ import sqlalchemy
 from discord.ext import commands
 
 from src.util.context import CstmContext
-from src.util.exceptions import ProjectAlreadyExists, ChapterAlreadyExists
 from prettytable import PrettyTable
 from sqlalchemy import func
 from src.model.chapter import Chapter
@@ -218,6 +217,8 @@ class Add(commands.Cog):
     async def on_chapter_error(self, ctx, error):
         if isinstance(error.original, sqlalchemy.exc.IntegrityError):
             await ctx.send("Chapter couldn't be added, as it already exists.")
+        else:
+            await ctx.send(f"An error occured while adding the chapter: {error}")
 
 def setup(Bot):
     Bot.add_cog(Add(Bot))

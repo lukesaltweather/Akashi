@@ -63,7 +63,7 @@ class command_helper:
             except asyncio.TimeoutError:
                 self.session.rollback()
                 await message.delete()
-                raise RuntimeError(
+                raise CommandError(
                     "No reaction from command author. No action was taken."
                 )
             else:

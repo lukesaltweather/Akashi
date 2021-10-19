@@ -46,7 +46,8 @@ class Add(commands.Cog):
 
         Arguments
         ===========
-        :member: The Member to be added by Mention, ID, or Name
+        :member: 
+            | The Member to be added by Mention, ID, or Name  [:doc:`/Types/discord`]
         """
         member = flags.member
         st = Staff(member.id, member.name)
@@ -73,16 +74,23 @@ class Add(commands.Cog):
         ===========
         Required
         ---------
-        :title: Title of the Project.
-        :link: Link to the project on box.
-        :thumbnail: Large picture for the entry in the status board.
+        :title:
+            | Title of the Project. [:doc:`/Types/text`]
+        :link: 
+            | Link to the project on box. [:doc:`/Types/text`]
+        :thumbnail: 
+            | Link to large picture for the entry in the status board.  [:doc:`/Types/text`]
 
         Optional
         ------------
-        :icon: Small Image for the status board in the upper left corner.
-        :ts, rd, pr, tl: Default staff for the project.
-        :status: Current status of the project, defaults to "active".
-        :altnames: Aliases for the project, divided by comma.
+        :icon: 
+            | Link to small Image for the status board in the upper left corner.  [:doc:`/Types/text`]
+        :ts, rd, pr, tl: 
+            | Default staff for the project.  [:doc:`/Types/staff`]
+        :status:
+            | Current status of the project, defaults to "active".  [:doc:`/Types/text `]
+        :altnames: 
+            | Aliases for the project, divided by comma.  [:doc:`/Types/text`]
         """
         session = ctx.session
         if searchproject(flags.title, session):
@@ -128,8 +136,10 @@ class Add(commands.Cog):
         ===========
         Required
         ---------
-        :chapter: Chapter on which to start on. Chapter to end on is determined by amount of links sent.
-        :project: Project the chapters belong to.
+        :chapter:
+            | Chapter on which to start on. Chapter to end on is determined by amount of links sent.  [:doc:`/Types/chapter`]
+        :project:
+            | Project the chapters belong to.  [:doc:`/Types/project`]
         """
         start_chp = flags.chapter
         date_created = func.now()
@@ -161,6 +171,7 @@ class Add(commands.Cog):
             )
             await session.commit()
 
+    @is_pu()
     @commands.command(
         aliases=["ac", "addch", "addc"],
         usage="https://akashi.readthedocs.io/en/stable/Add/addchapter.html",
@@ -169,7 +180,7 @@ class Add(commands.Cog):
         """
         Description
         ==============
-        Add a project to the database.
+        Add a chapter to the database.
 
         Required Role
         =====================
@@ -179,12 +190,15 @@ class Add(commands.Cog):
         ===========
         Required
         ---------
-        :chapter: Project and chapter number of the chapter to add.
-        :raws: Link to raws on Box.
+        :chapter: 
+            | Project and chapter number of the chapter to add.  [:doc:`/Types/chapter`]
+        :raws: 
+            | Link to raws on Box.  [:doc:`/Types/text`] 
 
         Optional
         ------------
-        :tl, rd, ts, pr: Staff for the chapter.
+        :tl, rd, ts, pr:
+            | Staff for the chapter.  [:doc:`/Types/staff`]
         """
         arg = flags.chapter
         project_str = arg[0: len(arg) - len(arg.split(' ')[-1])]

@@ -26,7 +26,6 @@ class EditChapterFlags(ChapterFlags):
     link_raw: TypeOrMissing[str] = flag(default=MISSING)
     to_project: Optional[Project]
     to_chapter: Optional[float]
-    notes: TypeOrMissing[str] = flag(default=MISSING)
 
 
 class ReleaseFlags(ChapterFlags):

@@ -53,15 +53,24 @@ class Info(commands.Cog):
 
         Optional
         ------------
-        :project: List of projects the chapters can belong to.
-        :tl, rd, ts, pr: List of staff working on respective steps.
-        :chapter_from, chapter_upto: Give a minimum and/or maximum chapter number to look for.
-        :chapter: A list of numbers the found chapters can have.
-        :id: A list of ids the found chapters can have.
-        :release_from, release_upto, release_on: Filter for release Date.
-        :status: Current status of the chapter. Can be one of "active", "tl", "ts", "rd", "pr", "qcts" or "ready".
-        :fields: What columns to include in the result table.
-        :links: Either true or false, whether the bot sends the links to each steps of the chapters.
+        :project: 
+            | List of projects the chapters can belong to. [:doc:`/Types/project`]
+        :tl, rd, ts, pr: 
+            | List of staff working on respective steps. [:doc:`/Types/staff`]
+        :chapter_from, chapter_upto: 
+            | Give a minimum and/or maximum chapter number to look for. [:doc:`/Types/number`]
+        :chapter: 
+            | A list of numbers the found chapters can have. [:doc:`/Types/number`]
+        :id: 
+            | A list of ids the found chapters can have. [:doc:`/Types/number`]
+        :release_from, release_upto, release_on: 
+            | Filter for release Date. [:doc:`/Types/datetime`]
+        :status: 
+            | Current status of the chapter. Can be one of "active", "tl", "ts", "rd", "pr", "qcts" or "ready". [:doc:`/Types/literals`]
+        :fields:
+            |  What columns to include in the result table. [:doc:`/Types/literals`]
+        :links: 
+            | Either true or false, whether the bot sends the links to each steps of the chapters. [:doc:`/Types/text`]
 
         Related Articles:
         ^^^^^^^^^^^^^^^^^^^^
@@ -479,10 +488,14 @@ class Info(commands.Cog):
 
         Optional
         ------------
-        :status: Filter by current status of the project.
-        :tl, rd, ts, pr: Filter by Staff working on project.
-        :project: Filter by name.
-        :fields: What columns to include in the result table.
+        :status: 
+            | Filter by current status of the project.
+        :tl, rd, ts, pr: 
+            | Filter by Staff working on project.
+        :project: 
+            | Filter by name.
+        :fields: 
+            | What columns to include in the result table.
 
         Related Articles:
         ^^^^^^^^^^^^^^^^^^^^
@@ -751,17 +764,6 @@ class Info(commands.Cog):
         Required Role
         =====================
         Role `Neko Herders`.
-
-        Arguments
-        ===========
-
-        Optional
-        ------------
-
-
-        Related Articles:
-        ^^^^^^^^^^^^^^^^^^^^
-
         """
         session = ctx.session
         staff = await get_all(session, select(Staff))
@@ -805,16 +807,6 @@ class Info(commands.Cog):
         Required Role
         =====================
         Role `Neko Workers`.
-
-        Arguments
-        ===========
-
-        Optional
-        ------------
-
-        Related Articles:
-        ^^^^^^^^^^^^^^^^^^^^
-
         """
         session = ctx.session
         ts_alias = aliased(Staff)
@@ -912,7 +904,8 @@ class Info(commands.Cog):
 
         Required
         ------------
-        :Member: The person to look for.
+        :Member:
+            | The person to look for.
 
         .. danger::
             Doesn't use the "normal" way to do commands. Just write the member's name `directly` after the command name like so:

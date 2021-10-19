@@ -15,7 +15,7 @@ Required Role
 =====================
 Role `Neko Workers`.
 
-Parameters
+Arguments
 ===========
 Required
 ---------

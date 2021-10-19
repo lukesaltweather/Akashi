@@ -3,6 +3,8 @@ import datetime
 import json
 import logging
 import os
+import sys
+import traceback
 from typing import Optional
 
 import aiofiles
@@ -19,6 +21,7 @@ from sqlalchemy import create_engine
 from src.model.staff import Staff
 from src.util.checks import is_admin
 from src.util.context import CstmContext
+from src.util.exceptions import NoCommandChannel, InsufficientPermissions, AkashiException
 
 with open("src/util/emojis.json", "r") as f:
     emojis = json.load(f)
@@ -70,22 +73,19 @@ class Bot(commands.Bot):
         self.load_extension("src.cogs.done")
         self.load_extension("src.cogs.note")
         self.load_extension("src.cogs.help")
-        self.load_extension("src.cogs.stats")
+        self.load_extension("src.cogs.database")
         self.load_extension("jishaku")
         self.logger.info(msg="Finished loading Cogs.")
         self.logger.info(msg="Init complete.")
+
+    async def get_context(self, message, *, cls=None):
+        return await super().get_context(message, cls=CstmContext)
 
     async def store_config(self):
         async with aiofiles.open("config.toml.new", mode="w") as file:
             await file.write(toml.dumps(self.config))
         os.replace("config.toml.new", "config.toml")
         self.logger.info(msg="Config File overridden.")
-
-    async def on_message(self, message):
-        ctx = await self.get_context(message, cls=CstmContext)
-        logging.getLogger("akashi.commands").info(f"Calling Command {ctx.command.name} with message {ctx.message.content}")
-        await self.invoke(ctx)
-        logging.getLogger("akashi.commands").info(f"Finished processing command {ctx.command.name}.")
 
     def get_cog_insensitive(self, name):
         """Gets the cog instance requested.
@@ -101,6 +101,11 @@ class Bot(commands.Bot):
         """
         a_lower = {k.lower(): v for k, v in self.cogs.items()}
         return a_lower.get(name.lower())
+
+    async def on_error(self, event_method: str, *args, **kwargs) -> None:
+        logging.getLogger("discord").error(f"The event {event_method} raised an error: {sys.exc_info()}")
+        print(f'Exception in {event_method}', file=sys.stderr)
+        traceback.print_exc()
 
 
 bot = Bot(command_prefix="$", intents=Intents.all())
@@ -128,9 +133,9 @@ async def only_members(ctx):
     if ia and ic and guild:
         return True
     elif ic:
-        raise MissingRequiredPermission("Wrong Channel.")
+        raise NoCommandChannel()
     elif not guild:
-        raise MissingRequiredPermission("Missing permission `Server Member`")
+        raise InsufficientPermissions("Missing permission `Server Member`")
 
 
 @bot.event
@@ -154,11 +159,9 @@ async def on_command_error(ctx, error):
         return
     error = getattr(error, "original", error)
     logging.getLogger("akashi.commands").error(f"The error that occured for {ctx.command.name}: {type(error)} / {getattr(error, 'message', 'No Message')}.")
-    if error is commands.CommandNotFound:
-        pass
+    if error is AkashiException:
+        await ctx.send(error.message)
     elif error is commands.CommandError:
-        await ctx.send(error.message or error.__str__)
-    elif error is commands.FlagError:
         await ctx.send(error.message or error.__str__)
     else:
         await ctx.send("An unknown error ocurred...")

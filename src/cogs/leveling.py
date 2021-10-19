@@ -1,7 +1,7 @@
 import discord
 import random
 
-from ..helpers.cooldownmgr import CooldownManager
+from ..util.cooldownmgr import CooldownManager
 from ..util.levels_xp import levels
 from discord.ext import commands
 

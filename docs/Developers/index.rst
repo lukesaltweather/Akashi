@@ -1,12 +1,12 @@
 ==============================
-Stats
+Developers
 ==============================
 
 
-Commands
+Articles
 ^^^^^^^^^^
 .. toctree::
     :maxdepth: 1
 
-    get_csv
-    read_only_user
+    setup
+    restore_backup

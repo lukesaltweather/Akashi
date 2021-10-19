@@ -4,3 +4,10 @@ backup
 ------------------------------------------------------------
 Aliases: 
 ------------------------------------------------------------
+Description
+==============
+Manually backups the database and sends the resulting backup as a message attachment.
+
+Required Role
+=====================
+Role `Neko Herders`.

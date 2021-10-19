@@ -6,7 +6,7 @@ Aliases: claim, take
 ------------------------------------------------------------
 Description
 ==============
-Assign a staffmember or yourself for a step on a chapter.
+Assign a staffmember (or yourself) for a step on a chapter.
 
 Required Role
 =====================
@@ -16,9 +16,12 @@ Arguments
 ===========
 Required
 ---------
-:chapter: The chapter to edit, in format: projectName chapterNbr
-:step: The step to assign the staffmember to. Can be one of: tl, rd, ts, pr or qc.
+:chapter: 
+    | The chapter to edit, in format: projectName chapterNbr [:doc:`/Types/chapter`]
+:step: 
+    | The step to assign the staffmember to. Can be one of: tl, rd, ts, pr or qc. [:doc:`/Types/literals`]
 
 Optional
 ----------
-:staff: The person that is assigned. If omitted, the command's author is assigned instead.
+:staff: 
+    | The staffmember to assign. If omitted, the command's author is assigned instead. [:doc:`/Types/literals`]

@@ -100,6 +100,23 @@ class Note(commands.Cog):
 
     @commands.command(aliases=["n", "viewnotes"])
     async def notes(self, ctx, *, flags: RemoveNoteFlags):
+        """
+        Description
+        ==============
+        See all notes of the specified chapter.
+
+        Required Role
+        =====================
+        Role `Neko Workers`.
+
+        Arguments
+        ===========
+
+        Required
+        ------------
+        :chapter:
+            | The chapter of which to view the notes. [:doc:`/Types/chapter`]
+        """
         session = ctx.session
         notes = flags.chapter.notes
         embed = discord.Embed(colour=discord.Colour.purple(), title=flags.chapter.__str__())
@@ -111,10 +128,28 @@ class Note(commands.Cog):
 
     @commands.command(aliases=["en", "updatenote", "un"])
     async def editnote(self, ctx, *, flags: RemoveNoteFlags):
+        """
+        Description
+        ==============
+        Edit note of specified chapter. You may only edit your own notes.
+        Launches a dialog.
+
+        Required Role
+        =====================
+        Role `Neko Workers`.
+
+        Arguments
+        ===========
+
+        Required
+        ------------
+        :chapter:
+            | The chapter to edit the notes of. [:doc:`/Types/chapter`]
+        """
         session = ctx.session
         notes = [SelectOption(label=note.text, value=note.id, description=f"{humanize.naturaldelta(note.created_on - datetime.now())} ago") for note in flags.chapter.notes if note.author.discord_id == ctx.author.id]
         if not notes:
-            raise CommandError("This chapter has no notes that can be deleted by you.")
+            raise CommandError("This chapter has no notes that can be edited by you.")
         view = RemoveView(timeout=60.0, ctx=ctx, delete_after=False)
         view.children[0].options = notes
         view.children[0].max_values = 1
@@ -145,7 +180,21 @@ class Note(commands.Cog):
     @commands.command(aliases=["rn"])
     async def removenote(self, ctx: CstmContext, *, flags: RemoveNoteFlags):
         """
+        Description
+        ==============
+        Remove one of your notes from the specified chapter.
 
+        Required Role
+        =====================
+        Role `Neko Workers`.
+
+        Arguments
+        ===========
+
+        Required
+        ------------
+        :chapter:
+            | The chapter to add the note to. [:doc:`/Types/chapter`]
         """
         notes = [SelectOption(label=note.text, value=note.id, description=f"{humanize.naturaldelta(note.created_on - datetime.now())} ago") for note in notes if note.author.discord_id == ctx.author.id]
         if not notes:
@@ -166,6 +215,23 @@ class Note(commands.Cog):
     @commands.command()
     @is_admin()
     async def purgenotes(self, ctx: CstmContext, *, flags: RemoveNoteFlags):
+        """
+        Description
+        ==============
+        Remove all notes from a chapter.
+
+        Required Role
+        =====================
+        Role `Neko Herders`.
+
+        Arguments
+        ===========
+
+        Required
+        ------------
+        :chapter:
+            | The chapter from which to remove the notes. [:doc:`/Types/chapter`]
+        """
         notes = flags.chapter.notes
         result = await ctx.prompt(text=f"Do you really want to purge {len(notes)} note(s) from {flags.chapter}?")
         if result:

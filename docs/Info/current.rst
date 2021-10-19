@@ -17,7 +17,8 @@ Arguments
 
 Required
 ------------
-:Member: The person to look for.
+:Member:
+    | The person to look for.
 
 .. danger::
     Doesn't use the "normal" way to do commands. Just write the member's name `directly` after the command name like so:

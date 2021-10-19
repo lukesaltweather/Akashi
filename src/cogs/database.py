@@ -54,7 +54,17 @@ class Database(commands.Cog):
         await initial_msg.delete()
 
     @commands.command()
+    @is_admin()
     async def backup(self, ctx):
+        """
+        Description
+        ==============
+        Manually backups the database and sends the resulting backup as a message attachment.
+
+        Required Role
+        =====================
+        Role `Neko Herders`.
+        """
         initial_msg = await ctx.send("Backing up the database...")
         buffer = io.BytesIO()
         try:

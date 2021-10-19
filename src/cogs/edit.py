@@ -45,16 +45,21 @@ class Edit(commands.Cog):
 
         Required
         ---------
-        :chapter: The chapter to edit, in format: projectName chapterNbr
+        :chapter: 
+            | The chapter to edit, in format: projectName chapterNbr [:doc:`/Types/chapter`]
 
         Optional
         ------------
-        :title: Title of the chapter.
-        :tl, rd, ts, pr: Staff for the chapter.
-        :link_tl, link_rd, link_ts, link_pr, link_qcts, link_raw: Links to specific steps of chapter on Box.
-        :to_project: Change the project the chapter belongs to.
-        :to_chapter: Change the chapter number.
-        :notes: Replaces all the chapters notes with this.
+        :title: 
+            | Title of the chapter. [:doc:`/Types/text`]
+        :tl, rd, ts, pr:
+            | Staff for the chapter. [:doc:`/Types/staff`]
+        :link_tl, link_rd, link_ts, link_pr, link_qcts, link_raw:
+            | Links to specific steps of chapter on Box. [:doc:`/Types/text`]
+        :to_project:
+            | Change the project the chapter belongs to. [:doc:`/Types/project`]
+        :to_chapter:
+            | Change the chapter number. [:doc:`/Types/number`]
         """
         session = ctx.session
         async with ctx.channel.typing():
@@ -90,8 +95,6 @@ class Edit(commands.Cog):
                 record.project = proj
             if flags.to_chapter:
                 record.number = flags.to_chapter
-            if flags.notes is not MISSING:
-                record.notes = flags.notes
             image = await record.get_report(record)
             embed1 = discord.Embed(
                 color=discord.Colour.dark_blue(),
@@ -120,19 +123,29 @@ class Edit(commands.Cog):
 
         Required
         ---------
-        :project: The project to edit.
+        :project:
+            | The project to edit. [:doc:`/Types/project`]
 
         Optional
         ------------
-        :title: The title of the project.
-        :link: Link to the project on box.
-        :thumbnail: Large picture for the entry in the status board.
-        :icon: Small Image for the status board in the upper left corner.
-        :ts, rd, pr, tl: Default staff for the project. Enter "none" to set the staff to none at all.
-        :status: Current status of the project, defaults to "active".
-        :altnames: Aliases for the project, divided by comma.
-        :color: The color the project's embed has in the info board. Can be a hex or one of these colors:
-        :position: Where the embed of the project appears in the info board.
+        :title: 
+            | The title of the project. [:doc:`/Types/text`]
+        :link: 
+            | Link to the project on box. [:doc:`/Types/text`]
+        :thumbnail: 
+            | Large picture for the entry in the status board. [:doc:`/Types/text`]
+        :icon: 
+            | Small Image for the status board in the upper left corner. [:doc:`/Types/text`]
+        :ts, rd, pr, tl: 
+            | Default staff for the project. Enter "none" to set the staff to none at all. [:doc:`/Types/staff`]
+        :status: 
+            | Current status of the project, defaults to "active". [:doc:`/Types/literals`]
+        :altnames: 
+            | Aliases for the project, divided by comma. [:doc:`/Types/text`]
+        :color: 
+            | The color the project's embed has in the info board. Can be a hex or one of these colors: [:doc:`/Types/color`]
+        :position: 
+            | Where the embed of the project appears in the info board. [:doc:`/Types/number`]
         """
         record = flags.project
         if flags.title:
@@ -191,13 +204,17 @@ class Edit(commands.Cog):
 
         Required
         ---------
-        :member: Staffmember to edit.
+        :member: 
+            | Staffmember to edit. [:doc:`/Types/staff`]
 
         Optional
         ------------
-        :id: The staff's discord id.
-        :name: The staff's username.
-        :status: Can be "active" or "inactive".
+        :id: 
+            | The staff's discord id. [:doc:`/Types/number`]
+        :name: 
+            | The staff's username. [:doc:`/Types/text`]
+        :status: 
+            | Can be "active" or "inactive". [:doc:`/Types/literals`]
         """
         member = flags.member
         if flags.id:
@@ -229,11 +246,13 @@ class Edit(commands.Cog):
         ===========
         Required
         ---------
-        :chapter: The chapter to set as released, in format: projectName chapterNbr
+        :chapter:
+            | The chapter to set as released, in format: projectName chapterNbr [:doc:`/Types/chapter`]
 
         Optional
         ------------
         :date: The date on which it was finished, defaults to current date and time.
+            | [:doc:`/Types/datetime`]
         """
         record = flags.chapter
         if flags.date:

@@ -3,6 +3,7 @@ import logging
 from attr import dataclass
 from discord import embeds
 from discord.ext import commands, tasks
+from src.util.checks import is_admin
 import asyncpg
 from uuid import uuid4
 import boto3

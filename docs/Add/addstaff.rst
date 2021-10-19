@@ -14,4 +14,5 @@ Role `Neko Herder`.
 
 Arguments
 ===========
-:member: The Member to be added by Mention, ID, or Name
+:member: 
+    | The Member to be added by Mention, ID, or Name  [:doc:`/Types/discord`]

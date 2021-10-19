@@ -16,13 +16,20 @@ Arguments
 ===========
 Required
 ---------
-:title: Title of the Project.
-:link: Link to the project on box.
-:thumbnail: Large picture for the entry in the status board.
+:title:
+    | Title of the Project. [:doc:`/Types/text`]
+:link: 
+    | Link to the project on box. [:doc:`/Types/text`]
+:thumbnail: 
+    | Link to large picture for the entry in the status board.  [:doc:`/Types/text`]
 
 Optional
 ------------
-:icon: Small Image for the status board in the upper left corner.
-:ts, rd, pr, tl: Default staff for the project.
-:status: Current status of the project, defaults to "active".
-:altnames: Aliases for the project, divided by comma.
+:icon: 
+    | Link to small Image for the status board in the upper left corner.  [:doc:`/Types/text`]
+:ts, rd, pr, tl: 
+    | Default staff for the project.  [:doc:`/Types/staff`]
+:status:
+    | Current status of the project, defaults to "active".  [:doc:`/Types/text `]
+:altnames: 
+    | Aliases for the project, divided by comma.  [:doc:`/Types/text`]

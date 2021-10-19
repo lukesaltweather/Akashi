@@ -23,5 +23,7 @@ Arguments
 ===========
 Required
 ---------
-:chapter: Chapter on which to start on. Chapter to end on is determined by amount of links sent.
-:project: Project the chapters belong to.
+:chapter:
+    | Chapter on which to start on. Chapter to end on is determined by amount of links sent.  [:doc:`/Types/chapter`]
+:project:
+    | Project the chapters belong to.  [:doc:`/Types/project`]

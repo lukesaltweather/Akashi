@@ -14,13 +14,3 @@ Return a list of all staff members.
 Required Role
 =====================
 Role `Neko Herders`.
-
-Arguments
-===========
-
-Optional
-------------
-
-
-Related Articles:
-^^^^^^^^^^^^^^^^^^^^

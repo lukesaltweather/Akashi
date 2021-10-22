@@ -17,15 +17,24 @@ Arguments
 
 Optional
 ------------
-:project: List of projects the chapters can belong to.
-:tl, rd, ts, pr: List of staff working on respective steps.
-:chapter_from, chapter_upto: Give a minimum and/or maximum chapter number to look for.
-:chapter: A list of numbers the found chapters can have.
-:id: A list of ids the found chapters can have.
-:release_from, release_upto, release_on: Filter for release Date.
-:status: Current status of the chapter. Can be one of "active", "tl", "ts", "rd", "pr", "qcts" or "ready".
-:fields: What columns to include in the result table.
-:links: Either true or false, whether the bot sends the links to each steps of the chapters.
+:project: 
+    | List of projects the chapters can belong to. [:doc:`/Types/project`]
+:tl, rd, ts, pr: 
+    | List of staff working on respective steps. [:doc:`/Types/staff`]
+:chapter_from, chapter_upto: 
+    | Give a minimum and/or maximum chapter number to look for. [:doc:`/Types/number`]
+:chapter: 
+    | A list of numbers the found chapters can have. [:doc:`/Types/number`]
+:id: 
+    | A list of ids the found chapters can have. [:doc:`/Types/number`]
+:release_from, release_upto, release_on: 
+    | Filter for release Date. [:doc:`/Types/datetime`]
+:status: 
+    | Current status of the chapter. Can be one of "active", "tl", "ts", "rd", "pr", "qcts" or "ready". [:doc:`/Types/literals`]
+:fields:
+    |  What columns to include in the result table. [:doc:`/Types/literals`]
+:links: 
+    | Either true or false, whether the bot sends the links to each steps of the chapters. [:doc:`/Types/text`]
 
 Related Articles:
 ^^^^^^^^^^^^^^^^^^^^

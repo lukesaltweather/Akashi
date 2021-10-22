@@ -14,12 +14,3 @@ Get info on projects you are currently working on.
 Required Role
 =====================
 Role `Neko Workers`.
-
-Arguments
-===========
-
-Optional
-------------
-
-Related Articles:
-^^^^^^^^^^^^^^^^^^^^

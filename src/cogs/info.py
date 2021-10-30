@@ -8,6 +8,7 @@ from prettytable import PrettyTable
 from sqlalchemy import Date, text, or_, and_
 from sqlalchemy.sql.expression import select
 
+from src.model.monitorevent import MonitorEvent
 from src.util.arghelper import arghelper
 from src.util import exceptions
 from src.util.misc import (
@@ -25,7 +26,7 @@ from src.model.chapter import Chapter
 from src.model.project import Project
 from src.model.staff import Staff
 
-from src.util.flags.infoflags import InfoChapter, InfoProject
+from src.util.flags.infoflags import InfoChapter, InfoProject, MonitorFlags
 from src.util.context import CstmContext
 from src.util.db import get_all
 
@@ -1005,6 +1006,41 @@ class Info(commands.Cog):
             icon_url=member.display_avatar.url,
         )
         await ctx.send(embed=embed)
+
+    @commands.command(aliases=["follow", "track", "watch"])
+    async def monitor(self, ctx: CstmContext, flags: MonitorFlags):
+        """
+        Description
+        ==============
+        Start tracking changes to a chapter or project. When a specific chapter or one of the chapters of the given project is updated,
+        a message is sent to the tracking user.
+
+        Required Role
+        =====================
+        Role `$role`.
+
+        Arguments
+        ===========
+        Optional
+        ------------
+        :chapter:
+            | Singular chapter to track. [:doc:`/Types/chapter`]
+        :project:
+            | Project of which all chapters will be tracked. [:doc:`/Types/project`]
+
+
+        Related Articles:
+        ^^^^^^^^^^^^^^^^^^^^
+        """
+        chapter_or_project = flags.chapter or flags.project
+        if (not chapter_or_project) or (flags.chapter and flags.project):
+            raise commands.CommandError("*One* of chapter/project arguments is required for this command.")
+
+        registered_event = MonitorEvent(staff=searchstaff(ctx.author.id.__str__(), ctx, ctx.session), chapter=flags.chapter, project=flags.project)
+        ctx.session.add(registered_event)
+        await ctx.prompt_and_commit(text=f"Do you really want to track {chapter_or_project}?")
+
+
 
 
 def setup(Bot):

@@ -13,6 +13,7 @@ from src.model.chapter import Chapter
 from src.model.project import Project
 from src.model.staff import Staff
 from src.util import exceptions, misc
+from src.util.exceptions import ProjectAlreadyExists
 from src.util.flags.addflags import (
     AddStaffFlags,
     AddProjectFlags,
@@ -211,6 +212,8 @@ class Add(commands.Cog):
         chp.date_created = func.now()
         ctx.session.add(chp)
         t = table.get_string(title="Chapter Preview")
+        if chp.project.to_notify:
+            pass
         await ctx.prompt_and_commit(file=await misc.drawimage(t))
 
     @addchapter.error

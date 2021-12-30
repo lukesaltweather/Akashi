@@ -279,7 +279,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "prettytable"
-version = "2.2.0"
+version = "2.5.0"
 description = "A simple Python library for easily displaying tabular data in a visually appealing ASCII table format"
 category = "main"
 optional = false
@@ -289,7 +289,7 @@ python-versions = ">=3.6"
 wcwidth = "*"
 
 [package.extras]
-tests = ["pytest", "pytest-cov"]
+tests = ["pytest", "pytest-cov", "pytest-lazy-fixture"]
 
 [[package]]
 name = "psutil"
@@ -438,7 +438,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "c643de911d45edb0fe70aa769202d936cdf6afe7bfa4392660d8b72902ca4368"
+content-hash = "9de629ff427796ee6020e58493a73b23ff0a4d314200febf0cf1f20f4300fa8e"
 
 [metadata.files]
 aiofiles = [
@@ -756,8 +756,8 @@ pillow = [
     {file = "Pillow-8.3.1.tar.gz", hash = "sha256:2cac53839bfc5cece8fdbe7f084d5e3ee61e1303cccc86511d351adcb9e2c792"},
 ]
 prettytable = [
-    {file = "prettytable-2.2.0-py3-none-any.whl", hash = "sha256:b186f1db9c9377cb552cfa95a3b7a0feab6ec55d7cad7e0763bdcbea1e8f4687"},
-    {file = "prettytable-2.2.0.tar.gz", hash = "sha256:bd81678c108e6c73d4f1e47cd4283de301faaa6ff6220bcd1d4022038c56b416"},
+    {file = "prettytable-2.5.0-py3-none-any.whl", hash = "sha256:1411c65d21dca9eaa505ba1d041bed75a6d629ae22f5109a923f4e719cfecba4"},
+    {file = "prettytable-2.5.0.tar.gz", hash = "sha256:f7da57ba63d55116d65e5acb147bfdfa60dceccabf0d607d6817ee2888a05f2c"},
 ]
 psutil = [
     {file = "psutil-5.8.0-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:0066a82f7b1b37d334e68697faba68e5ad5e858279fd6351c8ca6024e8d6ba64"},

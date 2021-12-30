@@ -5,9 +5,12 @@ from typing import Optional
 from discord.ext import commands
 import discord
 import sqlalchemy
+from prettytable import PrettyTable
+from sqlalchemy import inspect
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.util.misc import MISSING, format_number
+from src.model.staff import Staff
+from src.util.misc import MISSING, format_number, drawimage
 
 
 class ConfirmationView(discord.ui.View):
@@ -89,9 +92,40 @@ class CstmContext(commands.Context):
         if view.value:
             await self.session.commit()
             await self.reply("Commited changes.", mention_author=False)
+            return True
         else:
             await self.session.rollback()
             await self.reply("Discarded changes.", mention_author=False)
+            return False
+
+    async def monitor_changes(self, entity):
+        if self._session.dirty and entity.to_notify:
+            table = PrettyTable()
+            table.add_column("", ["ORIGINAL", "EDIT"])
+            state = inspect(self)
+            changes = 0
+            for attr in state.attrs:
+                hist = attr.history
+                if not hist.has_changes():
+                    continue
+                old_value = hist.deleted[0] if hist.deleted else None
+                if isinstance(old_value, Staff):
+                    old_value = old_value.name
+                new_value = hist.added[0] if hist.added else None
+                if isinstance(new_value, Staff):
+                    new_value = new_value.name
+                table.add_column(attr.key.capitalize(), [old_value, new_value])
+                changes += 1
+            if changes == 0:
+                return
+            to_notify = entity.to_notify
+            for staff in to_notify:
+                user = self.bot.get_user(staff.id)
+                await user.send(
+                    f"{self.author.display_name} has edited {entity.__class__.__name__} {entity.id}.",
+                    embed=discord.Embed(color=discord.Color.blurple()).set_image(url="attachment://image.png"),
+                    file=await drawimage(table.get_string())
+                )
 
     async def prompt(self, *, color=discord.Color.blue(), embed=None, file=None, text="Do you want to confirm?"):
         if not embed:

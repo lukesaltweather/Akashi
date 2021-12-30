@@ -35,6 +35,6 @@ class MonitorEvent(Base):
 
     def __init__(self, staff, *, chapter=None, project=None) -> None:
         super().__init__()
-        self.project_id = project.id
-        self.chapter_id = chapter.id
+        self.project_id = project.id if project else None
+        self.chapter_id = chapter.id if chapter else None
         self.staff_id = staff.id

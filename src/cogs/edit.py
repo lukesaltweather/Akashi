@@ -57,48 +57,49 @@ class Edit(commands.Cog):
         :notes: Replaces all the chapters notes with this.
         """
         session = ctx.session
-        async with ctx.channel.typing():
-            record = flags.chapter
-            if flags.title is not MISSING:
-                record.title = flags.title
-            if flags.tl is not MISSING:
-                tl = flags.tl
-                record.translator = tl
-            if flags.rd is not MISSING:
-                rd = flags.rd
-                record.redrawer = rd
-            if flags.ts is not MISSING:
-                ts = flags.ts
-                record.typesetter = ts
-            if flags.pr is not MISSING:
-                pr = flags.pr
-                record.proofreader = pr
-            if flags.link_ts is not MISSING:
-                record.link_ts = flags.link_ts
-            if flags.link_tl is not MISSING:
-                record.link_tl = flags.link_tl
-            if flags.link_rd is not MISSING:
-                record.link_rd = flags.link_rd
-            if flags.link_pr is not MISSING:
-                record.link_pr = flags.link_pr
-            if flags.link_qcts is not MISSING:
-                record.link_rl = flags.link_qcts
-            if flags.link_raw is not MISSING:
-                record.link_raw = flags.link_raw
-            if flags.to_project:
-                proj = flags.to_project
-                record.project = proj
-            if flags.to_chapter:
-                record.number = flags.to_chapter
-            if flags.notes is not MISSING:
-                record.notes = flags.notes
-            image = await record.get_report(record)
-            embed1 = discord.Embed(
-                color=discord.Colour.dark_blue(),
-                title="Do you want to commit these changes to this chapter?",
-            )
-            embed1.set_image(url="attachment://image.png")
-            await ctx.prompt_and_commit(embed=embed1, file=image)
+        record = flags.chapter
+        if flags.title is not MISSING:
+            record.title = flags.title
+        if flags.tl is not MISSING:
+            tl = flags.tl
+            record.translator = tl
+        if flags.rd is not MISSING:
+            rd = flags.rd
+            record.redrawer = rd
+        if flags.ts is not MISSING:
+            ts = flags.ts
+            record.typesetter = ts
+        if flags.pr is not MISSING:
+            pr = flags.pr
+            record.proofreader = pr
+        if flags.link_ts is not MISSING:
+            record.link_ts = flags.link_ts
+        if flags.link_tl is not MISSING:
+            record.link_tl = flags.link_tl
+        if flags.link_rd is not MISSING:
+            record.link_rd = flags.link_rd
+        if flags.link_pr is not MISSING:
+            record.link_pr = flags.link_pr
+        if flags.link_qcts is not MISSING:
+            record.link_rl = flags.link_qcts
+        if flags.link_raw is not MISSING:
+            record.link_raw = flags.link_raw
+        if flags.to_project:
+            proj = flags.to_project
+            record.project = proj
+        if flags.to_chapter:
+            record.number = flags.to_chapter
+        if flags.notes is not MISSING:
+            record.notes = flags.notes
+        image = await record.get_report(record)
+        embed1 = discord.Embed(
+            color=discord.Colour.dark_blue(),
+            title="Do you want to commit these changes to this chapter?",
+        )
+        embed1.set_image(url="attachment://image.png")
+        committed = await ctx.prompt_and_commit(embed=embed1, file=image)
+        if committed:
+            await ctx.monitor_changes(record)
 
     @commands.command(
         aliases=["editproj", "editp", "ep"],

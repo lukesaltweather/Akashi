@@ -7,9 +7,6 @@ on:
   push:
     branches:
       - "!dependabot/*"
-  pull_request:
-    branches:
-      - "!dependabot/*"
 
 
 jobs:

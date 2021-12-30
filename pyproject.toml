@@ -16,7 +16,7 @@ jishaku = "*"
 "discord-ext-menus" = {git = "https://github.com/Rapptz/discord-ext-menus"}
 "discord-ext-ipc" = "^2.1.1"
 asyncpg = "^0.25.0"
-prettytable = "^2.2.0"
+prettytable = "^2.5.0"
 pygit2 = "^1.7.2"
 psutil = "^5.8.0"
 boto3 = "1.17.102"

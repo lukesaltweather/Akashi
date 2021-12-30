@@ -18,7 +18,7 @@ jishaku = "*"
 asyncpg = "^0.25.0"
 prettytable = "^2.5.0"
 pygit2 = "^1.7.2"
-psutil = "^5.8.0"
+psutil = "^5.9.0"
 boto3 = "1.17.102"
 aiofiles = "^0.8.0"
 

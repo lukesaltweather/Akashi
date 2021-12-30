@@ -71,7 +71,7 @@ class CstmContext(commands.Context):
         return self._session
 
     async def prompt_and_commit(
-        self, color=discord.Color.blue(), *, embed=None, file=None, text="Do you want to confirm?"
+        self, color=discord.Color.blurple(), *, embed=None, file=None, text="Do you want to confirm?"
     ):
         if not embed:
             embed = discord.Embed(color=color, title=text)

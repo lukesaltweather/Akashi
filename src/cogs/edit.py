@@ -96,12 +96,8 @@ class Edit(commands.Cog):
             if flags.to_chapter:
                 record.number = flags.to_chapter
             image = await record.get_report(record)
-            embed1 = discord.Embed(
-                color=discord.Colour.dark_blue(),
-                title="Do you want to commit these changes to this chapter?",
-            )
-            embed1.set_image(url="attachment://image.png")
-            await ctx.prompt_and_commit(embed=embed1, file=image)
+
+            await ctx.prompt_and_commit(text="Do you want to commit these changes to this chapter?", file=image)
 
     @commands.command(
         aliases=["editproj", "editp", "ep"],
@@ -177,12 +173,8 @@ class Edit(commands.Cog):
         if flags.link:
             record.link = flags.link
         image = await record.get_report(f"{record.title}")
-        embed1 = discord.Embed(
-            color=discord.Colour.dark_blue(),
-            title="Do you want to commit these changes to this project?",
-        )
-        embed1.set_image(url="attachment://image.png")
-        await ctx.prompt_and_commit(embed=embed1, file=image)
+
+        await ctx.prompt_and_commit(text="Do you want to commit these changes to this project?", file=image)
 
     @commands.command(
         usage="https://akashi.readthedocs.io/en/stable/Edit/editstaff.html"
@@ -224,12 +216,8 @@ class Edit(commands.Cog):
         if flags.status:
             member.status = flags.status  # type: ignore
         image = await member.get_report(f"{member.name}")
-        embed1 = discord.Embed(
-            color=discord.Colour.dark_blue(),
-            title="Do you want to commit these changes to this staffmember?",
-        )
-        embed1.set_image(url="attachment://image.png")
-        await ctx.prompt_and_commit(embed=embed1, file=image)
+
+        await ctx.prompt_and_commit(text="Do you want to commit these changes to this staffmember?", file=image)
 
     @commands.command(usage="https://akashi.readthedocs.io/en/stable/Edit/release.html")
     async def release(self, ctx, *, flags: ReleaseFlags):
@@ -260,12 +248,7 @@ class Edit(commands.Cog):
         else:
             record.date_release = func.now()
         image = await record.get_report(record)
-        embed1 = discord.Embed(
-            color=discord.Colour.dark_blue(),
-            title="Do you want to set this chapter as released?",
-        )
-        embed1.set_image(url="attachment://image.png")
-        await ctx.prompt_and_commit(embed=embed1, file=image)
+        await ctx.prompt_and_commit(text="Do you want to set this chapter as released?", file=image)
 
 
 def setup(Bot):

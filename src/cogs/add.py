@@ -13,6 +13,7 @@ from src.model.chapter import Chapter
 from src.model.project import Project
 from src.model.staff import Staff
 from src.util import exceptions, misc
+from src.util.exceptions import ProjectAlreadyExists
 from src.util.flags.addflags import (
     AddStaffFlags,
     AddProjectFlags,
@@ -105,9 +106,7 @@ class Add(commands.Cog):
         pr.thumbnail = flags.thumbnail  # type: ignore
         session.add(pr)
         await ctx.prompt_and_commit(
-            embed=discord.Embed(
-                title=f"Do you really want to add the project {pr.title}"
-            )
+                text=f"Do you really want to add the project {pr.title}"
         )
 
     @commands.command(
@@ -175,7 +174,7 @@ class Add(commands.Cog):
         for chp in chapters:
             table.add_row([chp.number, chp.link_raw])
         image = await misc.drawimage(table.get_string())
-        await ctx.prompt_and_commit(discord.Colour.dark_purple(), text=f"Do you really want to add these chapters to project {project.title}?", file=image)
+        await ctx.prompt_and_commit(text=f"Do you really want to add these chapters to project {project.title}?", file=image)
 
 
 
@@ -233,7 +232,7 @@ class Add(commands.Cog):
         chp.date_created = func.now()
         ctx.session.add(chp)
         t = table.get_string(title="Chapter Preview")
-        await ctx.prompt_and_commit(file=await misc.drawimage(t))
+        await ctx.prompt_and_commit(text="Do you really want to add this chapter?", file=await misc.drawimage(t))
 
     @addchapter.error
     async def on_chapter_error(self, ctx, error):

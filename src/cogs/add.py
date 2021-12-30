@@ -7,7 +7,7 @@ import sqlalchemy
 from discord.ext import commands
 
 from src.util.context import CstmContext
-from prettytable import PrettyTable
+from prettytable import PrettyTable, prettytable
 from sqlalchemy import func
 from src.model.chapter import Chapter
 from src.model.project import Project
@@ -159,17 +159,25 @@ class Add(commands.Cog):
             await message.edit(
                 content="No reaction from command author. Chapters was not added."
             )
+            return
         else:
             content = message2.content.split("\n")
+            chapters = []
             for i, link in enumerate(content, start_chp):
                 chp = Chapter(i, link)
                 chp.date_created = date_created
                 chp.project = project
                 session.add(chp)
-            await ctx.send(
-                f"Successfully added {str(len(content))} chapters of `{project.title}`!"
-            )
-            await session.commit()
+                chapters.append(chp)
+
+        # prompt user to confirm
+        table = prettytable.PrettyTable(["Chapter", "Link"])
+        for chp in chapters:
+            table.add_row([chp.number, chp.link_raw])
+        image = await misc.drawimage(table.get_string())
+        await ctx.prompt_and_commit(discord.Colour.dark_purple(), text=f"Do you really want to add these chapters to project {project.title}?", file=image)
+
+
 
     @is_pu()
     @commands.command(

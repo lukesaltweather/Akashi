@@ -216,9 +216,7 @@ class TL_helper(command_helper):
         """
         if self.chapter.project.redrawer is None:
             self.message = await self.confirm("Notify Redrawer Role")
-            rd = await make_mentionable(
-                self.ctx.guild.get_role(self.bot.config["server"]["roles"]["rd"])
-            )
+            rd = self.ctx.guild.get_role(self.bot.config["server"]["roles"]["rd"])
             msg = await self.channel.send(
                 f"{rd}\nRedrawer required for `{self.chapter.project.title} {format_number(self.chapter.number)}`. React below to assign yourself.",
                 allowed_mentions=self.message,
@@ -252,9 +250,7 @@ class TL_helper(command_helper):
         """
         if self.chapter.project.typesetter is None:
             self.message = await self.confirm("Notify Typesetter Role")
-            ts = await make_mentionable(
-                self.ctx.guild.get_role(self.bot.config["server"]["roles"]["ts"])
-            )
+            ts = self.ctx.guild.get_role(self.bot.config["server"]["roles"]["ts"])
             msg = await self.channel.send(
                 f"{ts}\nTypesetter required for `{self.chapter.project.title} {format_number(self.chapter.number)}`. React below to assign yourself.",
                 allowed_mentions=self.message,
@@ -308,9 +304,7 @@ class TS_helper(command_helper):
     async def __no_proofreader(self):
         if self.chapter.project.proofreader is None:
             self.message = await self.confirm("Notify Proofreader Role")
-            pr = await make_mentionable(
-                self.ctx.guild.get_role(self.bot.config["server"]["roles"]["pr"])
-            )
+            pr = self.ctx.guild.get_role(self.bot.config["server"]["roles"]["pr"])
             msg = await self.channel.send(
                 f"{pr}\nProofreader required for `{self.chapter.project.title} {format_number(self.chapter.number)}`. React below to assign yourself.",
                 allowed_mentions=self.message,
@@ -494,9 +488,7 @@ class RD_helper(command_helper):
 
         else:
             self.message = await self.confirm("Notify Typesetter Role")
-            ts = await make_mentionable(
-                self.ctx.guild.get_role(self.bot.config["server"]["roles"]["ts"])
-            )
+            ts = self.ctx.guild.get_role(self.bot.config["server"]["roles"]["ts"])
             msg = await self.channel.send(
                 f"{ts}\nTypesetter required for `{self.chapter.project.title} {format_number(self.chapter.number)}`.\nReact below to assign yourself.",
                 allowed_mentions=self.message,
@@ -575,7 +567,8 @@ class Done(commands.Cog):
             | The chapter to edit, in format: projectName chapterNbr [:doc:`/Types/chapter`]
         :step: 
             | The step to assign the staffmember to. Can be one of: tl, rd, ts, pr or qc. [:doc:`/Types/literals`]
-
+        :link:
+            | The link to the folder on box. [:doc:`/Types/Text`]
         Optional
         ----------
         :staff: 

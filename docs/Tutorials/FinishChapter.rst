@@ -21,7 +21,7 @@ The Dollar Sign ($) is the command prefix. It's at the start of the message, and
 `done` is the command name. Note that there is no space between prefix and command.
 Following the command name are the three options the command requires.
 
-.. info::
+.. hint::
     An option consists of three parts.
 
     +-------------+-------+--------------+

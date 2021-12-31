@@ -5,8 +5,8 @@ name: Build and commit docs.
 
 on:
   push:
-    branches:
-      - "!dependabot*"
+    branches-ignore:
+      - "dependabot*"
 
 
 jobs:

@@ -12,7 +12,7 @@ The command you write must have these three options:
 
 A command could look like this:
 
-.. code-block:: none
+.. code-block::
     $done chapter: yankee 52 step: ts link: https://box.com/some-link
 
 Let's try to untangle this.
@@ -30,7 +30,7 @@ Following the command name are the three options the command requires.
     | step        | :     | ts           |
     +-------------+-------+--------------+
 
-    The colon denotes the separation between option name and it's corresponding value.
+    The colon denotes the separation between option name and its corresponding value.
 
 Let's discuss our three options.
 

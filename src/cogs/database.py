@@ -43,6 +43,7 @@ class Database(commands.Cog):
             )
         except Exception as e:
             logging.getLogger("akashi.db").debug(f"Error while backing up the database: {e}")
+            return
         buffer.seek(0)
         file = discord.File(
             buffer, datetime.datetime.utcnow().strftime("akashi-backup-%Y-%m-%d.dump")
@@ -68,24 +69,22 @@ class Database(commands.Cog):
         """
         initial_msg = await ctx.send("Backing up the database...")
         buffer = io.BytesIO()
-        try:
-            subprocess.Popen(
-                [
-                    "pg_dump",
-                    "-Fc",
-                    "-h localhost",
-                    "--no-password",
-                    "-U Akashi",
-                    "-t chapters",
-                    "-t projects",
-                    "-t note",
-                    "-t staff",
-                    "Akashi",
-                ],
-                stdout=buffer,
-            )
-        except Exception as e:
-            logging.getLogger("akashi.db").debug(f"Error while backing up the database: {e}")
+        subprocess.Popen(
+            [
+                "pg_dump",
+                "-Fc",
+                "-h localhost",
+                "--no-password",
+                "-U Akashi",
+                "-t chapters",
+                "-t projects",
+                "-t note",
+                "-t staff",
+                "Akashi",
+            ],
+            stdout=buffer,
+        )
+
         buffer.seek(0)
         file = discord.File(
             buffer, datetime.datetime.utcnow().strftime("akashi-manual-backup-%Y-%m-%d.dump")

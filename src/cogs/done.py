@@ -505,7 +505,7 @@ class Done(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(usage="https://akashi.readthedocs.io/en/stable/Done/done.html")
+    @commands.command()
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.guild, wait=True)
     async def done(self, ctx: CstmContext, *, flags: DoneFlags):
         """
@@ -548,7 +548,7 @@ class Done(commands.Cog):
             await RD.execute()
         await ctx.session.commit()
 
-    @commands.command(aliases=["claim", "take"], usage="https://akashi.readthedocs.io/en/latest/Done/assign.html")
+    @commands.command(aliases=["claim", "take"])
     async def assign(self, ctx: CstmContext, *, flags: AssignFlags):
         """
         Description

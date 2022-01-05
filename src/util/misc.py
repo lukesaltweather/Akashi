@@ -14,6 +14,10 @@ from PIL import Image, ImageDraw, ImageFont
 from sqlalchemy import or_
 from sqlalchemy.orm import sessionmaker
 
+resolve_attr_key = {
+    "ts"
+}
+
 
 async def get_roles(member: discord.Member):
     """

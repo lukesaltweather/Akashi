@@ -26,6 +26,7 @@ humanize = "^3.13"
 lupa = "^1.10"
 
 [tool.poetry.dev-dependencies]
+flake8 = "*"
 
 [tool.poetry.extras]
 sqlalchemy = ["asyncio"]

@@ -27,7 +27,6 @@ class Edit(commands.Cog):
 
     @commands.command(
         aliases=["editch", "editc", "ec"],
-        usage="https://akashi.readthedocs.io/en/stable/Edit/editchapter.html",
     )
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)  # type: ignore
     async def editchapter(self, ctx: CstmContext, *, flags: EditChapterFlags):
@@ -101,7 +100,6 @@ class Edit(commands.Cog):
 
     @commands.command(
         aliases=["editproj", "editp", "ep"],
-        usage="https://akashi.readthedocs.io/en/stable/Edit/editproject.html",
     )
     @is_pu()
     async def editproject(self, ctx: CstmContext, *, flags: EditProjectFlags):
@@ -177,7 +175,6 @@ class Edit(commands.Cog):
         await ctx.prompt_and_commit(text="Do you want to commit these changes to this project?", file=image)
 
     @commands.command(
-        usage="https://akashi.readthedocs.io/en/stable/Edit/editstaff.html"
     )
     @is_admin()
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)  # type: ignore
@@ -219,7 +216,7 @@ class Edit(commands.Cog):
 
         await ctx.prompt_and_commit(text="Do you want to commit these changes to this staffmember?", file=image)
 
-    @commands.command(usage="https://akashi.readthedocs.io/en/stable/Edit/release.html")
+    @commands.command()
     async def release(self, ctx, *, flags: ReleaseFlags):
         """
         Description

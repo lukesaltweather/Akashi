@@ -13,6 +13,7 @@ The command you write must have these three options:
 A command could look like this:
 
 .. code-block::
+
     $done chapter: yankee 52 step: ts link: https://box.com/some-link
 
 Let's try to untangle this.
@@ -22,7 +23,7 @@ The Dollar Sign ($) is the command prefix. It's at the start of the message, and
 Following the command name are the three options the command requires.
 
 .. hint::
-    An option consists of three parts.
+    An option consists of three parts. This is based on the style of the Discord search and slash commands.
 
     +-------------+-------+--------------+
     | Option Name | Colon | Option Value |

@@ -33,7 +33,7 @@ class Add(commands.Cog):
     def __init__(self, client):
         self.bot = client
 
-    @commands.command(usage="https://akashi.readthedocs.io/en/stable/Add/addstaff.html")
+    @commands.command()
     @is_admin()
     async def addstaff(self, ctx: CstmContext, *, flags: AddStaffFlags):
         """
@@ -58,7 +58,6 @@ class Add(commands.Cog):
 
     @commands.command(
         aliases=["ap", "addp", "addproj"],
-        usage="https://akashi.readthedocs.io/en/stable/Add/addproject.html",
     )
     @is_pu()
     async def addproject(self, ctx: CstmContext, *, flags: AddProjectFlags):
@@ -111,7 +110,6 @@ class Add(commands.Cog):
 
     @commands.command(
         aliases=["mac", "massaddchapters", "addchapters", "bigmac"],
-        usage="https://akashi.readthedocs.io/en/stable/Add/massaddchapters.html",
     )
     @is_pu()
     async def massaddchapter(self, ctx: CstmContext, *, flags: MassAddFlags):
@@ -181,7 +179,6 @@ class Add(commands.Cog):
     @is_pu()
     @commands.command(
         aliases=["ac", "addch", "addc"],
-        usage="https://akashi.readthedocs.io/en/stable/Add/addchapter.html",
     )
     async def addchapter(self, ctx: CstmContext, *, flags: AddChapterFlags):
         """

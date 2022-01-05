@@ -36,7 +36,6 @@ class Info(commands.Cog):
 
     @commands.command(
         aliases=["infochapters", "ic", "infoc"],
-        extras={"doc": "https://akashi.readthedocs.io/en/stable/Info/infochapter.html"}
     )
     async def infochapter(self, ctx: CstmContext, *, flags: InfoChapter):
         """
@@ -471,7 +470,6 @@ class Info(commands.Cog):
 
     @commands.command(
         aliases=["infoprojects", "infop", "ip"],
-        usage="https://akashi.readthedocs.io/en/stable/Info/infoproject.html",
     )
     async def infoproject(self, ctx, *, flags: InfoProject):
         """
@@ -665,7 +663,6 @@ class Info(commands.Cog):
             await ctx.send(embed=embed)
 
     @commands.command(
-        usage="https://akashi.readthedocs.io/en/stable/Info/allprojects.html"
     )
     async def allprojects(self, ctx):
         """
@@ -750,7 +747,6 @@ class Info(commands.Cog):
 
     @is_admin()
     @commands.command(
-        usage="https://akashi.readthedocs.io/en/stable/Info/allstaff.html"
     )
     async def allstaff(self, ctx):
         """
@@ -793,7 +789,6 @@ class Info(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(
-        usage="https://akashi.readthedocs.io/en/stable/Info/mycurrent.html"
     )
     async def mycurrent(self, ctx):
         """
@@ -888,7 +883,7 @@ class Info(commands.Cog):
         embed.set_author(name="Current chapters", icon_url=ctx.author.avatar_url)
         await ctx.send(embed=embed)
 
-    @commands.command(usage="https://akashi.readthedocs.io/en/stable/Info/current.html")
+    @commands.command()
     async def current(self, ctx, member: discord.Member):
         """
         Description
@@ -1000,5 +995,5 @@ class Info(commands.Cog):
         await ctx.send(embed=embed)
 
 
-def setup(Bot):
-    Bot.add_cog(Info(Bot))
+def setup(bot):
+    bot.add_cog(Info(bot))

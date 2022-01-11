@@ -3,7 +3,11 @@
 
 name: Build and commit docs.
 
-on: [push, pull_request]
+on:
+  push:
+    branches-ignore:
+      - "dependabot*"
+
 
 jobs:
   build:

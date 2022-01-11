@@ -193,7 +193,7 @@ async def on_raw_reaction_add(payload):
                     ts_alias = aliased(Staff)
                     chp = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id).filter(Chapter.id == msg.chapter).one()
                     chp.typesetter = await dbstaff(payload.user_id, session)
-                    author = bot.user
+                    author = bot.get_guild(payload.guild_id).get_member(msg.author)
                     embed = misc.completed_embed(chp, author, user, "RD", "TS", bot)
                     session.delete(msg)
                     msg2 = await channel.fetch_message(payload.message_id)
@@ -211,7 +211,7 @@ async def on_raw_reaction_add(payload):
                     chp = session.query(Chapter).outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id).filter(
                         Chapter.id == msg.chapter).one()
                     chp.redrawer = await dbstaff(payload.user_id, session)
-                    author = bot.user
+                    author = bot.get_guild(payload.guild_id).get_member(msg.author)
                     embed = misc.completed_embed(chp, author, user, "TL", "RD", bot)
                     session.delete(msg)
                     msg2 = await channel.fetch_message(payload.message_id)
@@ -229,7 +229,7 @@ async def on_raw_reaction_add(payload):
                     chp = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id).filter(
                         Chapter.id == msg.chapter).one()
                     chp.translator = await dbstaff(payload.user_id, session)
-                    author = bot.user
+                    author = bot.get_guild(payload.guild_id).get_member(msg.author)
                     embed = misc.completed_embed(chp, author, user, "RAW", "RD", bot)
                     session.delete(msg)
                     msg2 = await channel.fetch_message(payload.message_id)
@@ -247,7 +247,7 @@ async def on_raw_reaction_add(payload):
                     chp = session.query(Chapter).outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id).filter(
                         Chapter.id == msg.chapter).one()
                     chp.proofreader = await dbstaff(payload.user_id, session)
-                    author = bot.user
+                    author = bot.get_guild(payload.guild_id).get_member(msg.author)
                     embed = misc.completed_embed(chp, author, user, "TS", "PR", bot)
                     session.delete(msg)
                     msg2 = await channel.fetch_message(payload.message_id)

@@ -162,7 +162,7 @@ async def on_command_error(ctx, error):
     if error is AkashiException:
         await ctx.send(error.message)
     elif error is commands.CommandError:
-        await ctx.send(error.message or error.__str__)
+        await ctx.send(error.__str__)
     else:
         await ctx.send("An unknown error ocurred...")
         logging.getLogger("akashi.commands").critical(f"Error for {ctx.command.name} couldn't be resolved gracefully: Message: {getattr(error, 'message', 'No Message')}; \n Type: {type(error)}; \n String: {str(error)}.")

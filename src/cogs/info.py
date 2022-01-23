@@ -5,6 +5,7 @@ from discord.ext import commands
 from datetime import datetime, timedelta
 
 from prettytable import PrettyTable
+import prettytable
 from sqlalchemy import Date, text, or_, and_
 
 from src.helpers.arghelper import arghelper
@@ -618,22 +619,29 @@ class Info(commands.Cog):
     @commands.command(description=jsonhelp["allstaff"]["description"],
                       usage=jsonhelp["allstaff"]["usage"], brief=jsonhelp["allstaff"]["brief"], help=jsonhelp["allstaff"]["help"])
     async def allstaff(self, ctx):
+        """
+        Description
+        ==============
+        Return a list of all staff members.
+
+        .. error::
+           Currently not working.
+
+        Required Role
+        =====================
+        Role `Neko Herders`.
+        """
         session = self.bot.Session()
-        try:
-            staff = session.query(Staff).all()
-            embed = discord.Embed(
-                colour=discord.Colour.purple()
-            )
-            embed.add_field(name="\u200b", value=("**ID\n**" + ("\n".join(str(person.id) for person in staff))),
-                            inline=True)
-            embed.add_field(name="\u200b", value=("**Name\n**" + ("\n".join(person.name for person in staff))),
-                            inline=True)
-            embed.add_field(name="\u200b",
-                            value=("**Discord ID\n**" + ("\n".join(f"{person.discord_id}: {person.status}" for person in staff))),
-                            inline=True)
-            await ctx.send(embed=embed)
-        finally:
-            session.close()
+        staff = session.query(Staff).all()
+        embed = discord.Embed(colour=discord.Colour.purple(), title="All Existing Staff")
+        table = prettytable.PrettyTable()
+        table.add_column("Internal ID", [str(person.id) for person in staff])
+        table.add_column("Name", [person.name for person in staff])
+        table.add_column("Discord ID", [f"{person.discord_id}" for person in staff])
+        table.add_column("Status", [f"{person.status}" for person in staff])
+        embed.set_image(url="attachment://image.png")
+        file = await drawimage(table.get_string(title="All Staff"))
+        await ctx.send(embed=embed, file=file)
 
     @commands.command(description=jsonhelp["mycurrent"]["description"],
                       usage=jsonhelp["mycurrent"]["usage"], brief=jsonhelp["mycurrent"]["brief"], help=jsonhelp["mycurrent"]["help"])

@@ -642,6 +642,7 @@ class Info(commands.Cog):
         embed.set_image(url="attachment://image.png")
         file = await drawimage(table.get_string(title="All Staff"))
         await ctx.send(embed=embed, file=file)
+        session.close()
 
     @commands.command(description=jsonhelp["mycurrent"]["description"],
                       usage=jsonhelp["mycurrent"]["usage"], brief=jsonhelp["mycurrent"]["brief"], help=jsonhelp["mycurrent"]["help"])

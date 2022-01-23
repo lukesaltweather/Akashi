@@ -385,7 +385,7 @@ def completed_embed(
 
 
 class _MissingSentinel:
-    # stolen from https://github.com/Rapptz/discord.py/blob/master/discord/utils.py
+    # Created by rapptz: https://github.com/Rapptz/discord.py/blob/master/discord/utils.py
     def __eq__(self, other):
         return False
 

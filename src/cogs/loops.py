@@ -186,6 +186,10 @@ class Loops(commands.Cog):
                     new_msg = await channel.send(embeds=group)
                     used_ids.append(new_msg.id)
             if self.bot.config["server"]["board_message"] != used_ids:
+                unused_ids = set(self.bot.config["server"]["board_message"]) - set(used_ids)
+                for msg in unused_ids:
+                    message = await channel.fetch_message(msg)
+                    await message.delete()
                 self.bot.config["server"]["board_message"] = used_ids
                 await self.bot.store_config()
         except Exception as e:

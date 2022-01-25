@@ -464,7 +464,7 @@ class Info(commands.Cog):
                 icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128",
             )
             embed1.set_image(url="attachment://image.png")
-            await ctx.send(file=file, embed=embed1)
+            await ctx.reply(file=file, embed=embed1)
             if flags.links:
                 for e in embed.embeds:
                     await ctx.send(embed=e)
@@ -659,9 +659,9 @@ class Info(commands.Cog):
             icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128",
         )
         embed1.set_image(url="attachment://image.png")
-        await ctx.send(file=file, embed=embed1)
+        await ctx.reply(file=file, embed=embed1)
         if embed:
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)
 
     @commands.command(
     )
@@ -744,7 +744,7 @@ class Info(commands.Cog):
         )
         embed1.set_image(url="attachment://image.png")
         embed1.description = l
-        await ctx.send(file=file, embed=embed1)
+        await ctx.reply(file=file, embed=embed1)
 
     @is_admin()
     @commands.command(
@@ -772,7 +772,7 @@ class Info(commands.Cog):
         table.add_column("Status", [f"{person.status}" for person in staff])
         embed.set_image(url="attachment://image.png")
         file = await drawimage(table.get_string(title="All Staff"))
-        await ctx.send(embed=embed, file=file)
+        await ctx.reply(embed=embed, file=file)
 
     @commands.command(
     )
@@ -867,7 +867,7 @@ class Info(commands.Cog):
                 desc = f"{desc}\n{chapter.project.title} {chapter.number}: [TS]({chapter.link_ts}) [PR]({chapter.link_pr})"
         embed = discord.Embed(color=discord.Colour.gold(), description=desc)
         embed.set_author(name="Current chapters", icon_url=ctx.author.avatar_url)
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.command()
     async def current(self, ctx, member: discord.Member):
@@ -978,7 +978,7 @@ class Info(commands.Cog):
             name=f"{member.display_name}'s current chapters",
             icon_url=member.display_avatar.url,
         )
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
 
 def setup(bot):

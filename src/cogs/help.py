@@ -131,13 +131,13 @@ class MyHelpCommand(commands.MinimalHelpCommand):
     async def send_command_help(self, command):
         self.helper.clear()
         self.helper.add_command(command)
-        await self.get_destination().send(embed=self.helper.embed[0])
+        await self.context.reply(embed=self.helper.embed[0])
 
     async def send_cog_help(self, cog: commands.Cog):
         cogcommands = cog.get_commands()
         filtered = await self.filter_commands(cogcommands, sort=True)
         self.helper.add_cog(filtered, cog.qualified_name)
-        await self.get_destination().send(embed=self.helper.embed[1])
+        await self.context.reply(embed=self.helper.embed[1])
 
     async def send_pages(self):
         menu = HelpMenu(

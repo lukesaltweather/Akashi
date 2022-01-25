@@ -122,7 +122,7 @@ class Note(commands.Cog):
         embed = discord.Embed(colour=discord.Colour.purple(), title=flags.chapter.__str__())
         embed.description = "\n".join([f"{note.author.name} ({humanize.naturaldate(note.created_on)}):\n```{note.text}```" for note in notes])
         embed.set_image(url=flags.chapter.project.thumbnail)
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
 
 
@@ -153,12 +153,12 @@ class Note(commands.Cog):
         view = RemoveView(timeout=60.0, ctx=ctx, delete_after=False)
         view.children[0].options = notes
         view.children[0].max_values = 1
-        view_msg = await ctx.send(content="Which of your notes do you want to edit?", view=view)
+        view_msg = await ctx.reply(content="Which of your notes do you want to edit?", view=view)
         await view.wait()
 
         stmt = select(_Note).filter(_Note.id == int(view.value[0]))
         note = await get_one(session, stmt)
-        msg = await ctx.send(content="The next message you send will be used as the new note text.")
+        msg = await ctx.reply(content="The next message you send will be used as the new note text.")
 
         def check(message):
             return message.author == ctx.message.author
@@ -202,7 +202,7 @@ class Note(commands.Cog):
         view = RemoveView(timeout=60.0, ctx=ctx, delete_after=True)
         view.children[0].options = notes
         view.children[0].max_values = len(notes)
-        await ctx.send(content="Which of your notes do you want to delete?", view=view)
+        await ctx.reply(content="Which of your notes do you want to delete?", view=view)
         await view.wait()
 
         stmt = select(_Note).filter(_Note.id.in_([int(value) for value in view.value]))
@@ -239,7 +239,7 @@ class Note(commands.Cog):
                 await ctx.session.delete(note)
             await ctx.session.commit()
         else:
-            await ctx.send("Cancelling...", delete_after=10)
+            await ctx.reply("Cancelling...", delete_after=10)
 
 
 def setup(Bot):

@@ -77,7 +77,7 @@ class Misc(commands.Cog):
         luke = self.bot.get_user(358244935041810443)
         if luke is None:
             return
-        await ctx.send(
+        await ctx.reply(
             f"Hello, I'm Akashi. I keep track of Nekyou's projects.\n{luke.mention} made me.",
             allowed_mentions=message,
         )
@@ -166,11 +166,11 @@ class Misc(commands.Cog):
             inline=True,
         )
         embed.add_field(name="Uptime", value=f"{self.get_bot_uptime()}")
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.command()
     async def avatar(self, ctx: CstmContext, member: discord.Member):
-        await ctx.send(member.display_avatar.url)
+        await ctx.reply(member.display_avatar.url)
 
 
 def setup(bot):

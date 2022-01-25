@@ -54,7 +54,7 @@ class Add(commands.Cog):
         st = Staff(member.id, member.name)
         ctx.session.add(st)
         await ctx.session.commit()
-        await ctx.send("Successfully added {} to staff. ".format(member.name))
+        await ctx.reply(f"Successfully added {st.name} to staff. ")
 
     @commands.command(
         aliases=["ap", "addp", "addproj"],

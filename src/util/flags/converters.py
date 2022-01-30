@@ -48,7 +48,7 @@ class ChapterConverter:
 class DateTimeConverter:
     @classmethod
     async def convert(cls, ctx, arg):
-        return datetime.strptime(arg, "%Y %m %d")
+        return datetime.strptime(arg, "%Y-%m-%d")
 
 
 class StaffConverter:

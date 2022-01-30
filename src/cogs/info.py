@@ -84,10 +84,6 @@ class Info(commands.Cog):
         """
         session = ctx.session
         async with ctx.channel.typing():
-            ts_alias = aliased(Staff)
-            rd_alias = aliased(Staff)
-            tl_alias = aliased(Staff)
-            pr_alias = aliased(Staff)
             query = (
                 select(Chapter)
             )
@@ -499,16 +495,8 @@ class Info(commands.Cog):
         :doc:`/Tutorials/Fields`
         """
         session = ctx.session
-        ts_alias = aliased(Staff)
-        rd_alias = aliased(Staff)
-        tl_alias = aliased(Staff)
-        pr_alias = aliased(Staff)
         query = (
             select(Project)
-            .outerjoin(ts_alias, Project.typesetter_id == ts_alias.id)
-            .outerjoin(rd_alias, Project.redrawer_id == rd_alias.id)
-            .outerjoin(tl_alias, Project.translator_id == tl_alias.id)
-            .outerjoin(pr_alias, Project.proofreader_id == pr_alias.id)
         )
 
         if flags.status is not MISSING:
@@ -672,16 +660,8 @@ class Info(commands.Cog):
         Role `Neko Workers`.
         """
         session = ctx.session
-        ts_alias = aliased(Staff)
-        rd_alias = aliased(Staff)
-        tl_alias = aliased(Staff)
-        pr_alias = aliased(Staff)
         stmt = (
             select(Project)
-            .outerjoin(ts_alias, Project.typesetter_id == ts_alias.id)
-            .outerjoin(rd_alias, Project.redrawer_id == rd_alias.id)
-            .outerjoin(tl_alias, Project.translator_id == tl_alias.id)
-            .outerjoin(pr_alias, Project.proofreader_id == pr_alias.id)
         )
         records = await get_all(session, stmt)
         table = PrettyTable()
@@ -769,10 +749,6 @@ class Info(commands.Cog):
         Role `Neko Workers`.
         """
         session = ctx.session
-        ts_alias = aliased(Staff)
-        rd_alias = aliased(Staff)
-        tl_alias = aliased(Staff)
-        pr_alias = aliased(Staff)
         query = (
             select(Chapter)
         )
@@ -869,10 +845,6 @@ class Info(commands.Cog):
 
         """
         session = ctx.session
-        ts_alias = aliased(Staff)
-        rd_alias = aliased(Staff)
-        tl_alias = aliased(Staff)
-        pr_alias = aliased(Staff)
         query = (
             select(Chapter)
         )

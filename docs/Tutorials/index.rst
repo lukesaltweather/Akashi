@@ -9,4 +9,3 @@ Tutorials
     FinishChapter
     ParamListTut
     DateTutorial
-    Fields

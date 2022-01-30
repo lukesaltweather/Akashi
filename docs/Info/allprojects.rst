@@ -8,19 +8,6 @@ Description
 ==============
 Return a list of all project.
 
-.. caution::
-    This command doesn't take any arguments.
-
 Required Role
 =====================
 Role `Neko Workers`.
-
-Arguments
-===========
-
-Optional
-------------
-
-
-Related Articles:
-^^^^^^^^^^^^^^^^^^^^

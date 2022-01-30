@@ -24,3 +24,4 @@ backupscript
 **/_build
 **/__pycache__/*
 .idea/poetry.xml
+config.toml

@@ -621,9 +621,9 @@ class Done(commands.Cog):
             staff = await Staff.convert(ctx, ctx.author.id)
         if step == "tl" and not chapter.translator:
             chapter.translator = staff
-        elif step == "rd"  and not chapter.redrawer:
+        elif step == "rd" and not chapter.redrawer:
             chapter.redrawer = staff
-        elif step == "ts"  and not chapter.typesetter:
+        elif step == "ts" and not chapter.typesetter:
             chapter.typesetter = staff
         elif step in ("qc", "pr")  and not chapter.proofreader:
             chapter.proofreader = staff

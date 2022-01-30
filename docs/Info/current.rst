@@ -23,7 +23,4 @@ Required
 .. danger::
     Doesn't use the "normal" way to do commands. Just write the member's name `directly` after the command name like so:
 
-    `$current lukesaltweather`
-
-Related Articles:
-^^^^^^^^^^^^^^^^^^^^
+    `$current lukesaltweather`s

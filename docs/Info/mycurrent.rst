@@ -6,7 +6,7 @@ Aliases:
 ------------------------------------------------------------
 Description
 ==============
-Get info on projects you are currently working on.
+Get info on chapters you are currently working on.
 
 .. caution::
    Doesn't take any arguments.

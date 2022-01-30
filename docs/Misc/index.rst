@@ -12,3 +12,4 @@ Commands
     apply
     stats
     avatar
+    update

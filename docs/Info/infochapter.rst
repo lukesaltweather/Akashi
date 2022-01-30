@@ -32,7 +32,8 @@ Optional
 :status: 
     | Current status of the chapter. Can be one of "active", "tl", "ts", "rd", "pr", "qcts" or "ready". [:doc:`/Types/literals`]
 :fields:
-    |  What columns to include in the result table. [:doc:`/Types/literals`]
+    |  What columns to include in the result table.
+     Can be one of "link_tl" ("link_ts", "link_rd", ..),"date", "date_tl", .., "date_rl", "tl", "ts", "rd", "pr", "qcts" or "ready". [:doc:`/Types/literals`]
 :links: 
     | Either true or false, whether the bot sends the links to each steps of the chapters. [:doc:`/Types/text`]
 

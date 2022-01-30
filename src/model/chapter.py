@@ -89,16 +89,8 @@ class Chapter(Base, ReportMixin):
         session = ctx.session
         project = await searchproject(proj, session)
 
-        ts_alias = aliased(Staff)
-        rd_alias = aliased(Staff)
-        tl_alias = aliased(Staff)
-        pr_alias = aliased(Staff)
         query = (
             select(Chapter)
-            .outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id)
-            .outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id)
-            .outerjoin(tl_alias, Chapter.translator_id == tl_alias.id)
-            .outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id)
             .filter(Chapter.project_id == project.id)
             .filter(Chapter.number == chapter)
         )

@@ -8,7 +8,7 @@ from prettytable import PrettyTable
 from sqlalchemy import Date, text, or_, and_
 from sqlalchemy.sql.expression import select
 
-from src.model.monitorevent import MonitorEvent
+from src.model.monitor import MonitorRequest
 from src.util.arghelper import arghelper
 from src.util import exceptions
 from src.util.misc import (
@@ -1008,7 +1008,7 @@ class Info(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["follow", "track", "watch"])
-    async def monitor(self, ctx: CstmContext, flags: MonitorFlags):
+    async def monitor(self, ctx: CstmContext, *, flags: MonitorFlags):
         """
         Description
         ==============
@@ -1036,7 +1036,7 @@ class Info(commands.Cog):
         if (not chapter_or_project) or (flags.chapter and flags.project):
             raise commands.CommandError("*One* of chapter/project arguments is required for this command.")
 
-        registered_event = MonitorEvent(staff=searchstaff(ctx.author.id.__str__(), ctx, ctx.session), chapter=flags.chapter, project=flags.project)
+        registered_event = MonitorRequest(staff=await searchstaff(ctx.author.id.__str__(), ctx, ctx.session), chapter=flags.chapter, project=flags.project)
         ctx.session.add(registered_event)
         await ctx.prompt_and_commit(text=f"Do you really want to track {chapter_or_project}?")
 

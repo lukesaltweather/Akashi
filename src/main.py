@@ -60,6 +60,7 @@ class Bot(commands.Bot):
                 self.config["general"]["uri"], pool_size=20, future=True
             ),
             class_=AsyncSession,
+            expire_on_commit=False
         )
         self.logger.info(msg="Finished setting up SQLAlchemy Sessionmaker.")
         self.em = emojis

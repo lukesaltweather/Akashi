@@ -97,9 +97,7 @@ class Edit(commands.Cog):
             title="Do you want to commit these changes to this chapter?",
         )
         embed1.set_image(url="attachment://image.png")
-        committed = await ctx.prompt_and_commit(embed=embed1, file=image)
-        if committed:
-            await ctx.monitor_changes(record)
+        await ctx.monitor_changes(record, embed=embed1, file=image)
 
     @commands.command(
         aliases=["editproj", "editp", "ep"],

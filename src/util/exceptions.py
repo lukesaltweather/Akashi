@@ -1,7 +1,8 @@
 import discord.ext.commands as commands
 
 class AkashiException(Exception):
-    message = "Sorry. An error occured."
+    def __init__(self, message="Sorry. An error occured."):
+        self.message = message
 
 class ProjectAlreadyExists(AkashiException):
     def __init__(self, message="This project already exists."):

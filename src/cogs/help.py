@@ -4,6 +4,7 @@ import itertools
 import discord
 from discord.ext import commands
 from discord.ext import menus
+from discord.ext.menus.views import ViewMenuPages
 from typing import List
 from discord.ext.commands.core import Group, Command
 
@@ -121,7 +122,7 @@ class MyHelpCommand(commands.MinimalHelpCommand):
                 if self.sort_commands
                 else list(commands)
             )
-            if category != "MyCog":
+            if category != "MyCog" and category != "Jishaku":
                 self.helper.start_page(commands, category)
                 self.helper.add_cog(commands, category)
 
@@ -159,7 +160,7 @@ class MyCog(commands.Cog):
         self.bot.help_command = self._original_help_command
 
 
-class HelpMenu(menus.MenuPages):
+class HelpMenu(ViewMenuPages):
     @menus.button("🔢", position=menus.Last(1))
     async def select_page(self, payload):
         channel = self.bot.get_channel(payload.channel_id)
@@ -221,16 +222,17 @@ class EmbedHelper:
                 icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Info_icon-72a7cf.svg/1200px-Info_icon-72a7cf.svg.png",
                 text="For more detailed help on a command, use $help <command>",
             )
-        else:
-            string = f"\n\n**{cog}**  |  Page: **{self.page+1}**\n"
-            first = True
-            for command in commands:
-                if first:
-                    string = f"{string} **`{command.name}`**"
-                else:
-                    string = f"{string} | **`{command.name}`**"
+        string = f"\n\n**{cog}**  |  Page: **{self.page+1}**\n"
+        first = True
+        for command in commands:
+            doc_link = f'https://docs.akashi.app/en/stable/{command.cog_name}/{command.name}.html'
+            if first:
+                string = f"{string} [**`{command.name}`**]({doc_link})"
+            else:
+                string = f"{string} | [**`{command.name}`**]({doc_link})"
+                first = False
 
-            self.embed[0].description = f"{self.embed[0].description}{string}"
+        self.embed[0].description = f"{self.embed[0].description if self.embed[0].description is not discord.Embed.Empty else ''}{string}"
         self.page = self.page + 1
 
     def add_cog(self, coms, cogname: str):
@@ -245,6 +247,7 @@ class EmbedHelper:
             "Note": "🗒️",
             "ReminderCog": "📅",
             "Tags": "📓",
+            "Database": "📚",
         }.pop(cogname, False)
         if not emoji:
             return
@@ -257,7 +260,7 @@ class EmbedHelper:
                 v = MyVisitor(parsed)
                 parsed.walkabout(v)
                 doc_link = f'https://docs.akashi.app/en/stable/{command.cog_name}/{command.name}.html'
-                string = f"{string}\n[**`{command.name}`**]({doc_link}) {v.sections.get('Description', '')}\n```{command.signature}```\n"
+                string = f"{string}\n[**`{command.name}`**]({doc_link}) {v.sections.get('Description', '')}\n" + (f"```{command.signature}```\n" if command.signature != "" else "")
         self.embed[-1].description = string
         self.embed[-1].set_footer(
             icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Info_icon-72a7cf.svg/1200px-Info_icon-72a7cf.svg.png",

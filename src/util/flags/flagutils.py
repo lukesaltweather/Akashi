@@ -9,7 +9,7 @@ class ChapterFlags(FlagConverter):
     chapter: Chapter
 
 
-NoneLiteral = Literal["None", "none"]
+NoneLiteral = Literal["none"]
 
 
 class __TypeOrMissing(type):

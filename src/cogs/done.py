@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import json
+import typing as t
 
 import discord
 import humanize
@@ -19,6 +20,63 @@ from src.util.context import CstmContext
 from abc import abstractmethod
 
 from src.util.types import staffroles
+
+class DoneView(discord.ui.View):
+    def __init__(
+        self,
+        *,
+        timeout: float,
+        author_id: int,
+        reacquire: bool,
+        ctx: "CstmContext",
+        delete_after: bool
+    ) -> None:
+        super().__init__(timeout=timeout)
+        self.value: t.Optional[bool] = None
+        self.delete_after: bool = delete_after
+        self.author_id: int = author_id
+        self.ctx: CstmContext = ctx
+        self.reacquire: bool = reacquire
+        self.message: t.Optional[discord.Message] = None
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user and interaction.user.id == self.author_id:
+            return True
+        else:
+            await interaction.response.send_message(
+                "This confirmation dialog is not for you.", ephemeral=True
+            )
+            return False
+
+    async def on_timeout(self) -> None:
+        if self.delete_after and self.message:
+            await self.message.delete()
+
+    @discord.ui.button(label="Notify", style=discord.ButtonStyle.green, emoji="✉")
+    async def ping_mention(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
+        self.value = True
+        await interaction.response.defer()
+        if self.delete_after:
+            await interaction.delete_original_message()
+        self.stop()
+
+    @discord.ui.button(label="Don't Notify", style=discord.ButtonStyle.green, emoji="📝")
+    async def ping_no_mention(self, button: discord.ui.Button, interaction: discord.Interaction):
+        self.value = False
+        await interaction.response.defer()
+        if self.delete_after:
+            await interaction.delete_original_message()
+        self.stop()
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red, emoji="❌")
+    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
+        self.value = None
+        await interaction.response.defer()
+        if self.delete_after:
+            await interaction.delete_original_message()
+        self.stop()
 
 
 class command_helper:
@@ -42,44 +100,21 @@ class command_helper:
         if not self.skip_confirm:
             embed = discord.Embed(color=discord.Colour.gold())
             embed.description = f"This will do the following:\n```{preview}```\n\n Press ✉ to mention, 📝 to not mention, ❌ to cancel."
-
-            message = await self.ctx.send(embed=embed)
-
-            await message.add_reaction("✉")
-            await message.add_reaction("📝")
-            await message.add_reaction("❌")
-            await asyncio.sleep(delay=0.5)
-
-            def check(reaction, user):
-                return user == self.ctx.message.author and (
-                    str(reaction.emoji) == "✉" or str(reaction.emoji) == "📝",
-                    str(reaction.emoji) == "❌",
+            view = DoneView(timeout=15, author_id=self.ctx.author.id, reacquire=True, ctx=self.ctx, delete_after=True)
+            message = await self.ctx.send(embed=embed, view=view)
+            await view.wait()
+            if view.value:
+                await self.ctx.message.add_reaction("✅")
+                return discord.AllowedMentions(
+                    everyone=True, users=True, roles=True
                 )
-
-            try:
-                reaction, user = await self.bot.wait_for(
-                    "reaction_add", timeout=30.0, check=check
+            elif view.value is False:
+                await self.ctx.message.add_reaction("✅")
+                return discord.AllowedMentions(
+                    everyone=False, users=False, roles=False
                 )
-            except asyncio.TimeoutError:
-                self.session.rollback()
-                await message.delete()
-                raise CommandError(
-                    "No reaction from command author. No action was taken."
-                )
-            else:
-                await message.delete()
-                if str(reaction.emoji) == "✉":
-                    await self.ctx.message.add_reaction("✅")
-                    return discord.AllowedMentions(
-                        everyone=True, users=True, roles=True
-                    )
-                elif str(reaction.emoji) == "📝":
-                    await self.ctx.message.add_reaction("✅")
-                    return discord.AllowedMentions(
-                        everyone=False, users=False, roles=False
-                    )
-                else:
-                    raise CommandError("Command Cancelled.")
+            elif view.value is None:
+                raise CommandError("Command Cancelled.")
         else:
             return discord.AllowedMentions(everyone=False, users=False, roles=False)
 
@@ -513,8 +548,8 @@ class Done(commands.Cog):
         ==============
         Mark a specific step of a chapter as finished.
         Will prompt for an answer, click on the corresponding emoji reaction.
-
-        [FURTHER EXPLAINING TODO]
+        The options are: Ping the next member with a proper notification appearing for them,
+        or instead ping, but don't send out a (for some people annoying) notification.
 
         Required Role
         =====================
@@ -524,12 +559,17 @@ class Done(commands.Cog):
         ===========
         Required
         ---------
-        :chapter: The chapter to edit, in format: projectName chapterNbr
-        :step: The step that was finished. Can be one of: tl, rd, ts, pr or qcts.
+        :chapter:
+            | The chapter to edit, in format: projectName chapterNbr [:doc:`/Types/chapter`]
+        :step:
+            | The step you have finished. Can be one of: tl, rd, ts, pr or qc. [:doc:`/Types/literals`]
+        :link:
+            | The link to the folder on box. [:doc:`/Types/Text`]
 
         Optional
         ----------
-        :note: Add a note to the chapters notes.
+        :note:
+            | Add a note to the chapters notes. [:doc:`/Types/Text`]
         """
         if flags.step == "tl":
             TL = TL_helper(ctx, flags)

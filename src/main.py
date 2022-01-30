@@ -148,6 +148,9 @@ async def on_ready():
 
 @bot.event
 async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        await ctx.send("Command with that name could not be found.", delete_after=10)
+        return
     logging.getLogger("akashi.commands").warning(f"Now handling error in main error handler for command {ctx.command.name}.")
     # rollback command's db session
     await ctx.session.rollback()
@@ -159,10 +162,10 @@ async def on_command_error(ctx, error):
         return
     error = getattr(error, "original", error)
     logging.getLogger("akashi.commands").error(f"The error that occured for {ctx.command.name}: {type(error)} / {getattr(error, 'message', 'No Message')}.")
-    if error is AkashiException:
+    if issubclass(type(error), AkashiException):
         await ctx.send(error.message)
-    elif error is commands.CommandError:
-        await ctx.send(error.__str__)
+    elif issubclass(type(error), commands.CommandError):
+        await ctx.send(error.__str__())
     else:
         await ctx.send("An unknown error ocurred...")
         logging.getLogger("akashi.commands").critical(f"Error for {ctx.command.name} couldn't be resolved gracefully: Message: {getattr(error, 'message', 'No Message')}; \n Type: {type(error)}; \n String: {str(error)}.")

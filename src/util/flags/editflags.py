@@ -48,8 +48,8 @@ class EditProjectFlags(FlagConverter):
     link: Optional[str]
 
 
-class EditStaffFlags:
+class EditStaffFlags(FlagConverter):
     member: Staff
     id: Optional[int]
     name: Optional[str]
-    status: Literal["active", "inactive"]
+    status: Optional[Literal["active", "inactive"]]

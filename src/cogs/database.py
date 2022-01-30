@@ -89,7 +89,7 @@ class Database(commands.Cog):
         file = discord.File(
             buffer, datetime.datetime.utcnow().strftime("akashi-manual-backup-%Y-%m-%d.dump")
         )
-        await ctx.send(
+        await ctx.reply(
             "Backup complete.\n"
             "See https://docs.akashi.app/en/stable/Developers/restore_backup.html for info on how to restore the backup.",
             file=file,

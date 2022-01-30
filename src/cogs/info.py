@@ -68,7 +68,8 @@ class Info(commands.Cog):
         :status: 
             | Current status of the chapter. Can be one of "active", "tl", "ts", "rd", "pr", "qcts" or "ready". [:doc:`/Types/literals`]
         :fields:
-            |  What columns to include in the result table. [:doc:`/Types/literals`]
+            |  What columns to include in the result table.
+             Can be one of "link_tl" ("link_ts", "link_rd", ..),"date", "date_tl", .., "date_rl", "tl", "ts", "rd", "pr", "qcts" or "ready". [:doc:`/Types/literals`]
         :links: 
             | Either true or false, whether the bot sends the links to each steps of the chapters. [:doc:`/Types/text`]
 
@@ -89,11 +90,6 @@ class Info(commands.Cog):
             pr_alias = aliased(Staff)
             query = (
                 select(Chapter)
-                .outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id)
-                .outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id)
-                .outerjoin(tl_alias, Chapter.translator_id == tl_alias.id)
-                .outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id)
-                .join(Project, Chapter.project_id == Project.id)
             )
             if flags.project:
                 if len(flags.project) > 1:
@@ -671,23 +667,9 @@ class Info(commands.Cog):
         ==============
         Return a list of all project.
 
-        .. caution::
-            This command doesn't take any arguments.
-
         Required Role
         =====================
         Role `Neko Workers`.
-
-        Arguments
-        ===========
-
-        Optional
-        ------------
-
-
-        Related Articles:
-        ^^^^^^^^^^^^^^^^^^^^
-
         """
         session = ctx.session
         ts_alias = aliased(Staff)
@@ -755,9 +737,6 @@ class Info(commands.Cog):
         ==============
         Return a list of all staff members.
 
-        .. error::
-           Currently not working.
-
         Required Role
         =====================
         Role `Neko Herders`.
@@ -780,7 +759,7 @@ class Info(commands.Cog):
         """
         Description
         ==============
-        Get info on projects you are currently working on.
+        Get info on chapters you are currently working on.
 
         .. caution::
            Doesn't take any arguments.
@@ -796,11 +775,6 @@ class Info(commands.Cog):
         pr_alias = aliased(Staff)
         query = (
             select(Chapter)
-            .outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id)
-            .outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id)
-            .outerjoin(tl_alias, Chapter.translator_id == tl_alias.id)
-            .outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id)
-            .join(Project, Chapter.project_id == Project.id)
         )
         typ = await searchstaff(str(ctx.message.author.id), ctx, session)
         to_tl = await get_all(
@@ -839,34 +813,34 @@ class Info(commands.Cog):
             session,
             (
                 query.filter(Chapter.typesetter == typ)
-                .filter(or_(Chapter.link_rl == None, Chapter.link_rl == ""))
-                .filter(Chapter.link_pr != None, Chapter.link_pr != "")
-                .filter(Chapter.link_ts != None, Chapter.link_ts != "")
+                .filter(or_(Chapter.link_rl.is_(None), Chapter.link_rl == ""))
+                .filter(or_(Chapter.link_pr.is_not(None), Chapter.link_pr != ""))
+                .filter(or_(Chapter.link_ts.is_not(None), Chapter.link_ts != ""))
             ),
         )
         desc = ""
-        if len(to_tl) != 0:
+        if to_tl:
             desc = "`To translate:` "
             for chapter in to_tl:
                 desc = f"{desc}\n[{chapter.project.title} {chapter.number}]({chapter.link_raw})"
-        if len(to_rd) != 0:
+        if to_rd:
             desc = f"{desc}\n`To redraw:`"
             for chapter in to_rd:
                 desc = f"{desc}\n[{chapter.project.title} {chapter.number}]({chapter.link_raw})"
-        if len(to_ts) != 0:
+        if to_ts:
             desc = f"{desc}\n`To typeset:`"
             for chapter in to_ts:
                 desc = f"{desc}\n{chapter.project.title} {chapter.number}: [RD]({chapter.link_rd}) [TL]({chapter.link_tl})"
-        if len(to_pr) != 0:
+        if to_pr:
             desc = f"{desc}\n`To proofread:`"
             for chapter in to_pr:
                 desc = f"{desc}\n{chapter.project.title} {chapter.number}: [TS]({chapter.link_ts}) [TL]({chapter.link_tl})"
-        if len(to_qcts) != 0:
+        if to_qcts:
             desc = f"{desc}\n`To qcts:`"
             for chapter in to_qcts:
                 desc = f"{desc}\n{chapter.project.title} {chapter.number}: [TS]({chapter.link_ts}) [PR]({chapter.link_pr})"
         embed = discord.Embed(color=discord.Colour.gold(), description=desc)
-        embed.set_author(name="Current chapters", icon_url=ctx.author.avatar_url)
+        embed.set_author(name="Current chapters", icon_url=ctx.author.avatar.url)
         await ctx.reply(embed=embed)
 
     @commands.command()
@@ -891,10 +865,7 @@ class Info(commands.Cog):
         .. danger::
             Doesn't use the "normal" way to do commands. Just write the member's name `directly` after the command name like so:
 
-            `$current lukesaltweather`
-
-        Related Articles:
-        ^^^^^^^^^^^^^^^^^^^^
+            `$current lukesaltweather`s
 
         """
         session = ctx.session
@@ -904,11 +875,6 @@ class Info(commands.Cog):
         pr_alias = aliased(Staff)
         query = (
             select(Chapter)
-            .outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id)
-            .outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id)
-            .outerjoin(tl_alias, Chapter.translator_id == tl_alias.id)
-            .outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id)
-            .join(Project, Chapter.project_id == Project.id)
         )
         typ = await searchstaff(str(member.id), ctx, session)
         to_tl = await get_all(
@@ -953,23 +919,23 @@ class Info(commands.Cog):
             ),
         )
         desc = ""
-        if len(to_tl) != 0:
+        if to_tl:
             desc = "`To translate:` "
             for chapter in to_tl:
                 desc = f"{desc}\n[{chapter.project.title} {format_number(chapter.number)}]({chapter.link_raw})"
-        if len(to_rd) != 0:
+        if to_rd:
             desc = f"{desc}\n`To redraw:`"
             for chapter in to_rd:
                 desc = f"{desc}\n[{chapter.project.title} {format_number(chapter.number)}]({chapter.link_raw})"
-        if len(to_ts) != 0:
+        if to_ts:
             desc = f"{desc}\n`To typeset:`"
             for chapter in to_ts:
                 desc = f"{desc}\n{chapter.project.title} {format_number(chapter.number)}: [RD]({chapter.link_rd}) [TL]({chapter.link_tl})"
-        if len(to_pr) != 0:
+        if to_pr:
             desc = f"{desc}\n`To proofread:`"
             for chapter in to_pr:
                 desc = f"{desc}\n{chapter.project.title} {format_number(chapter.number)}: [TS]({chapter.link_ts}) [TL]({chapter.link_tl})"
-        if len(to_qcts) != 0:
+        if to_qcts:
             desc = f"{desc}\n`To qcts:`"
             for chapter in to_qcts:
                 desc = f"{desc}\n{chapter.project.title} {chapter.number}: [TS]({chapter.link_ts}) [PR]({chapter.link_pr})"

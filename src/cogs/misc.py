@@ -1,6 +1,7 @@
 import datetime
 import itertools
 import json
+import os
 import time
 from io import BytesIO
 
@@ -172,6 +173,14 @@ class Misc(commands.Cog):
     async def avatar(self, ctx: CstmContext, member: discord.Member):
         await ctx.reply(member.display_avatar.url)
 
+    @commands.command()
+    @is_admin()
+    async def update(self, ctx: CstmContext):
+        os.system("git pull")
+        os.system("poetry update")
+        os.system("poetry install")
+        await ctx.reply("Updated!")
+        self.bot.close()
 
 def setup(bot):
     bot.add_cog(Misc(bot))

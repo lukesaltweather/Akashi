@@ -117,6 +117,8 @@ class Add(commands.Cog):
         Description
         ==============
         Add multiple chapters at once.
+        After entering the command, you are expected to post links to the raws of the chapters.
+        Each link must be on its own line.
 
         Required Role
         =====================

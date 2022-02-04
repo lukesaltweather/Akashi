@@ -6,9 +6,12 @@
 Welcome to Akashi's documentation!
 ==================================
 
+
 .. image:: https://swall.teahub.io/photos/small/350-3506919_anime.jpg
-  :width: 400
+  :width: 600
+  :align: center
   :alt: An image is supposed to be here...
+
 
 Akashi is a Discord Bot for managing scanlation workflows.
 It keeps track of chapters, project and staff working on these.

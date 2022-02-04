@@ -19,8 +19,8 @@ Welcome to Akashi's documentation!
 |br|
 
 Akashi is a Discord Bot for managing scanlation workflows.
-It keeps track of chapters, project and staff working on these.
-Akashi was developed with my Scanlation Group, `Nekyou` in mind, so it's very tailored to our workflow.
+It keeps track of chapters, project and staff working on them. |br|
+Akashi was developed with my Scanlation Group, `Nekyou` in mind, so it's very tailored to our workflow. |br| |br|
 On this site you can find documentation for Akashi's commands, as well as some info if you're interested in hosting your own instance.
 |br|
 

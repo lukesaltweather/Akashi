@@ -14,3 +14,4 @@ Commands
     allstaff
     mycurrent
     current
+    monitor

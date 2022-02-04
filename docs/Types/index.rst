@@ -8,3 +8,5 @@ This setion documents the various types parameters can have, what they are and h
 
     chapter
     text
+    datetime
+    project

@@ -6,6 +6,6 @@ Tutorials
     :maxdepth: 1
 
     WhatsNew
+    whatdoesakashido
     FinishChapter
     ParamListTut
-    DateTutorial

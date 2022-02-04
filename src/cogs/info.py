@@ -78,9 +78,6 @@ class Info(commands.Cog):
 
         You can find a tutorial on how to pass a list of arguments here:
         :doc:`/Tutorials/ParamListTut`
-
-        Dates have to be in following format:
-        :doc:`/Tutorials/DateTutorial`
         """
         session = ctx.session
         async with ctx.channel.typing():
@@ -117,9 +114,10 @@ class Info(commands.Cog):
             if flags.id:
                 query = query.filter(Chapter.id == flags.id)
             if flags.ts:
-                query = query.filter(
-                    Chapter.typesetter_id.in_([staff.id for staff in flags.ts])
-                )
+                conds = list()
+                for arg in flags.ts:
+                    conds.append(Chapter.typesetter == arg)
+                query = query.filter(or_(*conds))
             if flags.rd:
                 conds = list()
                 for arg in flags.rd:

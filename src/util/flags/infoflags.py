@@ -9,7 +9,7 @@ from src.util.misc import MISSING
 from src.model.project import Project
 
 
-class InfoChapter(FlagConverter):
+class InfoChapter(FlagConverter, error_on_unknown=True):
     project: List[Project] = flag(default=MISSING)
     title: List[str] = flag(default=MISSING, noneable=True)
     chapter_from: Optional[float]

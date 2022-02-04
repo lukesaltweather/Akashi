@@ -1,7 +1,10 @@
 =============================================
-How to pass a date
+Date Type
 =============================================
 Dates are now passed in ISO-Format, so:
 
-YYYY-MM-DD or more concrete:
-2022-01-30
+`YYYY-MM-DD`
+
+As an Example:
+
+:code:`2022-01-30`

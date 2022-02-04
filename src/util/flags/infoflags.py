@@ -1,6 +1,8 @@
 from typing import Optional, Literal, List, Tuple, Union, TypeVar, Generic
 
 from discord.ext.commands import FlagConverter, flag
+
+from src.model.chapter import Chapter
 from src.util.flags.converters import CommaList, DateTimeConverter
 
 from src.model.staff import Staff
@@ -36,3 +38,7 @@ class InfoProject(FlagConverter):
     ts: Optional[Staff] = flag(default=[], noneable=True)
     pr: Optional[Staff] = flag(default=[], noneable=True)
     fields: Optional[CommaList[str]]
+
+class MonitorFlags(FlagConverter):
+    chapter: Optional[Chapter]
+    project: Optional[Project]

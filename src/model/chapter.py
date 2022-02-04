@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float
-from sqlalchemy.orm import relationship, aliased
+from sqlalchemy.orm import relationship, aliased, joinedload
 from sqlalchemy.sql.expression import select
+from src.model.monitor import MonitorRequest
 
 from src.model.note import Note
 from src.model.project import Project
@@ -68,6 +69,14 @@ class Chapter(Base, ReportMixin):
     project = relationship(
         "Project", back_populates="chapters", uselist=False, lazy="joined"
     )
+
+    to_notify = relationship(
+        "MonitorRequest",
+        lazy="joined",
+        back_populates="chapter",
+        uselist=True,
+    )
+
     # notes = relationship(
     #     "Note", back_populates="chapter", innerjoin=False, lazy="selectin", cascade="all,delete"
     # )
@@ -93,6 +102,8 @@ class Chapter(Base, ReportMixin):
             select(Chapter)
             .filter(Chapter.project_id == project.id)
             .filter(Chapter.number == chapter)
+            .options(joinedload(Chapter.to_notify).joinedload(MonitorRequest.staff),
+            joinedload(Chapter.to_notify).joinedload(MonitorRequest.project))
         )
         return await get_one(ctx.session, query)
 

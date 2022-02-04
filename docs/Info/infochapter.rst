@@ -42,6 +42,3 @@ Related Articles:
 
 You can find a tutorial on how to pass a list of arguments here:
 :doc:`/Tutorials/ParamListTut`
-
-Dates have to be in following format:
-:doc:`/Tutorials/DateTutorial`

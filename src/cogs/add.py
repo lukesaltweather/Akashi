@@ -231,13 +231,9 @@ class Add(commands.Cog):
         chp.date_created = func.now()
         ctx.session.add(chp)
         t = table.get_string(title="Chapter Preview")
-<<<<<<< HEAD
-        await ctx.prompt_and_commit(text="Do you really want to add this chapter?", file=await misc.drawimage(t))
-=======
         if chp.project.to_notify:
             pass
         await ctx.prompt_and_commit(file=await misc.drawimage(t))
->>>>>>> monitor
 
     @addchapter.error
     async def on_chapter_error(self, ctx, error):

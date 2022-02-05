@@ -17,8 +17,15 @@ depends_on = None
 
 
 def upgrade():
-    pass
+    op.create_table(
+        'note',
+        sa.Column('id', sa.Integer, primary_key=True),
+        sa.Column('chapter_id', sa.Integer, sa.ForeignKey('chapters.id'), nullable=False),
+        sa.Column('text', sa.Text, nullable=False),
+        sa.Column('author_id', sa.Integer, sa.ForeignKey('staff.id'), nullable=False),
+        sa.Column('created_on', sa.DateTime, default=sa.func.now(), nullable=False),
+    )
 
 
 def downgrade():
-    pass
+    op.drop_table('note')

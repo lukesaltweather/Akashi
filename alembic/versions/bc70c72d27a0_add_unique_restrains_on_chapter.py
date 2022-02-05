@@ -17,8 +17,8 @@ depends_on = None
 
 
 def upgrade():
-    pass
+    op.create_unique_constraint("uq_chapter", "chapter", ["number", "project_id"])
 
 
 def downgrade():
-    pass
+    op.drop_constraint("uq_chapter", "chapter", type_="unique")

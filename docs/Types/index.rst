@@ -13,3 +13,4 @@ This section documents the various types parameters can have, what they are and 
     none
     number
     staff
+    literals

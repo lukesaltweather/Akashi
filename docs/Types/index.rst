@@ -10,3 +10,6 @@ This setion documents the various types parameters can have, what they are and h
     text
     datetime
     project
+    none
+    number
+    staff

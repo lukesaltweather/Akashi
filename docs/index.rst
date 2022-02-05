@@ -20,13 +20,16 @@ Welcome to Akashi's documentation!
 
 Akashi is a Discord Bot for managing scanlation workflows.
 It keeps track of chapters, project and staff working on them. |br|
-Akashi was developed with my Scanlation Group, `Nekyou` in mind, so it's very tailored to our workflow. |br| |br|
+Akashi was developed with a specific Scanlation Group, `Nekyou`, in mind, so it's very tailored to our workflow. |br| |br|
 On this site you can find documentation for Akashi's commands, as well as some info if you're interested in hosting your own instance.
 |br|
 
+------------------------
+Table of Contents
+------------------------
+
 .. toctree::
    :maxdepth: 1
-   :caption: Table of Contents
 
    Tutorials/index
    Add/index
@@ -41,9 +44,9 @@ On this site you can find documentation for Akashi's commands, as well as some i
 
 
 
-
+------------------
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`

@@ -12,11 +12,11 @@ from src.model.project import Project
 
 
 class InfoChapter(FlagConverter, error_on_unknown=True):
-    project: List[Project] = flag(default=MISSING)
+    project: List[Project] = flag(default=MISSING, aliases=["p"])
     title: List[str] = flag(default=MISSING, noneable=True)
     chapter_from: Optional[float]
     chapter_upto: Optional[float]
-    chapter: List[float] = flag(default=[])
+    chapter: List[float] = flag(default=[], aliases=["c", "ch"])
     id: List[int] = flag(default=[])
     tl: List[Staff] = flag(default=[], noneable=True)
     rd: List[Staff] = flag(default=[], noneable=True)

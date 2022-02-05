@@ -1,12 +1,12 @@
 from typing import Literal, Union
 
-from discord.ext.commands.flags import FlagConverter
+from discord.ext.commands.flags import FlagConverter, flag
 
 from src.model.chapter import Chapter
 
 
 class ChapterFlags(FlagConverter):
-    chapter: Chapter
+    chapter: Chapter = flag(aliases=["c"])
 
 
 NoneLiteral = Literal["none"]

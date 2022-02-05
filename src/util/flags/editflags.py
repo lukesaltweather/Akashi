@@ -33,7 +33,7 @@ class ReleaseFlags(ChapterFlags):
 
 
 class EditProjectFlags(FlagConverter):
-    project: Project
+    project: Project = flag(aliases=["p"])
     title: Optional[str]
     status: Optional[str]
     color: TypeOrMissing[Colour] = flag(default=MISSING)

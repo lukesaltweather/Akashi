@@ -75,6 +75,44 @@ class CstmContext(commands.Context):
     def session(self):
         return self._session
 
+    async def notify(self, entity):
+        if entity.to_notify:
+            table = PrettyTable()
+            table.add_column("", ["ORIGINAL", "EDIT"])
+            state = inspect(entity)
+            changes = 0
+            for attr in state.attrs:
+                hist = attr.history
+                if not hist.has_changes():
+                    continue
+                old_value = hist.deleted[0] if hist.deleted else None
+                if isinstance(old_value, Staff):
+                    old_value = old_value.name
+                new_value = hist.added[0] if hist.added else None
+                if isinstance(new_value, Staff):
+                    new_value = new_value.name
+                table.add_column(attr.key.capitalize(), [old_value, new_value])
+                changes += 1
+            if changes == 0:
+                return
+            to_notify = entity.to_notify
+            for request in to_notify:
+                user = self.bot.get_user(request.staff.discord_id)
+                # differentiate between chapter and project here
+                if isinstance(entity, Chapter):
+                    await user.send(
+                        embed=discord.Embed(
+                            title=f"{self.author.display_name} added changes to {entity.project.title} {entity.number}.",
+                            color=discord.Color.blurple()).set_image(url="attachment://image.png"),
+                        file=await drawimage(table.get_string())
+                    )
+                elif isinstance(entity, Project):
+                    await user.send(
+                        embed=discord.Embed(title=f"{self.author.display_name} added changes to {entity.title}.",
+                                            color=discord.Color.blurple()).set_image(url="attachment://image.png"),
+                        file=await drawimage(table.get_string())
+                    )
+
     async def prompt_and_commit(
         self, color=discord.Color.blurple(), *, embed=None, file=None, text="Do you want to confirm?"
     ):
@@ -116,39 +154,7 @@ class CstmContext(commands.Context):
         await view.wait()
         if view.value:
             await self.reply("Commited changes.", mention_author=False)
-            if entity.to_notify:
-                table = PrettyTable()
-                table.add_column("", ["ORIGINAL", "EDIT"])
-                state = inspect(entity)
-                changes = 0
-                for attr in state.attrs:
-                    hist = attr.history
-                    if not hist.has_changes():
-                        continue
-                    old_value = hist.deleted[0] if hist.deleted else None
-                    if isinstance(old_value, Staff):
-                        old_value = old_value.name
-                    new_value = hist.added[0] if hist.added else None
-                    if isinstance(new_value, Staff):
-                        new_value = new_value.name
-                    table.add_column(attr.key.capitalize(), [old_value, new_value])
-                    changes += 1
-                if changes == 0:
-                    return
-                to_notify = entity.to_notify
-                for request in to_notify:
-                    user = self.bot.get_user(request.staff.discord_id)
-                    # differentiate between chapter and project here
-                    if isinstance(entity, Chapter):
-                        await user.send(
-                            embed=discord.Embed(title=f"{self.author.display_name} added changes to {entity.project.title} {entity.number}.",color=discord.Color.blurple()).set_image(url="attachment://image.png"),
-                            file=await drawimage(table.get_string())
-                        )
-                    elif isinstance(entity, Project):
-                        await user.send(
-                            embed=discord.Embed(title=f"{self.author.display_name} added changes to {entity.title}.",color=discord.Color.blurple()).set_image(url="attachment://image.png"),
-                            file=await drawimage(table.get_string())
-                        )
+            await self.notify(entity)
             await self.session.commit()
         else:
             await self.session.rollback()

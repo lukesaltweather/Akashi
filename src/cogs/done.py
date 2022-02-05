@@ -586,6 +586,7 @@ class Done(commands.Cog):
         elif flags.step == "rd":
             RD = RD_helper(ctx, flags)
             await RD.execute()
+        await ctx.notify(flags.chapter)
         await ctx.session.commit()
 
     @commands.command(aliases=["claim", "take"])
@@ -629,8 +630,8 @@ class Done(commands.Cog):
             chapter.proofreader = staff
         else:
             raise CommandError("A staffmember has already been assigned for this step.\nConsider using $editchapter to edit the staffmember for a step.")
-        await ctx.prompt_and_commit(text=f"Do you really want to assign {'yourself' if staff.discord_id == ctx.author.id else staff.name} "
-        f"as the {staffroles.get(step, 'Proofreader')} for {chapter}?", color=discord.Colour.dark_magenta())
+        await ctx.monitor_changes(text=f"Do you really want to assign {'yourself' if staff.discord_id == ctx.author.id else staff.name} "
+        f"as the {staffroles.get(step, 'Proofreader')} for {chapter}?", color=discord.Colour.dark_magenta(), entity=chapter)
 
 
 

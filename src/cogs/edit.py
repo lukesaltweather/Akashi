@@ -177,7 +177,7 @@ class Edit(commands.Cog):
             record.link = flags.link
         image = await record.get_report(f"{record.title}")
 
-        await ctx.prompt_and_commit(text="Do you want to commit these changes to this project?", file=image)
+        await ctx.monitor_changes(text="Do you want to commit these changes to this project?", file=image, entity=record)
 
     @commands.command(
     )
@@ -222,7 +222,7 @@ class Edit(commands.Cog):
         await ctx.prompt_and_commit(text="Do you want to commit these changes to this staffmember?", file=image)
 
     @commands.command()
-    async def release(self, ctx, *, flags: ReleaseFlags):
+    async def release(self, ctx: CstmContext, *, flags: ReleaseFlags):
         """
         Description
         ==============
@@ -250,7 +250,7 @@ class Edit(commands.Cog):
         else:
             record.date_release = func.now()
         image = await record.get_report(record)
-        await ctx.prompt_and_commit(text="Do you want to set this chapter as released?", file=image)
+        await ctx.monitor_changes(text="Do you want to set this chapter as released?", file=image, entity=record)
 
 
 def setup(Bot):

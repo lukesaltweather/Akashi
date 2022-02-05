@@ -77,10 +77,6 @@ class Chapter(Base, ReportMixin):
         uselist=True,
     )
 
-    # notes = relationship(
-    #     "Note", back_populates="chapter", innerjoin=False, lazy="selectin", cascade="all,delete"
-    # )
-
     def __init__(self, number, link_raw):
         self.number = number
         self.link_raw = link_raw

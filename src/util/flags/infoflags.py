@@ -31,12 +31,12 @@ class InfoChapter(FlagConverter, error_on_unknown=True):
 
 
 class InfoProject(FlagConverter):
-    status: Optional[str]
+    status: Optional[str] = flag(default=MISSING, noneable=True)
     project: Optional[str]
-    tl: Optional[Staff] = flag(default=[], noneable=True)
-    rd: Optional[Staff] = flag(default=[], noneable=True)
-    ts: Optional[Staff] = flag(default=[], noneable=True)
-    pr: Optional[Staff] = flag(default=[], noneable=True)
+    tl: Optional[Staff] = flag(default=MISSING, noneable=True)
+    rd: Optional[Staff] = flag(default=MISSING, noneable=True)
+    ts: Optional[Staff] = flag(default=MISSING, noneable=True)
+    pr: Optional[Staff] = flag(default=MISSING, noneable=True)
     fields: Optional[CommaList[str]]
 
 class MonitorFlags(FlagConverter):

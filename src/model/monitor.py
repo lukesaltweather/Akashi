@@ -17,17 +17,21 @@ class MonitorRequest(Base):
     chapter = relationship(
         "Chapter",
         lazy="joined",
-        back_populates="to_notify"
+        backref=backref("to_notify", lazy="joined", uselist=True),
+        foreign_keys=[chapter_id],
     )
     staff = relationship(
         "Staff",
         lazy="joined",
-        backref="to_notify"
+        backref=backref("to_notify", lazy="joined", uselist=True),
+        foreign_keys=[staff_id],
+        innerjoin=True,
     )
     project = relationship(
         "Project",
         lazy="joined",
-        backref="to_notify",
+        backref=backref("to_notify", lazy="joined", uselist=True),
+        foreign_keys=[project_id],
     )
 
     def __init__(self, staff, *, chapter=None, project=None) -> None:

@@ -132,6 +132,7 @@ class CstmContext(commands.Context):
         if view.value:
             await self.session.commit()
             await self.reply("Commited changes.", mention_author=False)
+            await self.success()
             return True
         else:
             await self.session.rollback()
@@ -156,6 +157,7 @@ class CstmContext(commands.Context):
             await self.reply("Commited changes.", mention_author=False)
             await self.notify(entity)
             await self.session.commit()
+            await self.success()
         else:
             await self.session.rollback()
             await self.reply("Discarded changes.", mention_author=False)
@@ -174,4 +176,12 @@ class CstmContext(commands.Context):
         )
         await self.send(embed=embed, file=file, view=view)
         await view.wait()
+        if view.value:
+            await self.success()
         return view.value
+
+    async def success(self):
+        await self.message.add_reaction("👍")
+
+    async def failure(self):
+        await self.message.add_reaction("👎")

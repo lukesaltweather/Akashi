@@ -55,6 +55,7 @@ class Add(commands.Cog):
         ctx.session.add(st)
         await ctx.session.commit()
         await ctx.reply(f"Successfully added {st.name} to staff. ")
+        await ctx.success()
 
     @commands.command(
         aliases=["ap", "addp", "addproj"],
@@ -175,7 +176,6 @@ class Add(commands.Cog):
             table.add_row([chp.number, chp.link_raw])
         image = await misc.drawimage(table.get_string())
         await ctx.prompt_and_commit(text=f"Do you really want to add these chapters to project {project.title}?", file=image)
-
 
 
     @is_pu()

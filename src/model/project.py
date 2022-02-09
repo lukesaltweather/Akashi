@@ -1,5 +1,5 @@
 from sqlalchemy import String, Integer, Column, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 from src.util.db import Base
 from src.model.ReportMixin import ReportMixin
@@ -19,34 +19,15 @@ class Project(Base, ReportMixin):
     icon = Column(String)
     position = Column(Integer)
     color = Column(String)
-    # pic = Column(String)
-    typesetter_id = Column(Integer, ForeignKey("staff.id", ondelete="SET NULL"))
-    redrawer_id = Column(Integer, ForeignKey("staff.id", ondelete="SET NULL"))
-    translator_id = Column(Integer, ForeignKey("staff.id", ondelete="SET NULL"))
-    proofreader_id = Column(Integer, ForeignKey("staff.id", ondelete="SET NULL"))
+    typesetter_id = Column(Integer, ForeignKey("staff.id", ondelete='SET NULL'))
+    redrawer_id = Column(Integer, ForeignKey("staff.id", ondelete='SET NULL'))
+    translator_id = Column(Integer, ForeignKey("staff.id", ondelete='SET NULL'))
+    proofreader_id = Column(Integer, ForeignKey("staff.id", ondelete='SET NULL'))
 
-    chapters = relationship("Chapter", back_populates="project")
-    typesetter = relationship(
-        "Staff",
-        foreign_keys=[typesetter_id],
-        backref="project_typesetter",
-        lazy="joined",
-    )
-    translator = relationship(
-        "Staff",
-        foreign_keys=[translator_id],
-        backref="project_translator",
-        lazy="joined",
-    )
-    redrawer = relationship(
-        "Staff", foreign_keys=[redrawer_id], backref="project_redrawer", lazy="joined"
-    )
-    proofreader = relationship(
-        "Staff",
-        foreign_keys=[proofreader_id],
-        backref="project_proofreader",
-        lazy="joined",
-    )
+    typesetter = relationship("Staff", foreign_keys=[typesetter_id], backref=backref('project_typesetter', lazy='joined'), lazy="joined")
+    translator = relationship("Staff", foreign_keys=[translator_id], backref=backref('project_translator', lazy="joined"), lazy="joined")
+    redrawer = relationship("Staff", foreign_keys=[redrawer_id], backref=backref("project_redrawer", lazy="joined"), lazy="joined")
+    proofreader = relationship("Staff", foreign_keys=[proofreader_id], backref=backref("project_proofreader", lazy="joined"), lazy="joined")
 
     def __init__(
         self, title: str, status: str, link: str, altNames: str, icon=icon_default

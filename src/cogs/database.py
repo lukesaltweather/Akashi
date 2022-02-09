@@ -37,6 +37,7 @@ class Database(commands.Cog):
                     "-t projects",
                     "-t note",
                     "-t staff",
+                    "-t monitorrequest",
                     "Akashi",
                 ],
                 stdout=buffer,

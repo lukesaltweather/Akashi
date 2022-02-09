@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float
-from sqlalchemy.orm import relationship, aliased, joinedload
+from sqlalchemy.orm import relationship, aliased, joinedload, backref
 from sqlalchemy.sql.expression import select
 from src.model.monitor import MonitorRequest
 
@@ -41,40 +41,29 @@ class Chapter(Base, ReportMixin):
     typesetter = relationship(
         "Staff",
         foreign_keys=[typesetter_id],
-        backref="chapters_typesetter",
         uselist=False,
         lazy="joined",
     )
     translator = relationship(
         "Staff",
         foreign_keys=[translator_id],
-        backref="chapters_translator",
         uselist=False,
         lazy="joined",
     )
     redrawer = relationship(
         "Staff",
         foreign_keys=[redrawer_id],
-        backref="chapters_redrawer",
         uselist=False,
         lazy="joined",
     )
     proofreader = relationship(
         "Staff",
         foreign_keys=[proofreader_id],
-        backref="chapters_proofreader",
         uselist=False,
         lazy="joined",
     )
     project = relationship(
-        "Project", back_populates="chapters", uselist=False, lazy="joined"
-    )
-
-    to_notify = relationship(
-        "MonitorRequest",
-        lazy="joined",
-        back_populates="chapter",
-        uselist=True,
+        "Project", backref=backref("chapters", uselist=True), lazy="joined", foreign_keys=[project_id], primaryjoin="Project.id==Chapter.project_id"
     )
 
     def __init__(self, number, link_raw):
@@ -98,8 +87,6 @@ class Chapter(Base, ReportMixin):
             select(Chapter)
             .filter(Chapter.project_id == project.id)
             .filter(Chapter.number == chapter)
-            .options(joinedload(Chapter.to_notify).joinedload(MonitorRequest.staff),
-            joinedload(Chapter.to_notify).joinedload(MonitorRequest.project))
         )
         return await get_one(ctx.session, query)
 

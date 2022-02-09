@@ -21,7 +21,7 @@ from src.util.misc import (
 )
 from src.util.search import searchstaff, searchproject
 from src.util.checks import is_admin
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, selectinload, joinedload
 
 from src.model.chapter import Chapter
 from src.model.project import Project
@@ -83,7 +83,7 @@ class Info(commands.Cog):
         session = ctx.session
         async with ctx.channel.typing():
             query = (
-                select(Chapter)
+                select(Chapter).join(Project)
             )
             if flags.project:
                 if len(flags.project) > 1:
@@ -455,10 +455,12 @@ class Info(commands.Cog):
                 icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128",
             )
             embed1.set_image(url="attachment://image.png")
-            await ctx.reply(file=file, embed=embed1)
+            await ctx.success()
             if flags.links:
-                for e in embed.embeds:
-                    await ctx.send(embed=e)
+                await ctx.reply(file=file, embeds=[embed1, *embed.embeds])
+            else:
+                await ctx.reply(file=file, embed=embed1)
+
 
     @commands.command(
         aliases=["infoprojects", "infop", "ip"],
@@ -495,7 +497,7 @@ class Info(commands.Cog):
         """
         session = ctx.session
         query = (
-            select(Project)
+            select(Project)#.join(Chapter)
         )
 
         if flags.status is not MISSING:
@@ -508,16 +510,16 @@ class Info(commands.Cog):
                 )
             )
         if flags.ts is not MISSING:
-            query = query.filter(ts_alias == flags.ts)
+            query = query.filter(Project.typesetter == flags.ts)
         if flags.rd is not MISSING:
-            query = query.filter(rd_alias == flags.rd)
+            query = query.filter(Project.redrawer == flags.rd)
         if flags.tl is not MISSING:
-            query = query.filter(tl_alias == flags.tl)
+            query = query.filter(Project.translator == flags.tl)
         if flags.pr is not MISSING:
-            query = query.filter(pr_alias == flags.pr)
+            query = query.filter(Project.proofreader == flags.pr)
         records = await get_all(session, query)
         table = PrettyTable()
-        embed = None
+        link_embed = None
         if flags.fields:
             fields = flags.fields
             for field in fields:  # type: ignore
@@ -586,8 +588,8 @@ class Info(commands.Cog):
                         if project.link is not None:
                             links.append(f"[`{project.title}`]({project.link})")
                     if len(links) != 0:
-                        embed = discord.Embed(color=discord.Colour.greyple())
-                        embed.add_field(
+                        link_embed = discord.Embed(color=discord.Colour.greyple())
+                        link_embed.add_field(
                             name="Links", value="\n".join(links), inline=False
                         )
         else:
@@ -612,8 +614,8 @@ class Info(commands.Cog):
                 if project.link is not None:
                     links.append(f"[`{project.title}`]({project.link})")
             if len(links) != 0:
-                embed = discord.Embed(color=discord.Colour.greyple())
-                embed.add_field(name="Links", value="\n".join(links), inline=False)
+                link_embed = discord.Embed(color=discord.Colour.greyple())
+                link_embed.add_field(name="Links", value="\n".join(links), inline=False)
             tl = [
                 project.translator.name if project.translator is not None else "None"
                 for project in records
@@ -636,15 +638,16 @@ class Info(commands.Cog):
             table.add_column("Proofreaders", pr)
 
         file = await drawimage(table.get_string(title="Projects"))
-        embed1 = discord.Embed(color=discord.Colour.greyple())
-        embed1.set_author(
+        embed_results = discord.Embed(color=discord.Colour.greyple())
+        embed_results.set_author(
             name="Results",
             icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128",
         )
-        embed1.set_image(url="attachment://image.png")
-        await ctx.reply(file=file, embed=embed1)
-        if embed:
-            await ctx.reply(embed=embed)
+        embed_results.set_image(url="attachment://image.png")
+        if link_embed:
+            await ctx.reply(file=file, embeds=[embed_results, link_embed])
+        else:
+            await ctx.reply(file=file, embed=embed_results)
 
     @commands.command(
     )
@@ -915,6 +918,7 @@ class Info(commands.Cog):
             name=f"{member.display_name}'s current chapters",
             icon_url=member.display_avatar.url,
         )
+        await ctx.success()
         await ctx.reply(embed=embed)
 
     @commands.command(aliases=["follow", "track", "watch"])

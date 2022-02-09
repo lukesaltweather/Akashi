@@ -152,7 +152,7 @@ class command_helper:
         next_step: str,
     ) -> discord.Embed:
         project = chapter.project.title
-        notes = "\n".join([f"[{(await Staff.convert(self.ctx, note.author_id)).name} {humanize.naturaldelta(note.created_on - datetime.datetime.now())}] {note.text}" for note in chapter.notes])
+        notes = "\n".join([f"[{(await Staff.convert(self.ctx, note.author.discord_id)).name} {humanize.naturaldelta(note.created_on - datetime.datetime.now())} ago] {note.text}" for note in chapter.notes])
         number = chapter.number
         links = {}
         if next_step == "TS":
@@ -588,6 +588,7 @@ class Done(commands.Cog):
             await RD.execute()
         await ctx.notify(flags.chapter)
         await ctx.session.commit()
+        await ctx.success()
 
     @commands.command(aliases=["claim", "take"])
     async def assign(self, ctx: CstmContext, *, flags: AssignFlags):

@@ -127,7 +127,7 @@ class Note(commands.Cog):
 
 
     @commands.command(aliases=["en", "updatenote", "un"])
-    async def editnote(self, ctx, *, flags: RemoveNoteFlags):
+    async def editnote(self, ctx: CstmContext, *, flags: RemoveNoteFlags):
         """
         Description
         ==============
@@ -147,7 +147,12 @@ class Note(commands.Cog):
             | The chapter to edit the notes of. [:doc:`/Types/chapter`]
         """
         session = ctx.session
-        notes = [SelectOption(label=note.text, value=note.id, description=f"{humanize.naturaldelta(note.created_on - datetime.now())} ago") for note in flags.chapter.notes if note.author.discord_id == ctx.author.id]
+        if ctx.guild.get_role(self.bot.config["server"]["roles"]["admin"]) in ctx.author.roles:
+            notes = [SelectOption(label=note.text, value=note.id,
+                     description=f"{humanize.naturaldelta(note.created_on - datetime.now())} ago")
+                     for note in flags.chapter.notes]
+        else:
+            notes = [SelectOption(label=note.text, value=note.id, description=f"{humanize.naturaldelta(note.created_on - datetime.now())} ago") for note in flags.chapter.notes if note.author.discord_id == ctx.author.id]
         if not notes:
             raise CommandError("This chapter has no notes that can be edited by you.")
         view = RemoveView(timeout=60.0, ctx=ctx, delete_after=False)
@@ -196,7 +201,14 @@ class Note(commands.Cog):
         :chapter:
             | The chapter to add the note to. [:doc:`/Types/chapter`]
         """
-        notes = [SelectOption(label=note.text, value=note.id, description=f"{humanize.naturaldelta(note.created_on - datetime.now())} ago") for note in notes if note.author.discord_id == ctx.author.id]
+        if ctx.guild.get_role(self.bot.config["server"]["roles"]["admin"]) in ctx.author.roles:
+            notes = [SelectOption(label=note.text, value=note.id,
+                     description=f"{humanize.naturaldelta(note.created_on - datetime.now())} ago")
+                     for note in flags.chapter.notes]
+        else:
+            notes = [SelectOption(label=note.text, value=note.id,
+                     description=f"{humanize.naturaldelta(note.created_on - datetime.now())} ago")
+                     for note in flags.chapter.notes if note.author.discord_id == ctx.author.id]
         if not notes:
             raise CommandError("This chapter has no notes that can be deleted by you.")
         view = RemoveView(timeout=60.0, ctx=ctx, delete_after=True)

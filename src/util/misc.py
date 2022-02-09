@@ -14,9 +14,7 @@ from PIL import Image, ImageDraw, ImageFont
 from sqlalchemy import or_
 from sqlalchemy.orm import sessionmaker
 
-resolve_attr_key = {
-    "ts"
-}
+resolve_attr_key = {"ts"}
 
 
 async def get_roles(member: discord.Member):
@@ -41,6 +39,7 @@ async def has_role(user, role, bot):
     if role in get_roles(user, bot):
         return True
     return False
+
 
 def strx(sti):
     if sti is None:

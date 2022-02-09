@@ -182,5 +182,6 @@ class Misc(commands.Cog):
         await ctx.reply("Updated!")
         self.bot.close()
 
+
 def setup(bot):
     bot.add_cog(Misc(bot))

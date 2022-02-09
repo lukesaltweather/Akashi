@@ -23,7 +23,7 @@ class ConfirmationView(discord.ui.View):
         author_id: int,
         reacquire: bool,
         ctx: "CstmContext",
-        delete_after: bool
+        delete_after: bool,
     ) -> None:
         super().__init__(timeout=timeout)
         self.value: Optional[bool] = None
@@ -103,18 +103,26 @@ class CstmContext(commands.Context):
                     await user.send(
                         embed=discord.Embed(
                             title=f"{self.author.display_name} added changes to {entity.project.title} {entity.number}.",
-                            color=discord.Color.blurple()).set_image(url="attachment://image.png"),
-                        file=await drawimage(table.get_string())
+                            color=discord.Color.blurple(),
+                        ).set_image(url="attachment://image.png"),
+                        file=await drawimage(table.get_string()),
                     )
                 elif isinstance(entity, Project):
                     await user.send(
-                        embed=discord.Embed(title=f"{self.author.display_name} added changes to {entity.title}.",
-                                            color=discord.Color.blurple()).set_image(url="attachment://image.png"),
-                        file=await drawimage(table.get_string())
+                        embed=discord.Embed(
+                            title=f"{self.author.display_name} added changes to {entity.title}.",
+                            color=discord.Color.blurple(),
+                        ).set_image(url="attachment://image.png"),
+                        file=await drawimage(table.get_string()),
                     )
 
     async def prompt_and_commit(
-        self, color=discord.Color.blurple(), *, embed=None, file=None, text="Do you want to confirm?"
+        self,
+        color=discord.Color.blurple(),
+        *,
+        embed=None,
+        file=None,
+        text="Do you want to confirm?",
     ):
         if not embed:
             embed = discord.Embed(color=color, title=text)
@@ -139,7 +147,15 @@ class CstmContext(commands.Context):
             await self.reply("Discarded changes.", mention_author=False)
             return False
 
-    async def monitor_changes(self, entity, color=discord.Color.blue(), *, embed=None, file=None, text="Do you want to confirm?"):
+    async def monitor_changes(
+        self,
+        entity,
+        color=discord.Color.blue(),
+        *,
+        embed=None,
+        file=None,
+        text="Do you want to confirm?",
+    ):
         if not embed:
             embed = discord.Embed(color=color, title=text)
         if file:
@@ -162,7 +178,14 @@ class CstmContext(commands.Context):
             await self.session.rollback()
             await self.reply("Discarded changes.", mention_author=False)
 
-    async def prompt(self, *, color=discord.Color.blue(), embed=None, file=None, text="Do you want to confirm?"):
+    async def prompt(
+        self,
+        *,
+        color=discord.Color.blue(),
+        embed=None,
+        file=None,
+        text="Do you want to confirm?",
+    ):
         if not embed:
             embed = discord.Embed(color=color, title=text)
         if file:

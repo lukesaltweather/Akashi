@@ -54,24 +54,24 @@ class Info(commands.Cog):
 
         Optional
         ------------
-        :project: 
+        :project:
             | List of projects the chapters can belong to. [:doc:`/Types/project`]
-        :tl, rd, ts, pr: 
+        :tl, rd, ts, pr:
             | List of staff working on respective steps. [:doc:`/Types/staff`]
-        :chapter_from, chapter_upto: 
+        :chapter_from, chapter_upto:
             | Give a minimum and/or maximum chapter number to look for. [:doc:`/Types/number`]
-        :chapter: 
+        :chapter:
             | A list of numbers the found chapters can have. [:doc:`/Types/number`]
-        :id: 
+        :id:
             | A list of ids the found chapters can have. [:doc:`/Types/number`]
-        :release_from, release_upto, release_on: 
+        :release_from, release_upto, release_on:
             | Filter for release Date. [:doc:`/Types/datetime`]
-        :status: 
+        :status:
             | Current status of the chapter. Can be one of "active", "tl", "ts", "rd", "pr", "qcts" or "ready". [:doc:`/Types/literals`]
         :fields:
             |  What columns to include in the result table.
              Can be one of "link_tl" ("link_ts", "link_rd", ..),"date", "date_tl", .., "date_rl", "tl", "ts", "rd", "pr", "qcts" or "ready". [:doc:`/Types/literals`]
-        :links: 
+        :links:
             | Either true or false, whether the bot sends the links to each steps of the chapters. [:doc:`/Types/text`]
 
         Related Articles:
@@ -82,9 +82,7 @@ class Info(commands.Cog):
         """
         session = ctx.session
         async with ctx.channel.typing():
-            query = (
-                select(Chapter).join(Project)
-            )
+            query = select(Chapter).join(Project)
             if flags.project:
                 if len(flags.project) > 1:
                     helper = arghelper(flags.project)
@@ -461,7 +459,6 @@ class Info(commands.Cog):
             else:
                 await ctx.reply(file=file, embed=embed1)
 
-
     @commands.command(
         aliases=["infoprojects", "infop", "ip"],
     )
@@ -480,13 +477,13 @@ class Info(commands.Cog):
 
         Optional
         ------------
-        :status: 
+        :status:
             | Filter by current status of the project.
-        :tl, rd, ts, pr: 
+        :tl, rd, ts, pr:
             | Filter by Staff working on project.
-        :project: 
+        :project:
             | Filter by name.
-        :fields: 
+        :fields:
             | What columns to include in the result table.
 
         Related Articles:
@@ -496,9 +493,7 @@ class Info(commands.Cog):
         :doc:`/Tutorials/Fields`
         """
         session = ctx.session
-        query = (
-            select(Project)#.join(Chapter)
-        )
+        query = select(Project)  # .join(Chapter)
 
         if flags.status is not MISSING:
             query = query.filter(Project.status.match(flags.status))  # type: ignore
@@ -649,8 +644,7 @@ class Info(commands.Cog):
         else:
             await ctx.reply(file=file, embed=embed_results)
 
-    @commands.command(
-    )
+    @commands.command()
     async def allprojects(self, ctx):
         """
         Description
@@ -662,9 +656,7 @@ class Info(commands.Cog):
         Role `Neko Workers`.
         """
         session = ctx.session
-        stmt = (
-            select(Project)
-        )
+        stmt = select(Project)
         records = await get_all(session, stmt)
         table = PrettyTable()
         titles = [project.title for project in records]
@@ -711,8 +703,7 @@ class Info(commands.Cog):
         await ctx.reply(file=file, embed=embed1)
 
     @is_admin()
-    @commands.command(
-    )
+    @commands.command()
     async def allstaff(self, ctx):
         """
         Description
@@ -725,7 +716,9 @@ class Info(commands.Cog):
         """
         session = ctx.session
         staff = await get_all(session, select(Staff))
-        embed = discord.Embed(colour=discord.Colour.purple(), title="All Existing Staff")
+        embed = discord.Embed(
+            colour=discord.Colour.purple(), title="All Existing Staff"
+        )
         table = prettytable.PrettyTable()
         table.add_column("Internal ID", [str(person.id) for person in staff])
         table.add_column("Name", [person.name for person in staff])
@@ -735,8 +728,7 @@ class Info(commands.Cog):
         file = await drawimage(table.get_string(title="All Staff"))
         await ctx.reply(embed=embed, file=file)
 
-    @commands.command(
-    )
+    @commands.command()
     async def mycurrent(self, ctx):
         """
         Description
@@ -751,9 +743,7 @@ class Info(commands.Cog):
         Role `Neko Workers`.
         """
         session = ctx.session
-        query = (
-            select(Chapter)
-        )
+        query = select(Chapter)
         typ = await searchstaff(str(ctx.message.author.id), ctx, session)
         to_tl = await get_all(
             session,
@@ -847,9 +837,7 @@ class Info(commands.Cog):
 
         """
         session = ctx.session
-        query = (
-            select(Chapter)
-        )
+        query = select(Chapter)
         typ = await searchstaff(str(member.id), ctx, session)
         to_tl = await get_all(
             session,
@@ -948,13 +936,19 @@ class Info(commands.Cog):
         """
         chapter_or_project = flags.chapter or flags.project
         if (not chapter_or_project) or (flags.chapter and flags.project):
-            raise commands.CommandError("*One* of chapter/project arguments is required for this command.")
+            raise commands.CommandError(
+                "*One* of chapter/project arguments is required for this command."
+            )
 
-        registered_event = MonitorRequest(staff=await searchstaff(ctx.author.id.__str__(), ctx, ctx.session), chapter=flags.chapter, project=flags.project)
+        registered_event = MonitorRequest(
+            staff=await searchstaff(ctx.author.id.__str__(), ctx, ctx.session),
+            chapter=flags.chapter,
+            project=flags.project,
+        )
         ctx.session.add(registered_event)
-        await ctx.prompt_and_commit(text=f"Do you really want to track {chapter_or_project}?")
-
-
+        await ctx.prompt_and_commit(
+            text=f"Do you really want to track {chapter_or_project}?"
+        )
 
 
 def setup(bot):

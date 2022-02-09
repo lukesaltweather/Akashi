@@ -14,17 +14,12 @@ class Staff(Base):
     status = Column(String)
 
     notes = relationship(
-        "Note",
-        back_populates="author",
-        lazy="selectin",
-        innerjoin=False,
-        uselist=True
+        "Note", back_populates="author", lazy="selectin", innerjoin=False, uselist=True
     )
 
     def __init__(self, discord_id, name):
         self.discord_id = discord_id
         self.name = name
-
 
     @classmethod
     async def convert(cls, ctx, arg):

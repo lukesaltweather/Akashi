@@ -43,7 +43,9 @@ class Database(commands.Cog):
                 stdout=buffer,
             )
         except Exception as e:
-            logging.getLogger("akashi.db").debug(f"Error while backing up the database: {e}")
+            logging.getLogger("akashi.db").debug(
+                f"Error while backing up the database: {e}"
+            )
             return
         buffer.seek(0)
         file = discord.File(
@@ -88,7 +90,8 @@ class Database(commands.Cog):
 
         buffer.seek(0)
         file = discord.File(
-            buffer, datetime.datetime.utcnow().strftime("akashi-manual-backup-%Y-%m-%d.dump")
+            buffer,
+            datetime.datetime.utcnow().strftime("akashi-manual-backup-%Y-%m-%d.dump"),
         )
         await ctx.reply(
             "Backup complete.\n"

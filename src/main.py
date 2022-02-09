@@ -21,7 +21,11 @@ from sqlalchemy import create_engine
 from src.model.staff import Staff
 from src.util.checks import is_admin
 from src.util.context import CstmContext
-from src.util.exceptions import NoCommandChannel, InsufficientPermissions, AkashiException
+from src.util.exceptions import (
+    NoCommandChannel,
+    InsufficientPermissions,
+    AkashiException,
+)
 
 with open("src/util/emojis.json", "r") as f:
     emojis = json.load(f)
@@ -60,7 +64,7 @@ class Bot(commands.Bot):
                 self.config["general"]["uri"], pool_size=20, future=True
             ),
             class_=AsyncSession,
-            expire_on_commit=False
+            expire_on_commit=False,
         )
         self.logger.info(msg="Finished setting up SQLAlchemy Sessionmaker.")
         self.em = emojis
@@ -104,8 +108,10 @@ class Bot(commands.Bot):
         return a_lower.get(name.lower())
 
     async def on_error(self, event_method: str, *args, **kwargs) -> None:
-        logging.getLogger("discord").error(f"The event {event_method} raised an error: {sys.exc_info()}")
-        print(f'Exception in {event_method}', file=sys.stderr)
+        logging.getLogger("discord").error(
+            f"The event {event_method} raised an error: {sys.exc_info()}"
+        )
+        print(f"Exception in {event_method}", file=sys.stderr)
         traceback.print_exc()
 
 
@@ -152,24 +158,32 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         await ctx.send("Command with that name could not be found.", delete_after=10)
         return
-    logging.getLogger("akashi.commands").warning(f"Now handling error in main error handler for command {ctx.command.name}.")
+    logging.getLogger("akashi.commands").warning(
+        f"Now handling error in main error handler for command {ctx.command.name}."
+    )
     # rollback command's db session
     await ctx.session.rollback()
     await ctx.session.close()
     # This prevents any commands with local handlers being
     # handled here in on_command_error.
     if hasattr(ctx.command, "on_error"):
-        logging.getLogger("akashi.commands").info(f"Error for command {ctx.command.name} has already been dealt with in local error handler.")
+        logging.getLogger("akashi.commands").info(
+            f"Error for command {ctx.command.name} has already been dealt with in local error handler."
+        )
         return
     error = getattr(error, "original", error)
-    logging.getLogger("akashi.commands").error(f"The error that occured for {ctx.command.name}: {type(error)} / {getattr(error, 'message', 'No Message')}.")
+    logging.getLogger("akashi.commands").error(
+        f"The error that occured for {ctx.command.name}: {type(error)} / {getattr(error, 'message', 'No Message')}."
+    )
     if issubclass(type(error), AkashiException):
         await ctx.send(error.message)
     elif issubclass(type(error), commands.CommandError):
         await ctx.send(error.__str__())
     else:
         await ctx.send("An unknown error ocurred...")
-        logging.getLogger("akashi.commands").critical(f"Error for {ctx.command.name} couldn't be resolved gracefully: Message: {getattr(error, 'message', 'No Message')}; \n Type: {type(error)}; \n String: {str(error)}.")
+        logging.getLogger("akashi.commands").critical(
+            f"Error for {ctx.command.name} couldn't be resolved gracefully: Message: {getattr(error, 'message', 'No Message')}; \n Type: {type(error)}; \n String: {str(error)}."
+        )
 
 
 @bot.command(hidden=True)
@@ -190,8 +204,11 @@ async def on_member_update(before: discord.Member, after: discord.Member):
             await session1.commit()
             channel = before.guild.get_channel_or_thread(390395499355701249)
             await channel.send("Successfully added {} to staff. ".format(after.name))  # type: ignore
-            logging.getLogger("akashi").info(f"Added staffmember {before.display_name}.")
+            logging.getLogger("akashi").info(
+                f"Added staffmember {before.display_name}."
+            )
         finally:
             await session1.close()
+
 
 bot.run(bot.config["general"]["bot_key"])

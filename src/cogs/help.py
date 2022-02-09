@@ -225,14 +225,16 @@ class EmbedHelper:
         string = f"\n\n**{cog}**  |  Page: **{self.page+1}**\n"
         first = True
         for command in commands:
-            doc_link = f'https://docs.akashi.app/en/stable/{command.cog_name}/{command.name}.html'
+            doc_link = f"https://docs.akashi.app/en/stable/{command.cog_name}/{command.name}.html"
             if first:
                 string = f"{string} [**`{command.name}`**]({doc_link})"
             else:
                 string = f"{string} | [**`{command.name}`**]({doc_link})"
                 first = False
 
-        self.embed[0].description = f"{self.embed[0].description if self.embed[0].description is not discord.Embed.Empty else ''}{string}"
+        self.embed[
+            0
+        ].description = f"{self.embed[0].description if self.embed[0].description is not discord.Embed.Empty else ''}{string}"
         self.page = self.page + 1
 
     def add_cog(self, coms, cogname: str):
@@ -259,8 +261,15 @@ class EmbedHelper:
                 parsed = parse_rst(docstring)
                 v = MyVisitor(parsed)
                 parsed.walkabout(v)
-                doc_link = f'https://docs.akashi.app/en/stable/{command.cog_name}/{command.name}.html'
-                string = f"{string}\n[**`{command.name}`**]({doc_link}) {v.sections.get('Description', '')}\n" + (f"```{command.signature}```\n" if command.signature != "" else "")
+                doc_link = f"https://docs.akashi.app/en/stable/{command.cog_name}/{command.name}.html"
+                string = (
+                    f"{string}\n[**`{command.name}`**]({doc_link}) {v.sections.get('Description', '')}\n"
+                    + (
+                        f"```{command.signature}```\n"
+                        if command.signature != ""
+                        else ""
+                    )
+                )
         self.embed[-1].description = string
         self.embed[-1].set_footer(
             icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Info_icon-72a7cf.svg/1200px-Info_icon-72a7cf.svg.png",
@@ -275,7 +284,11 @@ class EmbedHelper:
             icon_url="https://rei.animecharactersdatabase.com/uploads/chars/9225-1377974027.png",
         )
         self.embed[-1].title = "Docs"
-        self.embed[-1].url = f"https://docs.akashi.app/en/stable/{command.cog_name}/{command.name}.html"
+        self.embed[
+            -1
+        ].url = (
+            f"https://docs.akashi.app/en/stable/{command.cog_name}/{command.name}.html"
+        )
         if command.callback.__doc__:
             docstring = inspect.cleandoc(command.callback.__doc__)
             parsed = parse_rst(docstring)

@@ -20,11 +20,11 @@ from src.util.search import searchstaff
 
 class RemoveView(discord.ui.View):
     def __init__(
-            self,
-            *,
-            timeout: float,
-            ctx: "CstmContext",
-            delete_after: bool,
+        self,
+        *,
+        timeout: float,
+        ctx: "CstmContext",
+        delete_after: bool,
     ) -> None:
         super().__init__(timeout=timeout)
         self.value = []
@@ -47,12 +47,14 @@ class RemoveView(discord.ui.View):
             await self.message.delete()
 
     @discord.ui.select(max_values=25, row=0)
-    async def selected(self, select: discord.ui.Select, interaction: discord.Interaction):
+    async def selected(
+        self, select: discord.ui.Select, interaction: discord.Interaction
+    ):
         self.value = select.values
 
     @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green, row=1)
     async def confirm(
-            self, button: discord.ui.Button, interaction: discord.Interaction
+        self, button: discord.ui.Button, interaction: discord.Interaction
     ):
         print()
         await interaction.response.defer()
@@ -67,6 +69,7 @@ class RemoveView(discord.ui.View):
         if self.delete_after:
             await interaction.delete_original_message()
         self.stop()
+
 
 class Note(commands.Cog):
     def __init__(self, bot):
@@ -94,7 +97,13 @@ class Note(commands.Cog):
             | The actual text of the note to add. [:doc:`/Types/text`]
         """
         session = ctx.session
-        session.add(_Note(flags.chapter, flags.text, await searchstaff(str(ctx.author.id), ctx, ctx.session)))
+        session.add(
+            _Note(
+                flags.chapter,
+                flags.text,
+                await searchstaff(str(ctx.author.id), ctx, ctx.session),
+            )
+        )
         await ctx.message.add_reaction("👍")
         await session.commit()
 
@@ -119,12 +128,17 @@ class Note(commands.Cog):
         """
         session = ctx.session
         notes = flags.chapter.notes
-        embed = discord.Embed(colour=discord.Colour.purple(), title=flags.chapter.__str__())
-        embed.description = "\n".join([f"{note.author.name} ({humanize.naturaldate(note.created_on)}):\n```{note.text}```" for note in notes])
+        embed = discord.Embed(
+            colour=discord.Colour.purple(), title=flags.chapter.__str__()
+        )
+        embed.description = "\n".join(
+            [
+                f"{note.author.name} ({humanize.naturaldate(note.created_on)}):\n```{note.text}```"
+                for note in notes
+            ]
+        )
         embed.set_image(url=flags.chapter.project.thumbnail)
         await ctx.reply(embed=embed)
-
-
 
     @commands.command(aliases=["en", "updatenote", "un"])
     async def editnote(self, ctx: CstmContext, *, flags: RemoveNoteFlags):
@@ -147,30 +161,49 @@ class Note(commands.Cog):
             | The chapter to edit the notes of. [:doc:`/Types/chapter`]
         """
         session = ctx.session
-        if ctx.guild.get_role(self.bot.config["server"]["roles"]["admin"]) in ctx.author.roles:
-            notes = [SelectOption(label=note.text, value=note.id,
-                     description=f"{humanize.naturaldelta(note.created_on - datetime.now())} ago")
-                     for note in flags.chapter.notes]
+        if (
+            ctx.guild.get_role(self.bot.config["server"]["roles"]["admin"])
+            in ctx.author.roles
+        ):
+            notes = [
+                SelectOption(
+                    label=note.text,
+                    value=note.id,
+                    description=f"{humanize.naturaldelta(note.created_on - datetime.now())} ago",
+                )
+                for note in flags.chapter.notes
+            ]
         else:
-            notes = [SelectOption(label=note.text, value=note.id, description=f"{humanize.naturaldelta(note.created_on - datetime.now())} ago") for note in flags.chapter.notes if note.author.discord_id == ctx.author.id]
+            notes = [
+                SelectOption(
+                    label=note.text,
+                    value=note.id,
+                    description=f"{humanize.naturaldelta(note.created_on - datetime.now())} ago",
+                )
+                for note in flags.chapter.notes
+                if note.author.discord_id == ctx.author.id
+            ]
         if not notes:
             raise CommandError("This chapter has no notes that can be edited by you.")
         view = RemoveView(timeout=60.0, ctx=ctx, delete_after=False)
         view.children[0].options = notes
         view.children[0].max_values = 1
-        view_msg = await ctx.reply(content="Which of your notes do you want to edit?", view=view)
+        view_msg = await ctx.reply(
+            content="Which of your notes do you want to edit?", view=view
+        )
         await view.wait()
 
         stmt = select(_Note).filter(_Note.id == int(view.value[0]))
         note = await get_one(session, stmt)
-        msg = await ctx.reply(content="The next message you send will be used as the new note text.")
+        msg = await ctx.reply(
+            content="The next message you send will be used as the new note text."
+        )
 
         def check(message):
             return message.author == ctx.message.author
+
         try:
-            message = await self.bot.wait_for(
-                "message", timeout=60.0, check=check
-            )
+            message = await self.bot.wait_for("message", timeout=60.0, check=check)
         except asyncio.TimeoutError:
             await msg.delete()
             raise CommandError("No response from command author, cancelling.")
@@ -180,7 +213,6 @@ class Note(commands.Cog):
             await session.commit()
             await message.delete()
             await view_msg.edit(view=None, content="Successfully edited note.")
-
 
     @commands.command(aliases=["rn"])
     async def removenote(self, ctx: CstmContext, *, flags: RemoveNoteFlags):
@@ -201,14 +233,28 @@ class Note(commands.Cog):
         :chapter:
             | The chapter to add the note to. [:doc:`/Types/chapter`]
         """
-        if ctx.guild.get_role(self.bot.config["server"]["roles"]["admin"]) in ctx.author.roles:
-            notes = [SelectOption(label=note.text, value=note.id,
-                     description=f"{humanize.naturaldelta(note.created_on - datetime.now())} ago")
-                     for note in flags.chapter.notes]
+        if (
+            ctx.guild.get_role(self.bot.config["server"]["roles"]["admin"])
+            in ctx.author.roles
+        ):
+            notes = [
+                SelectOption(
+                    label=note.text,
+                    value=note.id,
+                    description=f"{humanize.naturaldelta(note.created_on - datetime.now())} ago",
+                )
+                for note in flags.chapter.notes
+            ]
         else:
-            notes = [SelectOption(label=note.text, value=note.id,
-                     description=f"{humanize.naturaldelta(note.created_on - datetime.now())} ago")
-                     for note in flags.chapter.notes if note.author.discord_id == ctx.author.id]
+            notes = [
+                SelectOption(
+                    label=note.text,
+                    value=note.id,
+                    description=f"{humanize.naturaldelta(note.created_on - datetime.now())} ago",
+                )
+                for note in flags.chapter.notes
+                if note.author.discord_id == ctx.author.id
+            ]
         if not notes:
             raise CommandError("This chapter has no notes that can be deleted by you.")
         view = RemoveView(timeout=60.0, ctx=ctx, delete_after=True)
@@ -245,7 +291,9 @@ class Note(commands.Cog):
             | The chapter from which to remove the notes. [:doc:`/Types/chapter`]
         """
         notes = flags.chapter.notes
-        result = await ctx.prompt(text=f"Do you really want to purge {len(notes)} note(s) from {flags.chapter}?")
+        result = await ctx.prompt(
+            text=f"Do you really want to purge {len(notes)} note(s) from {flags.chapter}?"
+        )
         if result:
             for note in notes:
                 await ctx.session.delete(note)

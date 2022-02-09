@@ -29,6 +29,7 @@ alembic = "1.7.6"
 
 [tool.poetry.dev-dependencies]
 flake8 = "*"
+black = "*"
 
 [tool.poetry.extras]
 sqlalchemy = ["asyncio"]

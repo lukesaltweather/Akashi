@@ -17,15 +17,18 @@ class Note(Base):
     created_on = Column(DateTime, default=datetime.datetime.now())
     chapter = relationship(
         "Chapter",
-        backref=backref("notes",lazy="selectin", cascade="all,delete", innerjoin=False, uselist=True),
+        backref=backref(
+            "notes",
+            lazy="selectin",
+            cascade="all,delete",
+            innerjoin=False,
+            uselist=True,
+        ),
         lazy="selectin",
-        innerjoin=False
+        innerjoin=False,
     )
     author = relationship(
-        "Staff",
-        lazy="selectin",
-        back_populates="notes",
-        innerjoin=True
+        "Staff", lazy="selectin", back_populates="notes", innerjoin=True
     )
 
     def __init__(self, chapter, text, author, *args, **kwargs) -> None:

@@ -39,6 +39,7 @@ class InfoProject(FlagConverter):
     pr: Optional[Staff] = flag(default=MISSING, noneable=True)
     fields: Optional[CommaList[str]]
 
+
 class MonitorFlags(FlagConverter):
     chapter: Optional[Chapter]
     project: Optional[Project]

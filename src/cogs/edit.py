@@ -44,12 +44,12 @@ class Edit(commands.Cog):
 
         Required
         ---------
-        :chapter: 
+        :chapter:
             | The chapter to edit, in format: projectName chapterNbr [:doc:`/Types/chapter`]
 
         Optional
         ------------
-        :title: 
+        :title:
             | Title of the chapter. [:doc:`/Types/text`]
         :tl, rd, ts, pr:
             | Staff for the chapter. [:doc:`/Types/staff`]
@@ -127,23 +127,23 @@ class Edit(commands.Cog):
 
         Optional
         ------------
-        :title: 
+        :title:
             | The title of the project. [:doc:`/Types/text`]
-        :link: 
+        :link:
             | Link to the project on box. [:doc:`/Types/text`]
-        :thumbnail: 
+        :thumbnail:
             | Large picture for the entry in the status board. [:doc:`/Types/text`]
-        :icon: 
+        :icon:
             | Small Image for the status board in the upper left corner. [:doc:`/Types/text`]
-        :ts, rd, pr, tl: 
+        :ts, rd, pr, tl:
             | Default staff for the project. Enter "none" to set the staff to none at all. [:doc:`/Types/staff`]
-        :status: 
+        :status:
             | Current status of the project, defaults to "active". [:doc:`/Types/literals`]
-        :altnames: 
+        :altnames:
             | Aliases for the project, divided by comma. [:doc:`/Types/text`]
-        :color: 
+        :color:
             | The color the project's embed has in the info board. Can be a hex or one of these colors: [:doc:`/Types/color`]
-        :position: 
+        :position:
             | Where the embed of the project appears in the info board. [:doc:`/Types/number`]
         """
         record = flags.project
@@ -177,10 +177,13 @@ class Edit(commands.Cog):
             record.link = flags.link
         image = await record.get_report(f"{record.title}")
 
-        await ctx.monitor_changes(text="Do you want to commit these changes to this project?", file=image, entity=record)
+        await ctx.monitor_changes(
+            text="Do you want to commit these changes to this project?",
+            file=image,
+            entity=record,
+        )
 
-    @commands.command(
-    )
+    @commands.command()
     @is_admin()
     @commands.max_concurrency(1, per=discord.ext.commands.BucketType.default, wait=True)  # type: ignore
     async def editstaff(self, ctx: CstmContext, *, flags: EditStaffFlags):
@@ -198,16 +201,16 @@ class Edit(commands.Cog):
 
         Required
         ---------
-        :member: 
+        :member:
             | Staffmember to edit. [:doc:`/Types/staff`]
 
         Optional
         ------------
-        :id: 
+        :id:
             | The staff's discord id. [:doc:`/Types/number`]
-        :name: 
+        :name:
             | The staff's username. [:doc:`/Types/text`]
-        :status: 
+        :status:
             | Can be "active" or "inactive". [:doc:`/Types/literals`]
         """
         member = flags.member
@@ -219,7 +222,9 @@ class Edit(commands.Cog):
             member.status = flags.status  # type: ignore
         image = await member.get_report(f"{member.name}")
 
-        await ctx.prompt_and_commit(text="Do you want to commit these changes to this staffmember?", file=image)
+        await ctx.prompt_and_commit(
+            text="Do you want to commit these changes to this staffmember?", file=image
+        )
 
     @commands.command()
     async def release(self, ctx: CstmContext, *, flags: ReleaseFlags):
@@ -250,7 +255,11 @@ class Edit(commands.Cog):
         else:
             record.date_release = func.now()
         image = await record.get_report(record)
-        await ctx.monitor_changes(text="Do you want to set this chapter as released?", file=image, entity=record)
+        await ctx.monitor_changes(
+            text="Do you want to set this chapter as released?",
+            file=image,
+            entity=record,
+        )
 
 
 def setup(Bot):

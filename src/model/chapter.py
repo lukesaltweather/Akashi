@@ -63,7 +63,11 @@ class Chapter(Base, ReportMixin):
         lazy="joined",
     )
     project = relationship(
-        "Project", backref=backref("chapters", uselist=True), lazy="joined", foreign_keys=[project_id], primaryjoin="Project.id==Chapter.project_id"
+        "Project",
+        backref=backref("chapters", uselist=True),
+        lazy="joined",
+        foreign_keys=[project_id],
+        primaryjoin="Project.id==Chapter.project_id",
     )
 
     def __init__(self, number, link_raw):

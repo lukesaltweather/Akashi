@@ -3,5 +3,5 @@ staffroles = {
     "rd": "Redrawer",
     "ts": "Typesetter",
     "pr": "Proofreader",
-    "qc": "Quality-Checker"
+    "qc": "Quality-Checker",
 }

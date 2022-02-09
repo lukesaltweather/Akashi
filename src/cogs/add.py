@@ -47,7 +47,7 @@ class Add(commands.Cog):
 
         Arguments
         ===========
-        :member: 
+        :member:
             | The Member to be added by Mention, ID, or Name  [:doc:`/Types/discord`]
         """
         member = flags.member
@@ -77,20 +77,20 @@ class Add(commands.Cog):
         ---------
         :title:
             | Title of the Project. [:doc:`/Types/text`]
-        :link: 
+        :link:
             | Link to the project on box. [:doc:`/Types/text`]
-        :thumbnail: 
+        :thumbnail:
             | Link to large picture for the entry in the status board.  [:doc:`/Types/text`]
 
         Optional
         ------------
-        :icon: 
+        :icon:
             | Link to small Image for the status board in the upper left corner.  [:doc:`/Types/text`]
-        :ts, rd, pr, tl: 
+        :ts, rd, pr, tl:
             | Default staff for the project.  [:doc:`/Types/staff`]
         :status:
             | Current status of the project, defaults to "active".  [:doc:`/Types/text `]
-        :altnames: 
+        :altnames:
             | Aliases for the project, divided by comma.  [:doc:`/Types/text`]
         """
         session = ctx.session
@@ -106,7 +106,7 @@ class Add(commands.Cog):
         pr.thumbnail = flags.thumbnail  # type: ignore
         session.add(pr)
         await ctx.prompt_and_commit(
-                text=f"Do you really want to add the project {pr.title}"
+            text=f"Do you really want to add the project {pr.title}"
         )
 
     @commands.command(
@@ -175,8 +175,10 @@ class Add(commands.Cog):
         for chp in chapters:
             table.add_row([chp.number, chp.link_raw])
         image = await misc.drawimage(table.get_string())
-        await ctx.prompt_and_commit(text=f"Do you really want to add these chapters to project {project.title}?", file=image)
-
+        await ctx.prompt_and_commit(
+            text=f"Do you really want to add these chapters to project {project.title}?",
+            file=image,
+        )
 
     @is_pu()
     @commands.command(
@@ -196,10 +198,10 @@ class Add(commands.Cog):
         ===========
         Required
         ---------
-        :chapter: 
+        :chapter:
             | Project and chapter number of the chapter to add.  [:doc:`/Types/chapter`]
-        :raws: 
-            | Link to raws on Box.  [:doc:`/Types/text`] 
+        :raws:
+            | Link to raws on Box.  [:doc:`/Types/text`]
 
         Optional
         ------------
@@ -207,8 +209,8 @@ class Add(commands.Cog):
             | Staff for the chapter.  [:doc:`/Types/staff`]
         """
         arg = flags.chapter
-        project_str = arg[0: len(arg) - len(arg.split(' ')[-1])]
-        chapter_nbr = float(arg.split(' ')[-1])
+        project_str = arg[0 : len(arg) - len(arg.split(" ")[-1])]
+        chapter_nbr = float(arg.split(" ")[-1])
 
         table = PrettyTable()
         chp = Chapter(chapter_nbr, flags.raws)
@@ -241,6 +243,7 @@ class Add(commands.Cog):
             await ctx.send("Chapter couldn't be added, as it already exists.")
         else:
             await ctx.send(f"An error occured while adding the chapter: {error}")
+
 
 def setup(Bot):
     Bot.add_cog(Add(Bot))

@@ -21,6 +21,7 @@ from abc import abstractmethod
 
 from src.util.types import staffroles
 
+
 class DoneView(discord.ui.View):
     def __init__(
         self,
@@ -29,7 +30,7 @@ class DoneView(discord.ui.View):
         author_id: int,
         reacquire: bool,
         ctx: "CstmContext",
-        delete_after: bool
+        delete_after: bool,
     ) -> None:
         super().__init__(timeout=timeout)
         self.value: t.Optional[bool] = None
@@ -63,7 +64,9 @@ class DoneView(discord.ui.View):
         self.stop()
 
     @discord.ui.button(label="Don't Notify", style=discord.ButtonStyle.green, emoji="📝")
-    async def ping_no_mention(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def ping_no_mention(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
         self.value = False
         await interaction.response.defer()
         if self.delete_after:
@@ -100,19 +103,21 @@ class command_helper:
         if not self.skip_confirm:
             embed = discord.Embed(color=discord.Colour.gold())
             embed.description = f"This will do the following:\n```{preview}```\n\n Press ✉ to mention, 📝 to not mention, ❌ to cancel."
-            view = DoneView(timeout=15, author_id=self.ctx.author.id, reacquire=True, ctx=self.ctx, delete_after=True)
+            view = DoneView(
+                timeout=15,
+                author_id=self.ctx.author.id,
+                reacquire=True,
+                ctx=self.ctx,
+                delete_after=True,
+            )
             message = await self.ctx.send(embed=embed, view=view)
             await view.wait()
             if view.value:
                 await self.ctx.message.add_reaction("✅")
-                return discord.AllowedMentions(
-                    everyone=True, users=True, roles=True
-                )
+                return discord.AllowedMentions(everyone=True, users=True, roles=True)
             elif view.value is False:
                 await self.ctx.message.add_reaction("✅")
-                return discord.AllowedMentions(
-                    everyone=False, users=False, roles=False
-                )
+                return discord.AllowedMentions(everyone=False, users=False, roles=False)
             elif view.value is None:
                 raise CommandError("Command Cancelled.")
         else:
@@ -152,7 +157,12 @@ class command_helper:
         next_step: str,
     ) -> discord.Embed:
         project = chapter.project.title
-        notes = "\n".join([f"[{(await Staff.convert(self.ctx, note.author.discord_id)).name} {humanize.naturaldelta(note.created_on - datetime.datetime.now())} ago] {note.text}" for note in chapter.notes])
+        notes = "\n".join(
+            [
+                f"[{(await Staff.convert(self.ctx, note.author.discord_id)).name} {humanize.naturaldelta(note.created_on - datetime.datetime.now())} ago] {note.text}"
+                for note in chapter.notes
+            ]
+        )
         number = chapter.number
         links = {}
         if next_step == "TS":
@@ -605,15 +615,15 @@ class Done(commands.Cog):
         ===========
         Required
         ---------
-        :chapter: 
+        :chapter:
             | The chapter to edit, in format: projectName chapterNbr [:doc:`/Types/chapter`]
-        :step: 
+        :step:
             | The step to assign the staffmember to. Can be one of: tl, rd, ts, pr or qc. [:doc:`/Types/literals`]
         :link:
             | The link to the folder on box. [:doc:`/Types/Text`]
         Optional
         ----------
-        :staff: 
+        :staff:
             | The staffmember to assign. If omitted, the command's author is assigned instead. [:doc:`/Types/literals`]
         """
         chapter = flags.chapter
@@ -627,14 +637,18 @@ class Done(commands.Cog):
             chapter.redrawer = staff
         elif step == "ts" and not chapter.typesetter:
             chapter.typesetter = staff
-        elif step in ("qc", "pr")  and not chapter.proofreader:
+        elif step in ("qc", "pr") and not chapter.proofreader:
             chapter.proofreader = staff
         else:
-            raise CommandError("A staffmember has already been assigned for this step.\nConsider using $editchapter to edit the staffmember for a step.")
-        await ctx.monitor_changes(text=f"Do you really want to assign {'yourself' if staff.discord_id == ctx.author.id else staff.name} "
-        f"as the {staffroles.get(step, 'Proofreader')} for {chapter}?", color=discord.Colour.dark_magenta(), entity=chapter)
-
-
+            raise CommandError(
+                "A staffmember has already been assigned for this step.\nConsider using $editchapter to edit the staffmember for a step."
+            )
+        await ctx.monitor_changes(
+            text=f"Do you really want to assign {'yourself' if staff.discord_id == ctx.author.id else staff.name} "
+            f"as the {staffroles.get(step, 'Proofreader')} for {chapter}?",
+            color=discord.Colour.dark_magenta(),
+            entity=chapter,
+        )
 
 
 def setup(Bot):

@@ -16,10 +16,10 @@ Arguments
 ===========
 Required
 ---------
-:chapter: 
+:chapter:
     | Project and chapter number of the chapter to add.  [:doc:`/Types/chapter`]
-:raws: 
-    | Link to raws on Box.  [:doc:`/Types/text`] 
+:raws:
+    | Link to raws on Box.  [:doc:`/Types/text`]
 
 Optional
 ------------

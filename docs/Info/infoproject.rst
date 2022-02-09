@@ -17,13 +17,13 @@ Arguments
 
 Optional
 ------------
-:status: 
+:status:
     | Filter by current status of the project.
-:tl, rd, ts, pr: 
+:tl, rd, ts, pr:
     | Filter by Staff working on project.
-:project: 
+:project:
     | Filter by name.
-:fields: 
+:fields:
     | What columns to include in the result table.
 
 Related Articles:

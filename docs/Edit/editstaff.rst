@@ -17,14 +17,14 @@ Arguments
 
 Required
 ---------
-:member: 
+:member:
     | Staffmember to edit. [:doc:`/Types/staff`]
 
 Optional
 ------------
-:id: 
+:id:
     | The staff's discord id. [:doc:`/Types/number`]
-:name: 
+:name:
     | The staff's username. [:doc:`/Types/text`]
-:status: 
+:status:
     | Can be "active" or "inactive". [:doc:`/Types/literals`]

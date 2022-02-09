@@ -17,12 +17,12 @@ Arguments
 
 Required
 ---------
-:chapter: 
+:chapter:
     | The chapter to edit, in format: projectName chapterNbr [:doc:`/Types/chapter`]
 
 Optional
 ------------
-:title: 
+:title:
     | Title of the chapter. [:doc:`/Types/text`]
 :tl, rd, ts, pr:
     | Staff for the chapter. [:doc:`/Types/staff`]

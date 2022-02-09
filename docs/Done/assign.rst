@@ -16,13 +16,13 @@ Arguments
 ===========
 Required
 ---------
-:chapter: 
+:chapter:
     | The chapter to edit, in format: projectName chapterNbr [:doc:`/Types/chapter`]
-:step: 
+:step:
     | The step to assign the staffmember to. Can be one of: tl, rd, ts, pr or qc. [:doc:`/Types/literals`]
 :link:
     | The link to the folder on box. [:doc:`/Types/Text`]
 Optional
 ----------
-:staff: 
+:staff:
     | The staffmember to assign. If omitted, the command's author is assigned instead. [:doc:`/Types/literals`]

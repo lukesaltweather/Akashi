@@ -8,7 +8,7 @@ With Akashi 2, the way to write commands changed radically. You might recognize 
 I am also currently looking into ways to make slash commands happen, although I can't make any promises.
 The new way to do commands looks like this:
 .. code-block:: text
-    
+
     $editchapter chapter: yankee 62 title: Yukiko-san is Fine ① ts: lukesaltweather
 
 ---------------------

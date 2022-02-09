@@ -52,6 +52,3 @@ link
 ------
 This is the link to the folder on box where you uploaded your finished files.
 Simply copy the link from box and paste it here.
-
-
-

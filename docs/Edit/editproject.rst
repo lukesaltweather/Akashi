@@ -22,21 +22,21 @@ Required
 
 Optional
 ------------
-:title: 
+:title:
     | The title of the project. [:doc:`/Types/text`]
-:link: 
+:link:
     | Link to the project on box. [:doc:`/Types/text`]
-:thumbnail: 
+:thumbnail:
     | Large picture for the entry in the status board. [:doc:`/Types/text`]
-:icon: 
+:icon:
     | Small Image for the status board in the upper left corner. [:doc:`/Types/text`]
-:ts, rd, pr, tl: 
+:ts, rd, pr, tl:
     | Default staff for the project. Enter "none" to set the staff to none at all. [:doc:`/Types/staff`]
-:status: 
+:status:
     | Current status of the project, defaults to "active". [:doc:`/Types/literals`]
-:altnames: 
+:altnames:
     | Aliases for the project, divided by comma. [:doc:`/Types/text`]
-:color: 
+:color:
     | The color the project's embed has in the info board. Can be a hex or one of these colors: [:doc:`/Types/color`]
-:position: 
+:position:
     | Where the embed of the project appears in the info board. [:doc:`/Types/number`]

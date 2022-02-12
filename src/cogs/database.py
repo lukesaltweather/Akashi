@@ -83,6 +83,7 @@ class Database(commands.Cog):
             ],
             shell=True,
             stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
         )
         res, error = process.communicate()
 

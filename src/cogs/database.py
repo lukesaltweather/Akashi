@@ -1,16 +1,12 @@
-import logging
-
-from attr import dataclass
-from discord import embeds
-from discord.ext import commands, tasks
-from src.util.checks import is_admin
-import asyncpg
-from uuid import uuid4
-import boto3
-import io
-import subprocess
-import discord
 import datetime
+import io
+import logging
+import subprocess
+
+import discord
+from discord.ext import commands, tasks
+
+from src.util.checks import is_admin
 
 
 class Database(commands.Cog):
@@ -72,7 +68,7 @@ class Database(commands.Cog):
         """
         initial_msg = await ctx.send("Backing up the database...")
         buffer = io.BytesIO()
-        subprocess.Popen(
+        process = subprocess.Popen(
             [
                 "pg_dump",
                 "-Fc",
@@ -85,8 +81,10 @@ class Database(commands.Cog):
                 "-t staff",
                 "Akashi",
             ],
-            stdout=buffer,
+            shell=True,
+            stdout=subprocess.PIPE,
         )
+        buffer = io.BytesIO(process.communicate()[0])
 
         buffer.seek(0)
         file = discord.File(

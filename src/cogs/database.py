@@ -84,7 +84,11 @@ class Database(commands.Cog):
             shell=True,
             stdout=subprocess.PIPE,
         )
-        buffer = io.BytesIO(process.communicate()[0])
+        res, error = process.communicate()
+
+        ctx.bot.logger.debug(f"{error}")
+
+        buffer = io.BytesIO(res)
 
         buffer.seek(0)
         file = discord.File(

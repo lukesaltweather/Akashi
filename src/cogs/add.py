@@ -1,18 +1,16 @@
 import asyncio
-import json
 
-import asyncpg.exceptions
-import discord
 import sqlalchemy
 from discord.ext import commands
-
-from src.util.context import CstmContext
 from prettytable import PrettyTable, prettytable
 from sqlalchemy import func
+
 from src.model.chapter import Chapter
 from src.model.project import Project
 from src.model.staff import Staff
-from src.util import exceptions, misc
+from src.util import misc
+from src.util.checks import is_admin, is_pu
+from src.util.context import CstmContext
 from src.util.exceptions import ProjectAlreadyExists
 from src.util.flags.addflags import (
     AddStaffFlags,
@@ -20,9 +18,8 @@ from src.util.flags.addflags import (
     AddChapterFlags,
     MassAddFlags,
 )
-from src.util.search import searchproject, searchstaff
 from src.util.misc import format_number
-from src.util.checks import is_admin, is_pu
+from src.util.search import searchproject
 
 
 class Add(commands.Cog):
@@ -175,7 +172,8 @@ class Add(commands.Cog):
         for chp in chapters:
             table.add_row([chp.number, chp.link_raw])
         image = await misc.drawimage(table.get_string())
-        await ctx.prompt_and_commit(
+        await ctx.monitor_changes(
+            entity=chapters,
             text=f"Do you really want to add these chapters to project {project.title}?",
             file=image,
         )
@@ -233,9 +231,11 @@ class Add(commands.Cog):
         chp.date_created = func.now()
         ctx.session.add(chp)
         t = table.get_string(title="Chapter Preview")
-        if chp.project.to_notify:
-            pass
-        await ctx.prompt_and_commit(file=await misc.drawimage(t))
+        await ctx.monitor_changes(
+            entity=chp,
+            text="Do you really want to add this chapter?",
+            file=await misc.drawimage(t),
+        )
 
     @addchapter.error
     async def on_chapter_error(self, ctx, error):

@@ -1,14 +1,14 @@
-from typing import Optional, List
+from typing import Optional
 
-from discord.ext.commands.flags import FlagConverter, flag
 from discord import Member
+from discord.ext.commands.flags import FlagConverter, flag
 
 from src.model.project import Project
 from src.model.staff import Staff
 
 
 class AddChapterFlags(FlagConverter):
-    chapter: str
+    chapter: str = flag(aliases=["c"])
     raws: str
     ts: Optional[Staff]
     rd: Optional[Staff]

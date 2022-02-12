@@ -1,18 +1,15 @@
-import asyncio
 import logging
 from typing import Optional
 
-from discord.ext import commands
 import discord
-import sqlalchemy
+from discord.ext import commands
 from prettytable import PrettyTable
 from sqlalchemy import inspect
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.model.staff import Staff
 from src.model.chapter import Chapter
 from src.model.project import Project
-from src.util.misc import MISSING, format_number, drawimage
+from src.model.staff import Staff
+from src.util.misc import drawimage
 
 
 class ConfirmationView(discord.ui.View):
@@ -76,7 +73,12 @@ class CstmContext(commands.Context):
         return self._session
 
     async def notify(self, entity):
-        if entity.to_notify:
+        to_notify = (
+            entity.to_notify
+            if isinstance(entity, Project)
+            else [*entity.to_notify, *entity.project.to_notify]
+        )
+        if to_notify:
             table = PrettyTable()
             table.add_column("", ["ORIGINAL", "EDIT"])
             state = inspect(entity)
@@ -95,7 +97,6 @@ class CstmContext(commands.Context):
                 changes += 1
             if changes == 0:
                 return
-            to_notify = entity.to_notify
             for request in to_notify:
                 user = self.bot.get_user(request.staff.discord_id)
                 # differentiate between chapter and project here
@@ -171,7 +172,11 @@ class CstmContext(commands.Context):
         await view.wait()
         if view.value:
             await self.reply("Commited changes.", mention_author=False)
-            await self.notify(entity)
+            if entity is list:
+                for e in entity:
+                    await self.notify(e)
+            else:
+                await self.notify(entity)
             await self.session.commit()
             await self.success()
         else:

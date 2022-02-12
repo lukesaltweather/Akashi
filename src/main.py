@@ -1,22 +1,18 @@
-import asyncio
 import datetime
 import json
 import logging
 import os
 import sys
 import traceback
-from typing import Optional
 
 import aiofiles
 import asyncpg
 import discord
-import sqlalchemy
 import toml
 from discord import version_info, Intents
 from discord.ext import commands
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
 
 from src.model.staff import Staff
 from src.util.checks import is_admin

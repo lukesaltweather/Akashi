@@ -6,8 +6,6 @@ Create Date: 2022-02-05 00:16:18.780786
 
 """
 from alembic import op
-import sqlalchemy as sa
-
 
 # revision identifiers, used by Alembic.
 revision = "bc70c72d27a0"
@@ -17,8 +15,8 @@ depends_on = None
 
 
 def upgrade():
-    op.create_unique_constraint("uq_chapter", "chapter", ["number", "project_id"])
+    op.create_unique_constraint("uq_chapter", "chapters", ["number", "project_id"])
 
 
 def downgrade():
-    op.drop_constraint("uq_chapter", "chapter", type_="unique")
+    op.drop_constraint("uq_chapter", "chapters", type_="unique")

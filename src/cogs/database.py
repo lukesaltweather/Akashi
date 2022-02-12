@@ -22,22 +22,29 @@ class Database(commands.Cog):
         initial_msg = await channel.send("Backing up the database...")
         buffer = io.BytesIO()
         try:
-            subprocess.Popen(
+            process = subprocess.Popen(
                 [
                     "pg_dump",
                     "-Fc",
-                    "-h localhost",
+                    "-h",
+                    "localhost",
                     "--no-password",
-                    "-U Akashi",
-                    "-t chapters",
-                    "-t projects",
-                    "-t note",
-                    "-t staff",
-                    "-t monitorrequest",
+                    "-U",
+                    "Akashi",
+                    "-t",
+                    "chapters",
+                    "-t",
+                    "projects",
+                    "-t",
+                    "note",
+                    "-t",
+                    "staff",
                     "Akashi",
                 ],
-                stdout=buffer,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
             )
+            buffer = io.BytesIO(process.stdout.read())
         except Exception as e:
             logging.getLogger("akashi.db").debug(
                 f"Error while backing up the database: {e}"
@@ -67,7 +74,6 @@ class Database(commands.Cog):
         Role `Neko Herders`.
         """
         initial_msg = await ctx.send("Backing up the database...")
-        buffer = io.BytesIO()
         process = subprocess.Popen(
             [
                 "pg_dump",

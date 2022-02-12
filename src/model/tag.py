@@ -1,12 +1,10 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float, BigInteger
-from sqlalchemy.orm import relationship
-from ..util.db import Base
-from src.model.staff import Staff
-from src.model.project import Project
+from sqlalchemy import Column, String, BigInteger
+
+from src.util.db import Base
 
 
 class Tag(Base):
-    __tablename__="tag"
+    __tablename__ = "tag"
     tag = Column(String, primary_key=True, nullable=False)
     content = Column(String, nullable=False)
     author = Column(BigInteger, nullable=False)

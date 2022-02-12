@@ -1,239 +1,249 @@
 import asyncio
-import json
 
-import discord
+import sqlalchemy
 from discord.ext import commands
-from src.util.exceptions import MissingRequiredParameter
-from prettytable import PrettyTable
+from prettytable import PrettyTable, prettytable
 from sqlalchemy import func
-from sqlalchemy.orm import aliased
 
-from datetime import datetime, timedelta
 from src.model.chapter import Chapter
 from src.model.project import Project
 from src.model.staff import Staff
-from src.util import exceptions, misc
-from src.util.search import searchproject, searchstaff
-from src.util.misc import formatNumber, drawimage
-from src.util.checks import is_admin
-import time
+from src.util import misc
+from src.util.checks import is_admin, is_pu
+from src.util.context import CstmContext
+from src.util.exceptions import ProjectAlreadyExists
+from src.util.flags.addflags import (
+    AddStaffFlags,
+    AddProjectFlags,
+    AddChapterFlags,
+    MassAddFlags,
+)
+from src.util.misc import format_number
+from src.util.search import searchproject
 
-with open('src/util/config.json', 'r') as f:
-    config = json.load(f)
-
-with open('src/util/help.json', 'r') as f:
-    jsonhelp = json.load(f)
 
 class Add(commands.Cog):
     """
-        Cog with all of the commands used for adding to the database
+    Cog with all of the commands used for adding to the database
     """
+
     def __init__(self, client):
         self.bot = client
 
-
-
-    async def cog_check(self, ctx):
-        worker = ctx.guild.get_role(self.bot.config["neko_workers"])
-        ia = worker in ctx.message.author.roles
-        ic = ctx.channel.id == self.bot.config["command_channel"]
-        guild = ctx.guild is not None
-        if ia and ic and guild:
-            return True
-        elif ic:
-            raise exceptions.MissingRequiredPermission("Wrong Channel.")
-        elif not guild:
-            raise exceptions.MissingRequiredPermission("Missing permission `Server Member`")
-
-
-    @commands.command(description=jsonhelp["addstaff"]["description"], usage=jsonhelp["addstaff"]["usage"], brief=jsonhelp["addstaff"]["brief"], help=jsonhelp["addstaff"]["help"])
+    @commands.command()
     @is_admin()
-    async def addstaff(self, ctx, *, arg):
-        session1 = self.bot.Session()
+    async def addstaff(self, ctx: CstmContext, *, flags: AddStaffFlags):
+        """
+        Description
+        ==============
+        Add a staffmember to the database.
+
+        Required Role
+        =====================
+        Role `Neko Herder`.
+
+        Arguments
+        ===========
+        :member:
+            | The Member to be added by Mention, ID, or Name  [:doc:`/Types/discord`]
+        """
+        member = flags.member
+        st = Staff(member.id, member.name)
+        ctx.session.add(st)
+        await ctx.session.commit()
+        await ctx.reply(f"Successfully added {st.name} to staff. ")
+        await ctx.success()
+
+    @commands.command(
+        aliases=["ap", "addp", "addproj"],
+    )
+    @is_pu()
+    async def addproject(self, ctx: CstmContext, *, flags: AddProjectFlags):
+        """
+        Description
+        ==============
+        Add a project to the database.
+
+        Required Role
+        =====================
+        Role `Akashi's Minions`.
+
+        Arguments
+        ===========
+        Required
+        ---------
+        :title:
+            | Title of the Project. [:doc:`/Types/text`]
+        :link:
+            | Link to the project on box. [:doc:`/Types/text`]
+        :thumbnail:
+            | Link to large picture for the entry in the status board.  [:doc:`/Types/text`]
+
+        Optional
+        ------------
+        :icon:
+            | Link to small Image for the status board in the upper left corner.  [:doc:`/Types/text`]
+        :ts, rd, pr, tl:
+            | Default staff for the project.  [:doc:`/Types/staff`]
+        :status:
+            | Current status of the project, defaults to "active".  [:doc:`/Types/text `]
+        :altnames:
+            | Aliases for the project, divided by comma.  [:doc:`/Types/text`]
+        """
+        session = ctx.session
+        if searchproject(flags.title, session):
+            raise ProjectAlreadyExists()
+
+        pr = Project(flags.title, flags.status, flags.link, flags.altnames)
+        pr.tl = flags.tl
+        pr.rd = flags.rd
+        pr.ts = flags.ts
+        pr.pr = flags.pr
+        pr.icon = flags.icon
+        pr.thumbnail = flags.thumbnail  # type: ignore
+        session.add(pr)
+        await ctx.prompt_and_commit(
+            text=f"Do you really want to add the project {pr.title}"
+        )
+
+    @commands.command(
+        aliases=["mac", "massaddchapters", "addchapters", "bigmac"],
+    )
+    @is_pu()
+    async def massaddchapter(self, ctx: CstmContext, *, flags: MassAddFlags):
+        """
+        Description
+        ==============
+        Add multiple chapters at once.
+        After entering the command, you are expected to post links to the raws of the chapters.
+        Each link must be on its own line.
+
+        Required Role
+        =====================
+        Role `Neko Workers`.
+
+        Example
+        ========
+        .. image:: /images/bigmac.png
+          :width: 400
+          :alt: bigmac Example
+
+
+        Arguments
+        ===========
+        Required
+        ---------
+        :chapter:
+            | Chapter on which to start on. Chapter to end on is determined by amount of links sent.  [:doc:`/Types/chapter`]
+        :project:
+            | Project the chapters belong to.  [:doc:`/Types/project`]
+        """
+        start_chp = flags.chapter
+        date_created = func.now()
+        project = flags.project
+        session = ctx.session
+
+        message = await ctx.send("Please paste the links, with one link per line.")
+
+        def check(message):
+            return (
+                message.author == ctx.message.author and message.channel == ctx.channel
+            )
+
         try:
-            arg = arg[1:]
-            d = dict(x.split('=', 1) for x in arg.split(' -'))
-            if d["id"] is not None:
-                stobject = discord.utils.find(lambda m: m.id == int(d["id"]), ctx.guild.members)
-                if stobject is not None:
-                    st = Staff(d["id"], stobject.name)
-                    session1.add(st)
-                    session1.commit()
-                    session1.close()
-                    await ctx.send("Successfully added {} to staff. ".format(stobject.name))
-                else:
-                    await ctx.send("Sorry, could not find a user with that ID")
-            else:
-                await ctx.send("There seems to be a mistake in the command syntax.")
-        finally:
-            session1.close()
+            message2 = await self.bot.wait_for("message", timeout=30.0, check=check)
+        except asyncio.TimeoutError:
+            await message.edit(
+                content="No reaction from command author. Chapters was not added."
+            )
+            return
+        else:
+            content = message2.content.split("\n")
+            chapters = []
+            for i, link in enumerate(content, start_chp):
+                chp = Chapter(i, link)
+                chp.date_created = date_created
+                chp.project = project
+                session.add(chp)
+                chapters.append(chp)
 
-    @commands.command(description=jsonhelp["addstaffexp"]["description"], usage=jsonhelp["addstaffexp"]["usage"], brief=jsonhelp["addstaffexp"]["brief"], help=jsonhelp["addstaffexp"]["help"])
-    @is_admin()
-    async def addstaffexp(self, ctx, *, arg):
-        session1 = self.bot.Session()
-        try:
-            arg = arg[1:]
-            d = dict(x.split('=', 1) for x in arg.split(' -'))
-            if d["id"] is not None:
-                st = Staff(d["id"], d["name"])
-                session1.add(st)
-                session1.commit()
-                session1.close()
-                await ctx.send(f"Successfully added {d['name']} to staff with id {d['id']}")
-            else:
-                await ctx.send("There seems to be a mistake in the command syntax.")
-        finally:
-            session1.close()
+        # prompt user to confirm
+        table = prettytable.PrettyTable(["Chapter", "Link"])
+        for chp in chapters:
+            table.add_row([chp.number, chp.link_raw])
+        image = await misc.drawimage(table.get_string())
+        await ctx.monitor_changes(
+            entity=chapters,
+            text=f"Do you really want to add these chapters to project {project.title}?",
+            file=image,
+        )
 
+    @is_pu()
+    @commands.command(
+        aliases=["ac", "addch", "addc"],
+    )
+    async def addchapter(self, ctx: CstmContext, *, flags: AddChapterFlags):
+        """
+        Description
+        ==============
+        Add a chapter to the database.
 
+        Required Role
+        =====================
+        Role `Akashi's Minions`.
 
-    @commands.command(aliases=["ap", "addp", "addproj"], description=jsonhelp["addproject"]["description"],
-                      usage=jsonhelp["addproject"]["usage"], brief=jsonhelp["addproject"]["brief"], help=jsonhelp["addproject"]["help"])
-    @is_admin()
-    async def addproject(self, ctx, *, arg):
-        session1 = self.bot.Session()
-        try:
-            arg = arg[1:]
-            d = dict(x.split('=', 1) for x in arg.split(' -'))
-            if "link" in d and "title" in d and "altNames" in d and "status" in d:
-                try:
-                    projects = searchproject(d["title"], session1)
-                    raise AttributeError
-                except exceptions.NoResultFound:
-                    pr = Project(d["title"], d["status"] if "status" in d else "inactive", d["link"], d["altNames"])
-                    if "ts" in d:
-                        pr.typesetter = await searchstaff(d["ts"], ctx, session1)
-                    if "rd" in d:
-                        pr.redrawer = await searchstaff(d["rd"], ctx, session1)
-                    if "pr" in d:
-                        pr.proofreader = await searchstaff(d["pr"], ctx, session1)
-                    if "tl" in d:
-                        pr.translator = await searchstaff(d["tl"], ctx, session1)
-                    if "icon" in d:
-                        pr.icon = d["icon"]
-                    if "thumbnail" in d:
-                        pr.thumbnail = d["thumbnail"]
-                    session1.add(pr)
-                    await ctx.send(
-                        "✅ Successfully added {} to projects with the status {}".format(d["title"], d["status"]))
-                except AttributeError:
-                    raise AttributeError
-            else:
-                raise MissingRequiredParameter("link, title, altNames or status")
-            session1.commit()
-        finally:
-            session1.close()
+        Arguments
+        ===========
+        Required
+        ---------
+        :chapter:
+            | Project and chapter number of the chapter to add.  [:doc:`/Types/chapter`]
+        :raws:
+            | Link to raws on Box.  [:doc:`/Types/text`]
 
-    @commands.command(aliases=["mac", "massaddchapters", "addchapters", 'bigmac'], description=jsonhelp["massaddchapter"]["description"],
-                      usage=jsonhelp["massaddchapter"]["usage"], brief=jsonhelp["massaddchapter"]["brief"], help=jsonhelp["massaddchapter"]["help"])
-    async def massaddchapter(self, ctx, *, arg):
-        session1 = self.bot.Session()
-        try:
-            arg = arg[1:]
-            d = dict(x.split('=', 1) for x in arg.split(' -'))
-            if "c" in d and "p" in d:
-                p = d['p']
-                start_chp = int(d['c'])
-            else:
-                raise MissingRequiredParameter("c, p or link_raw")
-            date_created = func.now()
-            project = searchproject(p, session1)
+        Optional
+        ------------
+        :tl, rd, ts, pr:
+            | Staff for the chapter.  [:doc:`/Types/staff`]
+        """
+        arg = flags.chapter
+        project_str = arg[0 : len(arg) - len(arg.split(" ")[-1])]
+        chapter_nbr = float(arg.split(" ")[-1])
 
-            message = await ctx.send('Please paste the links, with one link per line.')
+        table = PrettyTable()
+        chp = Chapter(chapter_nbr, flags.raws)
+        chp.project = await Project.convert(ctx, project_str)
+        table.add_column("Project", [chp.project.title])
+        table.add_column("Chapter", [format_number(chp.number)])
+        table.add_column("Raws", [chp.link_raw])
+        if flags.ts:
+            chp.typesetter = flags.ts
+            table.add_column(fieldname="Typesetter", column=[chp.typesetter.name])
+        if flags.rd:
+            chp.redrawer = flags.rd
+            table.add_column(fieldname="Redrawer", column=[chp.redrawer.name])
+        if flags.pr:
+            chp.proofreader = flags.pr
+            table.add_column(fieldname="Proofreads", column=[chp.proofreader.name])
+        if flags.tl:
+            chp.translator = flags.tl
+            table.add_column(fieldname="Translation", column=[chp.translator.name])
+        chp.date_created = func.now()
+        ctx.session.add(chp)
+        t = table.get_string(title="Chapter Preview")
+        await ctx.monitor_changes(
+            entity=chp,
+            text="Do you really want to add this chapter?",
+            file=await misc.drawimage(t),
+        )
 
-            def check(message):
-                return message.author == ctx.message.author and message.channel == ctx.channel
+    @addchapter.error
+    async def on_chapter_error(self, ctx, error):
+        if isinstance(error.original, sqlalchemy.exc.IntegrityError):
+            await ctx.send("Chapter couldn't be added, as it already exists.")
+        else:
+            await ctx.send(f"An error occured while adding the chapter: {error}")
 
-            try:
-                message2 = await self.bot.wait_for('message', timeout=30.0, check=check)
-            except asyncio.TimeoutError:
-                await message.edit(content='No reaction from command author. Chapters was not added.')
-            else:
-                content = message2.content.split('\n')
-                for i, link in enumerate(content, start_chp):
-                    chp = Chapter(i, link)
-                    chp.date_created = date_created
-                    chp.project = project
-                    session1.add(chp)
-                await ctx.send(f'Successfully added {str(len(content))} chapters of `{project.title}`!')
-                session1.commit()
-        finally:
-            session1.close()
-
-    @commands.command(aliases=["ac", "addch", "addc"], description=jsonhelp["addchapter"]["description"],
-                      usage=jsonhelp["addchapter"]["usage"], brief=jsonhelp["addchapter"]["brief"], help=jsonhelp["addchapter"]["help"])
-    async def addchapter(self, ctx, *, arg):
-        session1 = self.bot.Session()
-        try:
-            arg = arg[1:]
-            d = dict(x.split('=', 1) for x in arg.split(' -'))
-            table = PrettyTable()
-            if "c" in d and "link_raw" in d and "p" in d:
-                chp = Chapter(d["c"], d["link_raw"])
-                chp.project = searchproject(d["p"], session1)
-            elif "c" in d and "link" in d and "p" in d:
-                chp = Chapter(d["c"], d["link"])
-                chp.project = searchproject(d["p"], session1)
-            else:
-                raise MissingRequiredParameter("c, p or link_raw")
-            table.add_column("Project", [chp.project.title])
-            table.add_column("Chapter", [formatNumber(float(chp.number))])
-            table.add_column("Raws", [chp.link_raw])
-            if "ts" in d:
-                chp.typesetter = await searchstaff(d["ts"], ctx, session1)
-                table.add_column(fieldname="Typesetter", column=[chp.typesetter.name])
-            if "rd" in d:
-                chp.redrawer = await searchstaff(d["rd"], ctx, session1)
-                table.add_column(fieldname="Redrawer", column=[chp.redrawer.name])
-            if "pr" in d:
-                chp.proofreader = await searchstaff(d["pr"], ctx, session1)
-                table.add_column(fieldname="Proofreads", column=[chp.proofreader.name])
-            if "tl" in d:
-                chp.translator = await searchstaff(d["tl"], ctx, session1)
-                table.add_column(fieldname="Translation", column=[chp.translator.name])
-            if "link_ts" in d:
-                chp.link_ts = d["link_ts"]
-                table.add_column(fieldname="Link TS", column=[chp.link_ts])
-            if "link_rd" in d:
-                chp.link_rd = d["link_rd"]
-                table.add_column(fieldname="Link RD", column=[chp.link_rd])
-            if "link_tl" in d:
-                chp.link_tl = d["link_tl"]
-                table.add_column(fieldname="Link TL", column=[chp.link_tl])
-            if "link_pr" in d:
-                chp.link_pr = d["link_pr"]
-                table.add_column(fieldname="Link PR", column=[chp.link_pr])
-            chp.date_created = func.now()
-            session1.add(chp)
-            t = table.get_string(title="Chapter Preview")
-            message = await ctx.send(file=await misc.drawimage(t))
-            await message.add_reaction("✅")
-            await message.add_reaction("❌")
-            await asyncio.sleep(delay=0.5)
-
-            def check(reaction, user):
-                return user == ctx.message.author and (str(reaction.emoji) == '✅' or str(reaction.emoji) == '❌')
-
-            try:
-                reaction, user = await self.bot.wait_for('reaction_add', timeout=30.0, check=check)
-            except asyncio.TimeoutError:
-                await message.delete()
-                await ctx.channel.send('No reaction from command author. Chapter was not added.')
-                session1.rollback()
-            else:
-                if str(reaction.emoji) == "✅":
-                    num = formatNumber(float(chp.number))
-                    await ctx.channel.send('Sucessfully added {} {} to chapters.'.format(chp.project.title, num))
-                    session1.commit()
-                    await message.clear_reactions()
-                else:
-                    await message.delete()
-                    await ctx.channel.send('Action cancelled by user.')
-                    session1.rollback()
-                    await message.clear_reactions()
-        finally:
-            session1.close()
 
 def setup(Bot):
     Bot.add_cog(Add(Bot))

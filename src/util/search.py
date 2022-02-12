@@ -2,15 +2,15 @@ import json
 
 import discord
 import discord.ext
+from discord.ext.commands import CommandError
 from sqlalchemy.orm.exc import MultipleResultsFound
+from sqlalchemy.sql.expression import select
 
-from src.model.project import Project
-from src.model.staff import Staff
+import src.model.staff as staff
+import src.model.project as project
 from src.util import exceptions, misc
-from src.util.exceptions import StaffNotFoundError
+from src.util.db import get_first, get_one
 
-with open('src/util/config.json', 'r') as f:
-    config = json.load(f)
 
 async def discordstaff(sti: str, ctx):
     try:
@@ -24,11 +24,12 @@ async def discordstaff(sti: str, ctx):
 
 
 async def dbstaff(passid: int, session2):
-    staff = session2.query(Staff).filter(Staff.discord_id == passid).first()
-    if staff is not None:
-        return staff
+    stmt = select(staff.Staff).filter(staff.Staff.discord_id == passid)
+    st = await get_first(session2, stmt)
+    if st:
+        return st
     else:
-        raise StaffNotFoundError
+        raise CommandError("Staff doesn't exist.")
 
 
 def fakesearch(did, ctx):
@@ -51,7 +52,7 @@ async def searchstaff(passstr: str, ctx, sessions):
             if staff is not None:
                 return staff
         except ValueError:
-            raise StaffNotFoundError
+            raise CommandError("Staff doesn't exist.")
     return await dbstaff(dst.id, sessions)
 
 
@@ -60,15 +61,23 @@ async def searchstaffpayload(passstr, sessions):
         return None
     return await dbstaff(passstr, sessions)
 
-def searchproject(sti, session):
+
+async def searchproject(sti, session):
     if sti.isdigit():
-        return session.query(Project).filter(int(sti) == Project.id).one()
+        stmt = select(project.Project).filter(int(sti) == project.Project.id)
+        return get_one(session, stmt)
     for i in range(1, 3):
         try:
             if i == 1:
-                return session.query(Project).filter(Project.title.ilike("%" + sti + "%")).one()
+                stmt = select(project.Project).filter(
+                    project.Project.title.ilike("%" + sti + "%")
+                )
+                return await get_one(session, stmt)
             if i == 2:
-                return session.query(Project).filter(Project.altNames.ilike("%"+sti+",%")).one()
-        except:
-            pass
-    raise exceptions.NoResultFound(message="Couldn't find a project like this.")
+                stmt = select(project.Project).filter(
+                    project.Project.altNames.ilike("%" + sti + ",%")
+                )
+                return await get_one(session, stmt)
+        except Exception as e:
+            print(e)
+    raise CommandError("This project doesn't exist.")

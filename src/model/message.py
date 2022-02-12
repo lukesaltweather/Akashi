@@ -1,5 +1,13 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, BigInteger, DateTime, Boolean
-from ..util.db import Base
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    BigInteger,
+    DateTime,
+    Boolean,
+)
+
+from src.util.db import Base
 
 
 class Message(Base):

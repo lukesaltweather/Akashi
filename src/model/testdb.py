@@ -1,14 +1,16 @@
 from sqlalchemy.orm import sessionmaker
 
 from src.model.chapter import Chapter
-from src.util.db import Base, loadDB
-from src.model.staff import Staff
 from src.model.project import Project
+from src.model.staff import Staff
+from src.util.db import Base, loadDB
+
 
 async def create():
     engine = loadDB()
 
     Base.metadata.create_all(engine)
+
 
 async def createtables():
     engine = loadDB()
@@ -35,5 +37,3 @@ async def createtables():
 
     session.commit()
     session.close()
-
-

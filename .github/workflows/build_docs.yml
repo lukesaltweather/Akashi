@@ -8,7 +8,6 @@ on:
     branches-ignore:
       - "dependabot*"
 
-
 jobs:
   build:
 
@@ -16,20 +15,20 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.9
+    - name: Set up Python 3.10
       uses: actions/setup-python@v2
       with:
-        python-version: 3.9
+        python-version: "3.10"
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip poetry
         poetry install
     - name: Build Docs
       run: |
-        python -m src.util.docs
+        poetry run python -m src.util.docs
     - uses: EndBug/add-and-commit@v7 # You can change this to use a specific version.
       with:
-        add: 'src'
+        add: 'docs/*'
         author_name: Author Name
         message: 'Built docs.'
         pull_strategy: 'NO-PULL'
@@ -41,4 +40,3 @@ jobs:
           webhook_url: ${{ secrets.RTDS_WEBHOOK_URL }}
           webhook_token: ${{ secrets.RTDS_WEBHOOK_TOKEN }}
           commit_ref: ${{ github.ref }}
-

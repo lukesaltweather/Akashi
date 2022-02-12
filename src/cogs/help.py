@@ -4,10 +4,13 @@ import itertools
 import discord
 from discord.ext import commands
 from discord.ext import menus
+from discord.ext.menus.views import ViewMenuPages
 from typing import List
 from discord.ext.commands.core import Group, Command
 
 from src.util import exceptions
+from src.util.docs import parse_rst, MyVisitor
+
 
 class Source(menus.ListPageSource):
     def __init__(self, embeds: List[discord.Embed]):
@@ -17,17 +20,15 @@ class Source(menus.ListPageSource):
         return page
 
 
-
 class MyHelpCommand(commands.MinimalHelpCommand):
-
     def __init__(self, **options):
-        self.sort_commands = options.pop('sort_commands', True)
-        self.commands_heading = options.pop('commands_heading', "Commands")
-        self.dm_help = options.pop('dm_help', False)
-        self.dm_help_threshold = options.pop('dm_help_threshold', 1000)
-        self.aliases_heading = options.pop('aliases_heading', "Aliases:")
-        self.no_category = options.pop('no_category', 'No Category')
-        self.paginator = options.pop('paginator', None)
+        self.sort_commands = options.pop("sort_commands", True)
+        self.commands_heading = options.pop("commands_heading", "Commands")
+        self.dm_help = options.pop("dm_help", False)
+        self.dm_help_threshold = options.pop("dm_help_threshold", 1000)
+        self.aliases_heading = options.pop("aliases_heading", "Aliases:")
+        self.no_category = options.pop("no_category", "No Category")
+        self.paginator = options.pop("paginator", None)
         super().__init__(**options)
 
     async def prepare_help_command(self, ctx, command):
@@ -70,21 +71,27 @@ class MyHelpCommand(commands.MinimalHelpCommand):
         # Since we want to have detailed errors when someone
         # passes an invalid subcommand, we need to walk through
         # the command group chain ourselves.
-        keys = command.split(' ')
+        keys = command.split(" ")
         cmd = bot.all_commands.get(keys[0])
         if cmd is None:
-            string = await maybe_coro(self.command_not_found, self.remove_mentions(keys[0]))
+            string = await maybe_coro(
+                self.command_not_found, self.remove_mentions(keys[0])
+            )
             return await self.send_error_message(string)
 
         for key in keys[1:]:
             try:
                 found = cmd.all_commands.get(key)
             except AttributeError:
-                string = await maybe_coro(self.subcommand_not_found, cmd, self.remove_mentions(key))
+                string = await maybe_coro(
+                    self.subcommand_not_found, cmd, self.remove_mentions(key)
+                )
                 return await self.send_error_message(string)
             else:
                 if found is None:
-                    string = await maybe_coro(self.subcommand_not_found, cmd, self.remove_mentions(key))
+                    string = await maybe_coro(
+                        self.subcommand_not_found, cmd, self.remove_mentions(key)
+                    )
                     return await self.send_error_message(string)
                 cmd = found
 
@@ -94,13 +101,14 @@ class MyHelpCommand(commands.MinimalHelpCommand):
             return await self.send_command_help(cmd)
 
     def get_command_signature(self, command):
-        return '{0.clean_prefix}{1.qualified_name} {1.signature}'.format(self, command)
+        return "{0.clean_prefix}{1.qualified_name} {1.signature}".format(self, command)
 
     async def send_bot_help(self, mapping):
         ctx = self.context
         bot = ctx.bot
 
-        no_category = '\u200b{0.no_category}'.format(self)
+        no_category = "\u200b{0.no_category}".format(self)
+
         def get_category(command, *, no_category=no_category):
             cog = command.cog
             return cog.qualified_name if cog is not None else no_category
@@ -109,29 +117,36 @@ class MyHelpCommand(commands.MinimalHelpCommand):
         to_iterate = itertools.groupby(filtered, key=get_category)
 
         for category, commands in to_iterate:
-            commands = sorted(commands, key=lambda c: c.name) if self.sort_commands else list(commands)
-            if category != "MyCog":
+            commands = (
+                sorted(commands, key=lambda c: c.name)
+                if self.sort_commands
+                else list(commands)
+            )
+            if category != "MyCog" and category != "Jishaku":
                 self.helper.start_page(commands, category)
                 self.helper.add_cog(commands, category)
 
         await self.send_pages()
-        self.helper.reset()
+        self.helper.clear()
 
     async def send_command_help(self, command):
         self.helper.clear()
         self.helper.add_command(command)
-        await self.get_destination().send(embed=self.helper.embed[0])
+        await self.context.reply(embed=self.helper.embed[0])
 
     async def send_cog_help(self, cog: commands.Cog):
         cogcommands = cog.get_commands()
         filtered = await self.filter_commands(cogcommands, sort=True)
         self.helper.add_cog(filtered, cog.qualified_name)
-        await self.get_destination().send(embed=self.helper.embed[1])
+        await self.context.reply(embed=self.helper.embed[1])
 
     async def send_pages(self):
-        menu = HelpMenu(source=Source(self.helper.allembeds()), delete_message_after=True, timeout=60)
+        menu = HelpMenu(
+            source=Source(self.helper.allembeds()),
+            delete_message_after=True,
+            timeout=60,
+        )
         await menu.start(self.context)
-
 
 
 class MyCog(commands.Cog):
@@ -141,37 +156,35 @@ class MyCog(commands.Cog):
         bot.help_command = MyHelpCommand(dm_help=True)
         bot.help_command.cog = self
 
-    async def cog_check(self, ctx):
-        # worker = ctx.guild.get_role(self.bot.config["neko_workers"])
-        # ia = worker in ctx.message.author.roles
-        # ic = ctx.channel.id == self.bot.config["command_channel"]
-        guild = ctx.guild is not None
-        if guild:
-            return True
-        # elif ic:
-        #     raise exceptions.MissingRequiredPermission("Wrong Channel.")
-        elif not guild:
-            raise exceptions.MissingRequiredPermission("Missing permission `Server Member`")
-
     def cog_unload(self):
         self.bot.help_command = self._original_help_command
 
-class HelpMenu(menus.MenuPages):
-    @menus.button('🔢', position=menus.Last(1))
+
+class HelpMenu(ViewMenuPages):
+    @menus.button("🔢", position=menus.Last(1))
     async def select_page(self, payload):
         channel = self.bot.get_channel(payload.channel_id)
-        i = await channel.send("Please enter the page you want to skip to:", delete_after=30)
+        i = await channel.send(
+            "Please enter the page you want to skip to:", delete_after=30
+        )
+
         def check(msg):
-            return msg.channel.id == payload.channel_id and msg.author.id == self.ctx.author.id
+            return (
+                msg.channel.id == payload.channel_id
+                and msg.author.id == self.ctx.author.id
+            )
+
         try:
-            message = await self.bot.wait_for('message', check=check, timeout=30)
+            message = await self.bot.wait_for("message", check=check, timeout=30)
         except Exception:
-            pass
+            # timeout
+            return
+        else:
+            await i.delete()
         await message.delete()
-        await i.delete()
         try:
             msg_int = int(message.content)
-            await self.show_checked_page(msg_int-1)
+            await self.show_checked_page(msg_int - 1)
         except Exception:
             await self.ctx.send("Please enter a valid number...", delete_after=30)
 
@@ -187,43 +200,42 @@ class HelpMenu(menus.MenuPages):
             # An error happened that can be handled, so ignore it.
             await self.ctx.send("This page doesn't exist...", delete_after=30)
 
+
 class EmbedHelper:
     """Create an Embed for the help command"""
+
     def __init__(self):
         self.embed = list()
-        self.page=1
+        self.page = 1
         self.cog_counter = 2
 
     def start_page(self, commands, cog):
         if len(self.embed) == 0:
             self.embed.append(discord.Embed(color=discord.Colour.dark_blue()))
-            self.embed[0].set_author(name="Help", icon_url="https://rei.animecharactersdatabase.com/uploads/chars/9225-1377974027.png")
+            self.embed[0].set_author(
+                name="Help",
+                icon_url="https://rei.animecharactersdatabase.com/uploads/chars/9225-1377974027.png",
+            )
             self.embed[0].title = "Akashi Help"
-            self.embed[0].url = "https://docs.lukesaltweather.de"
+            self.embed[0].url = "https://docs.akashi.app"
             self.embed[0].set_footer(
-                icon_url='https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Info_icon-72a7cf.svg/1200px-Info_icon-72a7cf.svg.png',
-                text="For more detailed help on a command, use $help <command>")
-            string = f"\n\n**{cog}**  |  Page: **{self.page+1}**\n"
-            first = True
-            for command in commands:
-                if first:
-                    string = f"{string} **`{command.name}`**"
-                else:
-                    string = f"{string} | **`{command.name}`**"
+                icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Info_icon-72a7cf.svg/1200px-Info_icon-72a7cf.svg.png",
+                text="For more detailed help on a command, use $help <command>",
+            )
+        string = f"\n\n**{cog}**  |  Page: **{self.page+1}**\n"
+        first = True
+        for command in commands:
+            doc_link = f"https://docs.akashi.app/en/stable/{command.cog_name}/{command.name}.html"
+            if first:
+                string = f"{string} [**`{command.name}`**]({doc_link})"
+            else:
+                string = f"{string} | [**`{command.name}`**]({doc_link})"
+                first = False
 
-            self.embed[0].description = f"{string}"
-        else:
-            string = f"\n\n**{cog}**  |  Page: **{self.page+1}**\n"
-            first = True
-            for command in commands:
-                if first:
-                    string = f"{string} **`{command.name}`**"
-                else:
-                    string = f"{string} | **`{command.name}`**"
-
-            self.embed[0].description = f"{self.embed[0].description}{string}"
-        self.page = self.page+1
-
+        self.embed[
+            0
+        ].description = f"{self.embed[0].description if self.embed[0].description is not discord.Embed.Empty else ''}{string}"
+        self.page = self.page + 1
 
     def add_cog(self, coms, cogname: str):
         self.embed.append(discord.Embed(color=discord.Colour.dark_blue()))
@@ -235,48 +247,72 @@ class EmbedHelper:
             "Assign": "🙋",
             "Done": "👍",
             "Note": "🗒️",
-            "MangaDex": "📖",
             "ReminderCog": "📅",
-            "Tags": "📓"
-        }.pop(cogname, "")
+            "Tags": "📓",
+            "Database": "📚",
+        }.pop(cogname, False)
+        if not emoji:
+            return
         self.embed[-1].set_author(name=f"{emoji} {cogname}")
         string = ""
         for command in coms:
-            description = command.brief if command.description != "" else "No description"
-            string = f"{string}[**`{command.name}`**]({command.help})\n*{description}*\n\n"
+            if command.callback.__doc__:
+                docstring = inspect.cleandoc(command.callback.__doc__)
+                parsed = parse_rst(docstring)
+                v = MyVisitor(parsed)
+                parsed.walkabout(v)
+                doc_link = f"https://docs.akashi.app/en/stable/{command.cog_name}/{command.name}.html"
+                string = (
+                    f"{string}\n[**`{command.name}`**]({doc_link}) {v.sections.get('Description', '')}\n"
+                    + (
+                        f"```{command.signature}```\n"
+                        if command.signature != ""
+                        else ""
+                    )
+                )
         self.embed[-1].description = string
-        self.embed[-1].set_footer(icon_url='https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Info_icon-72a7cf.svg/1200px-Info_icon-72a7cf.svg.png', text=f"Page {self.cog_counter} | For more detailed help on a command, use $help <command>")
-        self.cog_counter = self.cog_counter+1
+        self.embed[-1].set_footer(
+            icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Info_icon-72a7cf.svg/1200px-Info_icon-72a7cf.svg.png",
+            text=f"Page {self.cog_counter} | For more detailed help on a command, use $help <command>",
+        )
+        self.cog_counter = self.cog_counter + 1
 
     def add_command(self, command):
         self.embed.append(discord.Embed(color=discord.Colour.dark_blue()))
-        self.embed[-1].set_author(name=command.name, icon_url="https://rei.animecharactersdatabase.com/uploads/chars/9225-1377974027.png")
+        self.embed[-1].set_author(
+            name=command.name,
+            icon_url="https://rei.animecharactersdatabase.com/uploads/chars/9225-1377974027.png",
+        )
         self.embed[-1].title = "Docs"
-        self.embed[-1].url = command.help
-        description = command.description if command.description != "" else "No description"
-        usage = ""
-        parameters = command.usage
-        for parameter in parameters:
-            usage = f"{usage}`{parameter['p']}` {parameter['e']}\n"
-        self.embed[-1].add_field(name='\u200b', value=f"__Description:__\n{description}", inline=False)
-        self.embed[-1].add_field(name='\u200b', value=f"__Usage:__\n{usage}", inline=False)
-
-    def reset(self):
-        self.embed = []
-        # self.embed = [discord.Embed(color=discord.Colour.dark_blue())]
-        # self.embed[0].set_author(name="Help",
-        #                          icon_url="https://rei.animecharactersdatabase.com/uploads/chars/9225-1377974027.png")
-        # self.embed[0].title = "Akashi Help"
-        # self.embed[
-        #     0].description = "Bot created by lukesaltweather@Nekyou.\nIf this help command doesn't help you with a problem, try visiting the docs first.\n" \
-        #                      "All commands are described in detail on there, as well as how to write commands in general."
-        # self.embed[0].set_footer(text="© Created by lukesaltweather#1111", icon_url="https://cdn.discordapp.com/avatars/358244935041810443/0c7effd92795854ef836c9ebe6404ff2.webp?size=1024")
+        self.embed[
+            -1
+        ].url = (
+            f"https://docs.akashi.app/en/stable/{command.cog_name}/{command.name}.html"
+        )
+        if command.callback.__doc__:
+            docstring = inspect.cleandoc(command.callback.__doc__)
+            parsed = parse_rst(docstring)
+            v = MyVisitor(parsed)
+            parsed.walkabout(v)
+            description = v.sections["Description"]
+            aliases = ", ".join(command.aliases)
+            parameters = v.params
+        else:
+            return
+        for parameter, param_desc in parameters.items():
+            self.embed[-1].add_field(
+                name=parameter, value=f"`{param_desc}`", inline=False
+            )
+        self.embed[
+            -1
+        ].description = f"*Aliases*: `{aliases}`\n**Description:**\n```{description}```"
 
     def clear(self):
         self.embed = []
 
     def allembeds(self):
         return self.embed
+
 
 def setup(Bot):
     Bot.add_cog(MyCog(Bot))

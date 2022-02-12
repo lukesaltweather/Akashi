@@ -1,58 +1,92 @@
-
-import os
-
-import asyncpg
-
-import sqlalchemy
-
-from discord.ext import commands
-from discord.ext.commands import MissingRequiredArgument
-from discord.ext import ipc
-
-from sqlalchemy.orm import sessionmaker, aliased
-
 import datetime
-
-from src.util.checks import is_admin
-from src.model.message import Message
-
-from src.util.db import loadDB
-from src.model import testdb
-
-
-from src.util.exceptions import ReactionInvalidRoleError, TagAlreadyExists, CancelError
-from src.util.search import *
-from src.util.misc import *
+import json
 import logging
+import os
+import sys
+import traceback
 
-with open('src/util/config.json', 'r') as f:
-    config = json.load(f)
+import aiofiles
+import asyncpg
+import discord
+import toml
+from discord import version_info, Intents
+from discord.ext import commands
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
 
-with open('src/util/help.json', 'r') as f:
-    jsonhelp = json.load(f)
+from src.model.staff import Staff
+from src.util.checks import is_admin
+from src.util.context import CstmContext
+from src.util.exceptions import (
+    NoCommandChannel,
+    InsufficientPermissions,
+    AkashiException,
+)
 
-with open('src/util/emojis.json', 'r') as f:
+with open("src/util/emojis.json", "r") as f:
     emojis = json.load(f)
 
-engine = loadDB(config["db_uri"])
-logger = logging.getLogger('discord')
+logger = logging.getLogger("discord")
 logger.setLevel(logging.INFO)
-handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
-handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+handler = logging.FileHandler(filename="bot.log", encoding="utf-8", mode="w")
+handler.setFormatter(
+    logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
+)
 logger.addHandler(handler)
+
+loggerBot = logging.getLogger("akashi")
+loggerBot.setLevel(logging.INFO)
+loggerBot.addHandler(handler)
+
 
 class Bot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ipc = ipc.Server(self, secret_key="1234", port=8765)  # create our IPC Server
+        self.logger = loggerBot
+        self.config = toml.load("config.toml")
+        self.logger.info(msg="Loaded Config.")
+        self.logger.info(msg="Creating asnypg pool...")
+        self.pool = self.loop.run_until_complete(
+            asyncpg.create_pool(
+                "postgres://Akashi:CWyYxRCvRg5hs@51.15.107.70:5432/akashitest",
+                min_size=1,
+                max_size=10,
+            )
+        )
+        self.logger.info(msg="Finished setting up asyncpg connection pool.")
+        self.logger.info(msg="Setting up SQLAlchemy Sessionmaker...")
+        self.Session = sessionmaker(
+            create_async_engine(
+                self.config["general"]["uri"], pool_size=20, future=True
+            ),
+            class_=AsyncSession,
+            expire_on_commit=False,
+        )
+        self.logger.info(msg="Finished setting up SQLAlchemy Sessionmaker.")
+        self.em = emojis
+        self.uptime = datetime.datetime.now()
+        self.logger.info(msg="Loading Cogs...")
+        self.load_extension("src.cogs.loops")
+        self.load_extension("src.cogs.edit")
+        self.load_extension("src.cogs.misc")
+        self.load_extension("src.cogs.info")
+        self.load_extension("src.cogs.add")
+        self.load_extension("src.cogs.done")
+        self.load_extension("src.cogs.note")
+        self.load_extension("src.cogs.help")
+        self.load_extension("src.cogs.database")
+        self.load_extension("jishaku")
+        self.logger.info(msg="Finished loading Cogs.")
+        self.logger.info(msg="Init complete.")
 
-    async def on_ipc_ready(self):
-        """Called upon the IPC Server being ready"""
-        print("Ipc is ready.")
+    async def get_context(self, message, *, cls=None):
+        return await super().get_context(message, cls=CstmContext)
 
-    async def on_ipc_error(self, endpoint, error):
-        """Called upon an error being raised within an IPC route"""
-        print(endpoint, "raised", error)
+    async def store_config(self):
+        async with aiofiles.open("config.toml.new", mode="w") as file:
+            await file.write(toml.dumps(self.config))
+        os.replace("config.toml.new", "config.toml")
+        self.logger.info(msg="Config File overridden.")
 
     def get_cog_insensitive(self, name):
         """Gets the cog instance requested.
@@ -66,276 +100,111 @@ class Bot(commands.Bot):
             This is equivalent to the name passed via keyword
             argument in class creation or the class name if unspecified.
         """
-        a_lower = {k.lower():v for k,v in self.cogs.items()}
+        a_lower = {k.lower(): v for k, v in self.cogs.items()}
         return a_lower.get(name.lower())
 
-if config["online"]:
-    bot = Bot(command_prefix='$', intents=discord.Intents.all())
-else:
-    bot = Bot(command_prefix='-', intents=discord.Intents.all())
+    async def on_error(self, event_method: str, *args, **kwargs) -> None:
+        logging.getLogger("discord").error(
+            f"The event {event_method} raised an error: {sys.exc_info()}"
+        )
+        print(f"Exception in {event_method}", file=sys.stderr)
+        traceback.print_exc()
 
-bot.Session = sessionmaker(bind=engine)
-bot.config = config
-bot.pool = asyncio.get_event_loop().run_until_complete(asyncpg.create_pool(bot.config.get("db_uri"), min_size=1, max_size=10))
-bot.load_extension('src.cogs.loops')
-bot.load_extension('src.cogs.edit')
-bot.load_extension('src.cogs.misc')
-bot.load_extension('src.cogs.info')
-bot.load_extension('src.cogs.add')
-bot.load_extension('src.cogs.done')
-bot.load_extension('src.cogs.note')
-bot.load_extension('src.cogs.help')
-bot.load_extension('src.cogs.reminder')
-bot.load_extension('src.cogs.stats')
-bot.load_extension("jishaku")
-bot.load_extension('src.cogs.tags')
-bot.load_extension('src.cogs.mangadex')
-bot.load_extension("src.cogs.ipc")  # load the IPC Route cog
-# bot.load_extension('src.cogs.halloween')
-bot.em = emojis
-bot.debug = False
-print(discord.version_info)
-bot.uptime = datetime.datetime.now()
+
+bot = Bot(command_prefix="$", intents=Intents.all())
+
+print(version_info)
+
+
+@bot.after_invoke
+async def after_invoke_hook(ctx: CstmContext):
+    await ctx.session.close()
+    logging.getLogger("akashi.db").debug(f"Closing SQLAlchemy Session.")
+
 
 @bot.check
 async def globally_block_dms(ctx):
     return ctx.guild is not None
 
+
+@bot.check
+async def only_members(ctx):
+    worker = ctx.guild.get_role(ctx.bot.config["server"]["roles"]["member"])
+    ia = worker in ctx.message.author.roles
+    ic = ctx.channel.id in ctx.bot.config["server"]["channels"]["commands"]
+    guild = ctx.guild is not None
+    if ia and ic and guild:
+        return True
+    elif ic:
+        raise NoCommandChannel()
+    elif not guild:
+        raise InsufficientPermissions("Missing permission `Server Member`")
+
+
 @bot.event
 async def on_ready():
-    print('We have logged in as {0.user}'.format(bot))
-    activity = discord.Activity(name='$help', type=discord.ActivityType.playing)
+    activity = discord.Activity(name="$help", type=discord.ActivityType.playing)
     await bot.change_presence(activity=activity)
-    # Set-up the engine here.
-    # Create a session
+    await bot.wait_until_ready()
+    logging.getLogger("akashi").info(f"Login and startup complete.")
+
 
 @bot.event
 async def on_command_error(ctx, error):
-    # This prevents any commands with local handlers being handled here in on_command_error.
-    if hasattr(ctx.command, 'on_error'):
+    if isinstance(error, commands.CommandNotFound):
+        await ctx.send("Command with that name could not be found.", delete_after=10)
         return
-    error = getattr(error, 'original', error)
-    await ctx.message.add_reaction("❌")
-    if isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send("Please enter at least one argument.")
-    elif isinstance(error, commands.CommandNotFound):
-        # await ctx.send("Command doesn't exist.")
-        pass
-    elif isinstance(error, ValueError):
-        await ctx.send("Error while parsing parameters.")
-        await ctx.send(error)
-    elif isinstance(error, exceptions.NoResultFound):
+    logging.getLogger("akashi.commands").warning(
+        f"Now handling error in main error handler for command {ctx.command.name}."
+    )
+    # rollback command's db session
+    await ctx.session.rollback()
+    await ctx.session.close()
+    # This prevents any commands with local handlers being
+    # handled here in on_command_error.
+    if hasattr(ctx.command, "on_error"):
+        logging.getLogger("akashi.commands").info(
+            f"Error for command {ctx.command.name} has already been dealt with in local error handler."
+        )
+        return
+    error = getattr(error, "original", error)
+    logging.getLogger("akashi.commands").error(
+        f"The error that occured for {ctx.command.name}: {type(error)} / {getattr(error, 'message', 'No Message')}."
+    )
+    if issubclass(type(error), AkashiException):
         await ctx.send(error.message)
-    elif isinstance(error, exceptions.StaffNotFoundError):
-        await ctx.send("Can't find the staffmember you were searching for.")
-    elif isinstance(error, LookupError):
-        await ctx.send("Sorry, I couldn't find what you were looking for.")
-    elif isinstance(error, commands.CheckFailure):
-        await ctx.send("Sorry, but you don't have the required permissions for this command.")
-    elif isinstance(error, exceptions.MissingRequiredPermission):
-        await ctx.send(error.message)
-    elif isinstance(error, exceptions.MissingRequiredParameter):
-        await ctx.send("Missing %s" % error.param)
-    elif isinstance(error, sqlalchemy.orm.exc.NoResultFound):
-        await ctx.send("Sorry, I couldn't find what you were looking for. Does this chapter/project exist?")
-    elif isinstance(error, TagAlreadyExists):
-        await ctx.send(f"{error.message} Tag already exists.")
-    elif isinstance(error, CancelError):
-        await ctx.send("Command cancelled.")
+    elif issubclass(type(error), commands.CommandError):
+        await ctx.send(error.__str__())
     else:
-        await ctx.send(error)
+        await ctx.send("An unknown error ocurred...")
+        logging.getLogger("akashi.commands").critical(
+            f"Error for {ctx.command.name} couldn't be resolved gracefully: Message: {getattr(error, 'message', 'No Message')}; \n Type: {type(error)}; \n String: {str(error)}."
+        )
 
 
 @bot.command(hidden=True)
 @is_admin()
 async def restart(ctx):
-    os.system('systemctl restart akashi')
+    logging.getLogger("akashi").info(f"Restarting bot...")
+    os.system("systemctl restart akashi")
 
 
 @bot.event
-async def on_member_update(before: discord.Member , after: discord.Member):
+async def on_member_update(before: discord.Member, after: discord.Member):
     worker = before.guild.get_role(345799525274746891)
     if worker not in before.roles and worker in after.roles:
         session1 = bot.Session()
         try:
             st = Staff(after.id, after.name)
             session1.add(st)
-            session1.commit()
-            session1.close()
-            channel = before.guild.get_channel(390395499355701249)
-            await channel.send("Successfully added {} to staff. ".format(after.name))
+            await session1.commit()
+            channel = before.guild.get_channel_or_thread(390395499355701249)
+            await channel.send("Successfully added {} to staff. ".format(after.name))  # type: ignore
+            logging.getLogger("akashi").info(
+                f"Added staffmember {before.display_name}."
+            )
         finally:
-            session1.close()
+            await session1.close()
 
 
-@bot.event
-async def on_raw_reaction_add(payload):
-    guild = bot.get_guild(config["guild_id"])
-    nw = discord.utils.find(lambda r: r.id == config["neko_workers"], guild.roles)
-    has_role = nw in guild.get_member(payload.user_id).roles
-    channel = bot.get_channel(payload.channel_id)
-    user = guild.get_member(payload.user_id)
-    if payload.user_id != 603216263484801039 and has_role:
-        msg = None
-        session = bot.Session()
-        message = await channel.fetch_message(payload.message_id)
-        try:
-            msg = session.query(Message).filter(payload.message_id == Message.message_id).one()
-            print(msg)
-        except:
-            session.close()
-        try:
-            if int(msg.awaiting) == config["ts_id"]:
-                ts = (bot.get_guild(payload.guild_id)).get_role(config["ts_id"])
-                if ts not in await get_roles(user):
-                    raise ReactionInvalidRoleError
-                else:
-                    ts_alias = aliased(Staff)
-                    chp = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id).filter(Chapter.id == msg.chapter).one()
-                    chp.typesetter = await dbstaff(payload.user_id, session)
-                    author = bot.get_guild(payload.guild_id).get_member(msg.author)
-                    embed = misc.completed_embed(chp, author, user, "RD", "TS", bot)
-                    session.delete(msg)
-                    msg2 = await channel.fetch_message(payload.message_id)
-                    await msg2.clear_reactions()
-                    await msg2.unpin()
-                    await msg2.edit(content=None, embed=embed)
-                    session.commit()
-                session.close()
-            elif int(msg.awaiting) == config["rd_id"]:
-                rd = (bot.get_guild(payload.guild_id)).get_role(config["rd_id"])
-                if rd not in await get_roles(user):
-                    raise ReactionInvalidRoleError
-                else:
-                    rd_alias = aliased(Staff)
-                    chp = session.query(Chapter).outerjoin(rd_alias, Chapter.redrawer_id == rd_alias.id).filter(
-                        Chapter.id == msg.chapter).one()
-                    chp.redrawer = await dbstaff(payload.user_id, session)
-                    author = bot.get_guild(payload.guild_id).get_member(msg.author)
-                    embed = misc.completed_embed(chp, author, user, "TL", "RD", bot)
-                    session.delete(msg)
-                    msg2 = await channel.fetch_message(payload.message_id)
-                    await msg2.clear_reactions()
-                    await msg2.unpin()
-                    await msg2.edit(content=None, embed=embed)
-                    session.commit()
-                session.close()
-            elif int(msg.awaiting) == config["tl_id"]:
-                tl = (bot.get_guild(payload.guild_id)).get_role(config["tl_id"])
-                if tl not in await get_roles(user):
-                    raise ReactionInvalidRoleError
-                else:
-                    ts_alias = aliased(Staff)
-                    chp = session.query(Chapter).outerjoin(ts_alias, Chapter.typesetter_id == ts_alias.id).filter(
-                        Chapter.id == msg.chapter).one()
-                    chp.translator = await dbstaff(payload.user_id, session)
-                    author = bot.get_guild(payload.guild_id).get_member(msg.author)
-                    embed = misc.completed_embed(chp, author, user, "RAW", "RD", bot)
-                    session.delete(msg)
-                    msg2 = await channel.fetch_message(payload.message_id)
-                    await msg2.clear_reactions()
-                    await msg2.unpin()
-                    await msg2.edit(content=None, embed=embed)
-                    session.commit()
-                session.close()
-            elif int(msg.awaiting) == config["pr_id"]:
-                pr = (bot.get_guild(payload.guild_id)).get_role(config["pr_id"])
-                if pr not in await get_roles(user):
-                    raise ReactionInvalidRoleError
-                else:
-                    pr_alias = aliased(Staff)
-                    chp = session.query(Chapter).outerjoin(pr_alias, Chapter.proofreader_id == pr_alias.id).filter(
-                        Chapter.id == msg.chapter).one()
-                    chp.proofreader = await dbstaff(payload.user_id, session)
-                    author = bot.get_guild(payload.guild_id).get_member(msg.author)
-                    embed = misc.completed_embed(chp, author, user, "TS", "PR", bot)
-                    session.delete(msg)
-                    msg2 = await channel.fetch_message(payload.message_id)
-                    await msg2.clear_reactions()
-                    await msg2.unpin()
-                    await msg2.edit(content=None, embed=embed)
-                    session.commit()
-                session.close()
-        except Exception as e:
-            print(e)
-        finally:
-            session.close()
-
-
-@is_admin()
-@bot.command(enable=False, hidden=True)
-async def allcommands(ctx):
-    list = ""
-    for command in bot.commands:
-        list= f"{command.name}, {list}"
-    await ctx.send(list)
-
-
-
-@is_admin()
-@bot.command(enable=False, hidden=True)
-async def createtables(ctx):
-    await testdb.createtables()
-
-
-@bot.command(hidden=True)
-@is_admin()
-async def deletechapter(ctx, *, arg):
-    arg = arg[1:]
-    d = dict(x.split('=', 1) for x in arg.split(' -'))
-    try:
-        session = bot.Session()
-        query = session.query(Chapter)
-        if "id" in d:
-            record = query.filter(Chapter.id == float(d["id"])).one()
-        else:
-            raise MissingRequiredArgument
-        session.delete(record)
-        session.commit()
-    finally:
-        session.close()
-
-
-@is_admin()
-@bot.command(hidden=True)
-async def editconfig(ctx, *, arg):
-    arg = arg[1:]
-    d = dict(x.split('=', 1) for x in arg.split(' -'))
-    if "neko_workers" in d:
-        config["neko_workers"] = d["neko_workers"]
-    if "neko_herders" in d:
-        config["neko_herders"] = d["neko_herders"]
-    if "board_channel" in d:
-        config["board_channel"] = d["board_channel"]
-    if "command_channel" in d:
-        config["command_channel"] = d["command_channel"]
-    if "ts_id" in d:
-        config["ts_id"] = d["ts_id"]
-    if "rd_id" in d:
-        config["rd_id"] = d["rd_id"]
-    if "tl_id" in d:
-        config["tl_id"] = d["tl_id"]
-    if "pr_id" in d:
-        config["pr_id"] = d["pr_id"]
-    with open('src/util/config.json', 'w') as f:
-        json.dump(config, f, indent=4)
-
-
-@is_admin()
-@bot.command(hidden=True)
-async def displayconfig(ctx):
-    with open('src/util/config.json', 'r') as f:
-        r = json.load(f)
-        del r["heroku_key"]
-        del r["offline_key"]
-        j = json.dumps(r, indent=4, sort_keys=True)
-        await ctx.author.send(j)
-
-
-if config["online"]:
-    bot.ipc.start()
-    bot.run(config["heroku_key"])
-else:
-    bot.ipc.start()
-    bot.run(config["offline_key"])
-
+bot.run(bot.config["general"]["bot_key"])

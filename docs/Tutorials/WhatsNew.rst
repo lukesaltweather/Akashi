@@ -7,6 +7,7 @@ What's new in Akashi 2?
 With Akashi 2, the way to write commands changed radically. You might recognize the new format from Discord's slash commands.
 I am also currently looking into ways to make slash commands happen, although I can't make any promises.
 The new way to do commands looks like this:
+
 .. code-block:: text
 
     $editchapter chapter: yankee 62 title: Yukiko-san is Fine ① ts: lukesaltweather
@@ -17,6 +18,7 @@ The new way to do commands looks like this:
 With Akashi 2, chapters are specified in a different manner.
 Instead of having 2 arguments for a chapter (chapter and project), the two have now merged into a single argument "chapter".
 This works like so:
+
 .. code-block:: text
 
     $editchapter chapter: yankee 52 ts: lukesaltweather
@@ -51,7 +53,7 @@ Akashi now features a new backup functionality, which publishes a new database d
 This backup can then be used to restore a replacement database to the last backup state, in case things go south.
 
 -------------------------------
-6. Behind the scenes
+7. Behind the scenes
 -------------------------------
 A lot of tidying up and refactoring has been done on existing code. Responses to commands are now more consistent across the commands.
 However, this is still a work in progress.

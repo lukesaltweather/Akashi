@@ -12,7 +12,7 @@ from src.util.misc import MISSING
 from src.util.flags.flagutils import TypeOrMissing
 
 
-class EditChapterFlags(ChapterFlags):
+class EditChapterFlags(ChapterFlags, error_on_unknown=True):
     title: TypeOrMissing[str] = flag(default=MISSING)
     tl: TypeOrMissing[Staff] = flag(default=MISSING)
     rd: TypeOrMissing[Staff] = flag(default=MISSING)
@@ -28,11 +28,11 @@ class EditChapterFlags(ChapterFlags):
     to_chapter: Optional[float]
 
 
-class ReleaseFlags(ChapterFlags):
+class ReleaseFlags(ChapterFlags, error_on_unknown=True):
     date: Optional[DateTimeConverter]
 
 
-class EditProjectFlags(FlagConverter):
+class EditProjectFlags(FlagConverter, error_on_unknown=True):
     project: Project = flag(aliases=["p"])
     title: Optional[str]
     status: Optional[str]
@@ -48,7 +48,7 @@ class EditProjectFlags(FlagConverter):
     link: Optional[str]
 
 
-class EditStaffFlags(FlagConverter):
+class EditStaffFlags(FlagConverter, error_on_unknown=True):
     member: Staff
     id: Optional[int]
     name: Optional[str]

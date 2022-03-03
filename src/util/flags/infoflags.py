@@ -30,7 +30,7 @@ class InfoChapter(FlagConverter, error_on_unknown=True):
     fields: Optional[CommaList[str]] = flag(default=tuple())
 
 
-class InfoProject(FlagConverter):
+class InfoProject(FlagConverter, error_on_unknown=True):
     status: Optional[str] = flag(default=MISSING, noneable=True)
     project: Optional[str]
     tl: Optional[Staff] = flag(default=MISSING, noneable=True)
@@ -40,6 +40,6 @@ class InfoProject(FlagConverter):
     fields: Optional[CommaList[str]]
 
 
-class MonitorFlags(FlagConverter):
+class MonitorFlags(FlagConverter, error_on_unknown=True):
     chapter: Optional[Chapter]
     project: Optional[Project]

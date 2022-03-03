@@ -7,7 +7,7 @@ from src.model.project import Project
 from src.model.staff import Staff
 
 
-class AddChapterFlags(FlagConverter):
+class AddChapterFlags(FlagConverter, error_on_unknown=True):
     chapter: str = flag(aliases=["c"])
     raws: str
     ts: Optional[Staff]
@@ -17,7 +17,7 @@ class AddChapterFlags(FlagConverter):
     note: Optional[str]
 
 
-class AddProjectFlags(FlagConverter):
+class AddProjectFlags(FlagConverter, error_on_unknown=True):
     ts: Optional[Staff]
     rd: Optional[Staff]
     pr: Optional[Staff]
@@ -30,10 +30,10 @@ class AddProjectFlags(FlagConverter):
     link: str
 
 
-class AddStaffFlags(FlagConverter):
+class AddStaffFlags(FlagConverter, error_on_unknown=True):
     member: Member
 
 
-class MassAddFlags(FlagConverter):
+class MassAddFlags(FlagConverter, error_on_unknown=True):
     chapter: int
     project: Project

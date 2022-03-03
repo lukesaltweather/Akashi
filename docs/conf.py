@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = "Akashi"
-copyright = "2021, lukesaltweather"
+copyright = "2022, lukesaltweather"
 author = "lukesaltweather"
 
 
@@ -43,7 +43,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_book_theme"
+html_theme = "furo"
 html_logo = "akashi.png"
 html_favicon = "akashi.png"
 html_title = "Akashi Documentation"

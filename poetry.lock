@@ -157,6 +157,14 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "cached-property"
+version = "1.5.2"
+description = "A decorator for caching properties in classes."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "cffi"
 version = "1.15.0"
 description = "Foreign Function Interface for Python calling C code."
@@ -571,14 +579,15 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "pygit2"
-version = "1.8.0"
+version = "1.9.0"
 description = "Python bindings for libgit2."
 category = "main"
 optional = false
 python-versions = ">=3.7"
 
 [package.dependencies]
-cffi = ">=1.4.0"
+cached-property = "*"
+cffi = ">=1.9.1"
 
 [[package]]
 name = "python-dateutil"
@@ -737,7 +746,7 @@ sqlalchemy = []
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "a6c32a551ec4f4cba55a8c643394da1b1590b8d1e114cb26896a1ed584c7b628"
+content-hash = "ce4eea84228eb141e8ab6366ef01d2004df12d41209a5944f71c572047c26943"
 
 [metadata.files]
 aiofiles = [
@@ -903,6 +912,10 @@ braceexpand = [
     {file = "braceexpand-0.1.7-py2.py3-none-any.whl", hash = "sha256:91332d53de7828103dcae5773fb43bc34950b0c8160e35e0f44c4427a3b85014"},
     {file = "braceexpand-0.1.7.tar.gz", hash = "sha256:e6e539bd20eaea53547472ff94f4fb5c3d3bf9d0a89388c4b56663aba765f705"},
 ]
+cached-property = [
+    {file = "cached-property-1.5.2.tar.gz", hash = "sha256:9fa5755838eecbb2d234c3aa390bd80fbd3ac6b6869109bfc1b499f7bd89a130"},
+    {file = "cached_property-1.5.2-py2.py3-none-any.whl", hash = "sha256:df4f613cf7ad9a588cc381aaf4a512d26265ecebd5eb9e1ba12f1319eb85a6a0"},
+]
 cffi = [
     {file = "cffi-1.15.0-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:c2502a1a03b6312837279c8c1bd3ebedf6c12c4228ddbad40912d671ccc8a962"},
     {file = "cffi-1.15.0-cp27-cp27m-manylinux1_i686.whl", hash = "sha256:23cfe892bd5dd8941608f93348c0737e369e51c100d03718f108bf1add7bd6d0"},
@@ -1067,6 +1080,7 @@ greenlet = [
     {file = "greenlet-1.1.2-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:97e5306482182170ade15c4b0d8386ded995a07d7cc2ca8f27958d34d6736497"},
     {file = "greenlet-1.1.2-cp310-cp310-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:e6a36bb9474218c7a5b27ae476035497a6990e21d04c279884eb10d9b290f1b1"},
     {file = "greenlet-1.1.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:abb7a75ed8b968f3061327c433a0fbd17b729947b400747c334a9c29a9af6c58"},
+    {file = "greenlet-1.1.2-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:b336501a05e13b616ef81ce329c0e09ac5ed8c732d9ba7e3e983fcc1a9e86965"},
     {file = "greenlet-1.1.2-cp310-cp310-win_amd64.whl", hash = "sha256:14d4f3cd4e8b524ae9b8aa567858beed70c392fdec26dbdb0a8a418392e71708"},
     {file = "greenlet-1.1.2-cp35-cp35m-macosx_10_14_x86_64.whl", hash = "sha256:17ff94e7a83aa8671a25bf5b59326ec26da379ace2ebc4411d690d80a7fbcf23"},
     {file = "greenlet-1.1.2-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:9f3cba480d3deb69f6ee2c1825060177a22c7826431458c697df88e6aeb3caee"},
@@ -1079,6 +1093,7 @@ greenlet = [
     {file = "greenlet-1.1.2-cp36-cp36m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f9d29ca8a77117315101425ec7ec2a47a22ccf59f5593378fc4077ac5b754fce"},
     {file = "greenlet-1.1.2-cp36-cp36m-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:21915eb821a6b3d9d8eefdaf57d6c345b970ad722f856cd71739493ce003ad08"},
     {file = "greenlet-1.1.2-cp36-cp36m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:eff9d20417ff9dcb0d25e2defc2574d10b491bf2e693b4e491914738b7908168"},
+    {file = "greenlet-1.1.2-cp36-cp36m-musllinux_1_1_x86_64.whl", hash = "sha256:b8c008de9d0daba7b6666aa5bbfdc23dcd78cafc33997c9b7741ff6353bafb7f"},
     {file = "greenlet-1.1.2-cp36-cp36m-win32.whl", hash = "sha256:32ca72bbc673adbcfecb935bb3fb1b74e663d10a4b241aaa2f5a75fe1d1f90aa"},
     {file = "greenlet-1.1.2-cp36-cp36m-win_amd64.whl", hash = "sha256:f0214eb2a23b85528310dad848ad2ac58e735612929c8072f6093f3585fd342d"},
     {file = "greenlet-1.1.2-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:b92e29e58bef6d9cfd340c72b04d74c4b4e9f70c9fa7c78b674d1fec18896dc4"},
@@ -1087,6 +1102,7 @@ greenlet = [
     {file = "greenlet-1.1.2-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1e12bdc622676ce47ae9abbf455c189e442afdde8818d9da983085df6312e7a1"},
     {file = "greenlet-1.1.2-cp37-cp37m-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:8c790abda465726cfb8bb08bd4ca9a5d0a7bd77c7ac1ca1b839ad823b948ea28"},
     {file = "greenlet-1.1.2-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f276df9830dba7a333544bd41070e8175762a7ac20350786b322b714b0e654f5"},
+    {file = "greenlet-1.1.2-cp37-cp37m-musllinux_1_1_x86_64.whl", hash = "sha256:8c5d5b35f789a030ebb95bff352f1d27a93d81069f2adb3182d99882e095cefe"},
     {file = "greenlet-1.1.2-cp37-cp37m-win32.whl", hash = "sha256:64e6175c2e53195278d7388c454e0b30997573f3f4bd63697f88d855f7a6a1fc"},
     {file = "greenlet-1.1.2-cp37-cp37m-win_amd64.whl", hash = "sha256:b11548073a2213d950c3f671aa88e6f83cda6e2fb97a8b6317b1b5b33d850e06"},
     {file = "greenlet-1.1.2-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:9633b3034d3d901f0a46b7939f8c4d64427dfba6bbc5a36b1a67364cf148a1b0"},
@@ -1095,6 +1111,7 @@ greenlet = [
     {file = "greenlet-1.1.2-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e859fcb4cbe93504ea18008d1df98dee4f7766db66c435e4882ab35cf70cac43"},
     {file = "greenlet-1.1.2-cp38-cp38-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:00e44c8afdbe5467e4f7b5851be223be68adb4272f44696ee71fe46b7036a711"},
     {file = "greenlet-1.1.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ec8c433b3ab0419100bd45b47c9c8551248a5aee30ca5e9d399a0b57ac04651b"},
+    {file = "greenlet-1.1.2-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:2bde6792f313f4e918caabc46532aa64aa27a0db05d75b20edfc5c6f46479de2"},
     {file = "greenlet-1.1.2-cp38-cp38-win32.whl", hash = "sha256:288c6a76705dc54fba69fbcb59904ae4ad768b4c768839b8ca5fdadec6dd8cfd"},
     {file = "greenlet-1.1.2-cp38-cp38-win_amd64.whl", hash = "sha256:8d2f1fb53a421b410751887eb4ff21386d119ef9cde3797bf5e7ed49fb51a3b3"},
     {file = "greenlet-1.1.2-cp39-cp39-macosx_10_14_x86_64.whl", hash = "sha256:166eac03e48784a6a6e0e5f041cfebb1ab400b394db188c48b3a84737f505b67"},
@@ -1103,6 +1120,7 @@ greenlet = [
     {file = "greenlet-1.1.2-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:b1692f7d6bc45e3200844be0dba153612103db241691088626a33ff1f24a0d88"},
     {file = "greenlet-1.1.2-cp39-cp39-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:7227b47e73dedaa513cdebb98469705ef0d66eb5a1250144468e9c3097d6b59b"},
     {file = "greenlet-1.1.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7ff61ff178250f9bb3cd89752df0f1dd0e27316a8bd1465351652b1b4a4cdfd3"},
+    {file = "greenlet-1.1.2-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:0051c6f1f27cb756ffc0ffbac7d2cd48cb0362ac1736871399a739b2885134d3"},
     {file = "greenlet-1.1.2-cp39-cp39-win32.whl", hash = "sha256:f70a9e237bb792c7cc7e44c531fd48f5897961701cdaa06cf22fc14965c496cf"},
     {file = "greenlet-1.1.2-cp39-cp39-win_amd64.whl", hash = "sha256:013d61294b6cd8fe3242932c1c5e36e5d1db2c8afb58606c5a67efce62c1f5fd"},
     {file = "greenlet-1.1.2.tar.gz", hash = "sha256:e30f5ea4ae2346e62cedde8794a56858a67b878dd79f7df76a0767e356b1744a"},
@@ -1357,36 +1375,36 @@ pyflakes = [
     {file = "pyflakes-2.4.0.tar.gz", hash = "sha256:05a85c2872edf37a4ed30b0cce2f6093e1d0581f8c19d7393122da7e25b2b24c"},
 ]
 pygit2 = [
-    {file = "pygit2-1.8.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:723875972eb34a079b0ccb864f1b6c3fcd1cb057c39169f1651e93d761fee75c"},
-    {file = "pygit2-1.8.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:e2c7ede1ee92c2bca6d2ba8b78384c8ac7f973bb62010e0f8ebd0749197d6c7f"},
-    {file = "pygit2-1.8.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c9be4690b95f2d74edf94e42789e2dccf799418944f3076e05299664059cae88"},
-    {file = "pygit2-1.8.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1354f21bad14ebc5fe8d86cfc07e879358bb4d0f172702a95c7aab4f644aff0e"},
-    {file = "pygit2-1.8.0-cp310-cp310-win32.whl", hash = "sha256:e4a039331d8a8ede8d063d54ec55de4999ff149830db4deb0e7bf4af879b51ea"},
-    {file = "pygit2-1.8.0-cp310-cp310-win_amd64.whl", hash = "sha256:dd6cc30f292304ef1a284ed4dad632efbccd23c0dd00b2fb67e6011269814463"},
-    {file = "pygit2-1.8.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:84627ed330b748f23be906a31bef6640b3d009329ec65cc395494243ca1498cc"},
-    {file = "pygit2-1.8.0-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:34a0604c83872d45368c74e27e204f2233bc80a61777c494adfc302fb9e19dbb"},
-    {file = "pygit2-1.8.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8ad9279a646d57b785e84cb86f73e775ae85ebc5361707a6e45aa66aeb905821"},
-    {file = "pygit2-1.8.0-cp37-cp37m-win32.whl", hash = "sha256:b1e20e196c5f39516d188956e3bf1a8695539b69f6e973098e16abdf211f388e"},
-    {file = "pygit2-1.8.0-cp37-cp37m-win_amd64.whl", hash = "sha256:be3dbe7ead161441c6562121c41fe2160555cd6ee82a3c4bf80df4626ae5a4e7"},
-    {file = "pygit2-1.8.0-cp38-cp38-macosx_10_9_universal2.whl", hash = "sha256:9e7015b5c629b4b30bfb43a8347eba2d2ddcd68789d0d255fbdd3849a5381b44"},
-    {file = "pygit2-1.8.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:29521da6db257e03dcf7314aceaadbc41f11fa7086d3fd0fe01804679043617a"},
-    {file = "pygit2-1.8.0-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:09f378ccd93aca34bc1fcb0b6add6ac5425558db9e7e8bf03aae2719c4c2de1e"},
-    {file = "pygit2-1.8.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3a39e7d3bdeaf780aa901cfd9f5d5681963e3d16433f422968c52343c226bfd7"},
-    {file = "pygit2-1.8.0-cp38-cp38-win32.whl", hash = "sha256:a34272897c378feb7e22460a57fddda163668a1444ab984d5bfa3d8a118479c5"},
-    {file = "pygit2-1.8.0-cp38-cp38-win_amd64.whl", hash = "sha256:bfe85c17bf47cd8d29d91a162efac0f8de9570e01e01325131c15399d6686462"},
-    {file = "pygit2-1.8.0-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:d7406496f45d9746b545bf3f291687b6beef6c426fad9be6ee55ed593494b60c"},
-    {file = "pygit2-1.8.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:fb3c4426729b6c99fc62916e5cf7e1d2d002a82a180e2d064a9e07fba9729b67"},
-    {file = "pygit2-1.8.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1bf9eb8a333e0a0ac0a0cf71bc16f181501b389e4ff6c1a1fda8aa81aba51f70"},
-    {file = "pygit2-1.8.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:14f5202077b5fbb604a3f5c05effbe561ee0b478f673178dce1e2001b73f9578"},
-    {file = "pygit2-1.8.0-cp39-cp39-win32.whl", hash = "sha256:e312cbe2aa1eaaf9c0d73f3cdde4bcc5fdc1c8a4108d1d159f12b9add7d13ee8"},
-    {file = "pygit2-1.8.0-cp39-cp39-win_amd64.whl", hash = "sha256:407ced944259a2542874231551fd65a16a0c8352e468a6f2c5462e4910ef7c50"},
-    {file = "pygit2-1.8.0-pp37-pypy37_pp73-macosx_10_9_x86_64.whl", hash = "sha256:04426794238d8e327a8ce961b66642db6faddc213989ad9d78412a89de5aac5d"},
-    {file = "pygit2-1.8.0-pp37-pypy37_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:507cd52d34d4b0536095ae5ed7c3271cebce5bab6d6b9a4587c45ebf759f5c67"},
-    {file = "pygit2-1.8.0-pp37-pypy37_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7765960ce478a2a2fe0282aec1207f16d789ae2b92035ef04ec6bbf96c74dfc7"},
-    {file = "pygit2-1.8.0-pp38-pypy38_pp73-macosx_10_9_x86_64.whl", hash = "sha256:797194d467630f88a7b2ea59cea4bd72ef71009fbe7e97062282b73ba736d12b"},
-    {file = "pygit2-1.8.0-pp38-pypy38_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9f7443a5c8c77cddab590c94197b7bccb809e0e57baecc2560e1031a8befdc21"},
-    {file = "pygit2-1.8.0-pp38-pypy38_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:18d4aeb9f3f92c472711c87f88985040807ce2f34b4c9d5278fa0ae4dc22968d"},
-    {file = "pygit2-1.8.0.tar.gz", hash = "sha256:6e2c5cff5aa1e43f43103480761152f5c5d6bef40f5c1f50c8758a6e89e66cb6"},
+    {file = "pygit2-1.9.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:4a78eabd0ad69887940c9b853d375303c199a79d6964a524f8e4dd5dfe930bb0"},
+    {file = "pygit2-1.9.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:e9317f731cbbe90b64ba30fbcb1bb019857312a2cb1b46f1dff5963f36dfc758"},
+    {file = "pygit2-1.9.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f2d4b89fcb9f5c2b97a58c7ae560f51beeb45a0be02f1359964a2b1f03a221dd"},
+    {file = "pygit2-1.9.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2374d98b82195186765868f73c6c65fb2a69ec4f53aa9c56f139d72881c8967a"},
+    {file = "pygit2-1.9.0-cp310-cp310-win32.whl", hash = "sha256:ef5660e8abcfae1425ea2bb80f1b09cdbc633d2926ae89bc961367af8eddf880"},
+    {file = "pygit2-1.9.0-cp310-cp310-win_amd64.whl", hash = "sha256:7ebbafcc41a0d8e7deefe12e15fe862df1f862afcf74a319c5596910c0636cda"},
+    {file = "pygit2-1.9.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:a0aa6b6393b52dac92c88b09d3e655820641d940a1e9c53b565f698f70c6a2c2"},
+    {file = "pygit2-1.9.0-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9150d58bd84e71ace4c8b74257898d2aa88574fe60145cbc59e07455c19f811a"},
+    {file = "pygit2-1.9.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:50210f7066b659a8e5cdb96b81a6a56386b0f940a5ed3d4a49218a7fa7052327"},
+    {file = "pygit2-1.9.0-cp37-cp37m-win32.whl", hash = "sha256:e3421c8617b708cc3dc7e5c8449afe0917c8327767d33e3bb6d40e6f387334df"},
+    {file = "pygit2-1.9.0-cp37-cp37m-win_amd64.whl", hash = "sha256:ad332c1be1a8cdf8803d73ad1c40ae91d6bd5366489dbaad2de08c68f1fa8eb7"},
+    {file = "pygit2-1.9.0-cp38-cp38-macosx_10_9_universal2.whl", hash = "sha256:5abe0dacf32227be721f8a1f793b2c95a92bca3ef6564bd065238736e49a3d07"},
+    {file = "pygit2-1.9.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:b957b8f91854a5b19b7b7ec696c9310562af1585d5d592746f19d008d08c62b4"},
+    {file = "pygit2-1.9.0-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2dad5ddd816f3690cb181ccd84883b5d95f61f19a27060ed379a6ea733855777"},
+    {file = "pygit2-1.9.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8cbc6f03c0a5a9dc414fe0a95c4c77a516575ec184205179a63872957b92482a"},
+    {file = "pygit2-1.9.0-cp38-cp38-win32.whl", hash = "sha256:1e12f17ec594bf9297b56dffae50a4938caf7b44aecd9523cae82587e833cc81"},
+    {file = "pygit2-1.9.0-cp38-cp38-win_amd64.whl", hash = "sha256:6cb5d0131f699a91cf329a3d081b1309f542b50ae8968d583de8329e8a234f5f"},
+    {file = "pygit2-1.9.0-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:8dafc6079f880b5e4b0fe1a141bcf1018110d8e4579710de01dff0221c65b848"},
+    {file = "pygit2-1.9.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:ff79d9b20f5a5ec5ce2a2dfc2e5775404c3932b40cc39836cdb92b1368a3025c"},
+    {file = "pygit2-1.9.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:cad866f71e2f0b240920d5630a70d1286e140a9ea4bfc91f3a349d73d24288a8"},
+    {file = "pygit2-1.9.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:21fe01a6540e0ea99ddc1d9053286a1dc829dd096b97a64d2300f9db46470f7f"},
+    {file = "pygit2-1.9.0-cp39-cp39-win32.whl", hash = "sha256:2f72b9cf6d55b80cbd870e86b92ada45ff68f459634cd18220c87d1076e2c354"},
+    {file = "pygit2-1.9.0-cp39-cp39-win_amd64.whl", hash = "sha256:1e69647473ba6cd84c5325286a856241cdfe3ebf1d6a6fd12343acbe9a8e815f"},
+    {file = "pygit2-1.9.0-pp37-pypy37_pp73-macosx_10_9_x86_64.whl", hash = "sha256:2bf9fd1bc9ab8c409fd1575d4b10d9b219ff127c07a9bb09e2e500ab57d0b55e"},
+    {file = "pygit2-1.9.0-pp37-pypy37_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7d4458cebf2c811c4dfbd1423eaecfe49a41a27de31916fb21dbf40eae11cdfb"},
+    {file = "pygit2-1.9.0-pp37-pypy37_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:da8ad80a037f414a880952e5b02d99ee4052970b0ba67aeff12916c2d96cb5db"},
+    {file = "pygit2-1.9.0-pp38-pypy38_pp73-macosx_10_9_x86_64.whl", hash = "sha256:1f1339410c70d7cf8b3cee2bee019d7d30141ffcad0f614e975decbe9867efd3"},
+    {file = "pygit2-1.9.0-pp38-pypy38_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:59a24e8e58035aa4746c5d47eae37612ebde0c1d0d04f9cf0b0fac39fb6fe21d"},
+    {file = "pygit2-1.9.0-pp38-pypy38_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a3ffd6ae7bc9e4d6a204f593c02b2537acdd08f973ddd7e5015277d9550cb125"},
+    {file = "pygit2-1.9.0.tar.gz", hash = "sha256:c5e8588acad5e32fa0595582571059e6b90ec7c487c58b4e53c2800dcbde44c8"},
 ]
 python-dateutil = [
     {file = "python-dateutil-2.8.1.tar.gz", hash = "sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c"},

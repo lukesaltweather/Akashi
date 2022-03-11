@@ -1,15 +1,12 @@
-import json
-
 import discord
 import discord.ext
 from discord.ext.commands import CommandError
-from sqlalchemy.orm.exc import MultipleResultsFound
-from sqlalchemy.sql.expression import select
+from sqlalchemy.sql.expression import select, or_
 
-import src.model.staff as staff
 import src.model.project as project
-from src.util import exceptions, misc
-from src.util.db import get_first, get_one
+import src.model.staff as staff
+from src.util import misc
+from src.util.db import get_first, get_one, get_all
 
 
 async def discordstaff(sti: str, ctx):
@@ -81,3 +78,13 @@ async def searchproject(sti, session):
         except Exception as e:
             print(e)
     raise CommandError("This project doesn't exist.")
+
+
+async def searchprojects(sti, session):
+    stmt = select(project.Project).filter(
+        or_(
+            project.Project.title.ilike("%" + sti + "%"),
+            project.Project.altNames.ilike("%" + sti + ",%"),
+        )
+    )
+    return await get_all(session, stmt)

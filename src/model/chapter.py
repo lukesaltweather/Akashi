@@ -1,15 +1,16 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float
-from sqlalchemy.orm import relationship, aliased, joinedload, backref
-from sqlalchemy.sql.expression import select
-from src.model.monitor import MonitorRequest
+import re
 
-from src.model.note import Note
-from src.model.project import Project
-from src.model.staff import Staff
+import discord
+
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float
+from sqlalchemy.orm import relationship, backref
+from sqlalchemy.sql.expression import select
+
 from src.model.ReportMixin import ReportMixin
-from src.util.db import Base, get_one
+from src.model.project import Project
+from src.util.db import Base, get_one, get_all
 from src.util.misc import format_number
-from src.util.search import searchproject
+from src.util.search import searchproject, searchprojects
 
 
 class Chapter(Base, ReportMixin):
@@ -64,7 +65,7 @@ class Chapter(Base, ReportMixin):
     )
     project = relationship(
         "Project",
-        backref=backref("chapters", uselist=True),
+        backref=backref("chapters", uselist=True, lazy="joined"),
         lazy="joined",
         foreign_keys=[project_id],
         primaryjoin="Project.id==Chapter.project_id",

@@ -75,9 +75,11 @@ class Bot(commands.Bot):
         self.load_extension("src.cogs.note")
         self.load_extension("src.cogs.help")
         self.load_extension("src.cogs.database")
+        self.load_extension("src.slash.done")
         self.load_extension("jishaku")
         self.logger.info(msg="Finished loading Cogs.")
-        self.logger.info(msg="Init complete.")
+
+        self.loop.create_task(self.async_startup())
 
     async def get_context(self, message, *, cls=None):
         return await super().get_context(message, cls=CstmContext)
@@ -109,6 +111,13 @@ class Bot(commands.Bot):
         )
         print(f"Exception in {event_method}", file=sys.stderr)
         traceback.print_exc()
+
+    async def async_startup(self):
+        await self.wait_until_ready()
+        self.logger.info(msg="Syncing slash commands.")
+        await self.tree.sync(guild=discord.Object(603203362133114891))
+        self.logger.info(msg="Finished syncing slash commands.")
+        self.logger.info(msg="Init complete.")
 
 
 bot = Bot(command_prefix="$", intents=Intents.all())

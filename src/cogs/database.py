@@ -53,11 +53,10 @@ class Database(commands.Cog):
         file = discord.File(
             buffer, datetime.datetime.utcnow().strftime("akashi-backup-%Y-%m-%d.dump")
         )
-        bkp_message = await channel.fetch_message(
-            self.bot.config["server"].get("bkp_message")
-        )
+        bkp_message = self.bot.config["server"].get("bkp_message", None)
         if bkp_message:
-            await bkp_message.edit(
+            msg = await channel.fetch_message(self.bot.config["server"]["bkp_message"])
+            await msg.edit(
                 "Here's todays backup.\n"
                 "See https://docs.akashi.app/developers/restore_backup.html for info on how to restore the backup.",
                 file=file,

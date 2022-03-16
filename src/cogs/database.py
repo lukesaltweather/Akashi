@@ -57,7 +57,7 @@ class Database(commands.Cog):
         if bkp_message:
             msg = await channel.fetch_message(self.bot.config["server"]["bkp_message"])
             await msg.edit(
-                "Here's todays backup.\n"
+                f"Here's the backup on {datetime.datetime.utcnow().strftime('%Y-%m-%d')}.\n"
                 "See https://docs.akashi.app/developers/restore_backup.html for info on how to restore the backup.",
                 attachments=[file],
             )

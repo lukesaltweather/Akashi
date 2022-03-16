@@ -65,7 +65,7 @@ class Database(commands.Cog):
             new_message = await channel.send(
                 "Here's todays backup.\n"
                 "See https://docs.akashi.app/developers/restore_backup.html for info on how to restore the backup.",
-                file=file,
+                attachments=[file],
             )
             self.bot.config["server"]["bkp_message"] = new_message.id
             await self.bot.save_config()

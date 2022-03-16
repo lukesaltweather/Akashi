@@ -19,7 +19,6 @@ class Database(commands.Cog):
         channel = await self.bot.fetch_channel(
             self.bot.config["server"]["channels"]["backups"]
         )
-        initial_msg = await channel.send("Backing up the database...")
         buffer = io.BytesIO()
         try:
             process = subprocess.Popen(
@@ -54,12 +53,22 @@ class Database(commands.Cog):
         file = discord.File(
             buffer, datetime.datetime.utcnow().strftime("akashi-backup-%Y-%m-%d.dump")
         )
-        await channel.send(
-            "Here's todays backup.\n"
-            "See https://docs.akashi.app/developers/restore_backup.html for info on how to restore the backup.",
-            file=file,
+        bkp_message = await channel.fetch_message(
+            self.bot.config["server"].get("bkp_message")
         )
-        await initial_msg.delete()
+        if bkp_message:
+            await bkp_message.edit(
+                "Here's todays backup.\n"
+                "See https://docs.akashi.app/developers/restore_backup.html for info on how to restore the backup.",
+                file=file,
+            )
+        else:
+            new_message = await channel.send(
+                "Here's todays backup.\n"
+                "See https://docs.akashi.app/developers/restore_backup.html for info on how to restore the backup.",
+                file=file,
+            )
+            self.bot.config["server"]["bkp_message"] = new_message.id
 
     @commands.command()
     @is_admin()

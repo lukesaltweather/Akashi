@@ -75,7 +75,7 @@ class Bot(commands.Bot):
         self.load_extension("src.cogs.note")
         self.load_extension("src.cogs.help")
         self.load_extension("src.cogs.database")
-        self.load_extension("src.slash.done")
+        # self.load_extension("src.slash.done")
         self.load_extension("jishaku")
         self.logger.info(msg="Finished loading Cogs.")
 

@@ -68,6 +68,7 @@ class Database(commands.Cog):
                 file=file,
             )
             self.bot.config["server"]["bkp_message"] = new_message.id
+            await self.bot.save_config()
 
     @commands.command()
     @is_admin()

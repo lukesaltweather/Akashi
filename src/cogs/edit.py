@@ -93,7 +93,7 @@ class Edit(commands.Cog):
             record.project = proj
         if flags.to_chapter:
             record.number = flags.to_chapter
-        image = await record.get_report(record)
+        image = await record.get_report(str(record))
         embed1 = discord.Embed(
             color=discord.Colour.dark_blue(),
             title="Do you want to commit these changes to this chapter?",

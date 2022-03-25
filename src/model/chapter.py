@@ -86,14 +86,17 @@ class Chapter(Base, ReportMixin):
         proj = arg[0 : len(arg) - len(arg.split(" ")[-1])]
 
         session = ctx.session
-        project = await searchprojects(proj, session)
+        project = await searchproject(proj, session)
 
         query = (
             select(Chapter)
             .filter(Chapter.project_id == project.id)
             .filter(Chapter.number == chapter)
         )
-        return await get_one(ctx.session, query)
+        try:
+            return await get_one(ctx.session, query)
+        except Exception:
+            raise discord.ext.commands.BadArgument(f"{chapter} could not be found.")
 
     def __str__(self):
         return f"{self.project} {format_number(self.number)}"

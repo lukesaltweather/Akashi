@@ -60,23 +60,15 @@ async def searchstaffpayload(passstr, sessions):
 
 
 async def searchproject(sti, session):
-    if sti.isdigit():
-        stmt = select(project.Project).filter(int(sti) == project.Project.id)
-        return get_one(session, stmt)
-    for i in range(1, 3):
-        try:
-            if i == 1:
-                stmt = select(project.Project).filter(
-                    project.Project.title.ilike("%" + sti + "%")
-                )
-                return await get_one(session, stmt)
-            if i == 2:
-                stmt = select(project.Project).filter(
-                    project.Project.altNames.ilike("%" + sti + ",%")
-                )
-                return await get_one(session, stmt)
-        except Exception as e:
-            print(e)
+    stmt = select(project.Project).filter(
+        or_(
+            project.Project.title.ilike("%" + sti + "%"),
+            project.Project.altNames.ilike("%" + sti + ",%"),
+        )
+    )
+    proj = await get_first(session, stmt)
+    if proj:
+        return proj
     raise CommandError("This project doesn't exist.")
 
 

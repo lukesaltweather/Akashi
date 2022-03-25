@@ -86,7 +86,7 @@ class Chapter(Base, ReportMixin):
         proj = arg[0 : len(arg) - len(arg.split(" ")[-1])]
 
         session = ctx.session
-        project = await searchproject(proj, session)
+        project = await searchprojects(proj, session)
 
         query = (
             select(Chapter)

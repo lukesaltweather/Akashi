@@ -53,6 +53,9 @@ class Misc(commands.Cog):
                 await member.add_roles(discord.Object(717869966136967330))
             elif payload.emoji.__str__() == "✉️":
                 await member.add_roles(discord.Object(345886396046770176))
+                await guild.get_channel(345887844663033856).send(
+                    f"Hi {member.mention}! Please send your application in here."
+                )
             elif payload.emoji.__str__() == "🍲":
                 await member.add_roles(discord.Object(464213892109828097))
 

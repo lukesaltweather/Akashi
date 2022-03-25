@@ -93,8 +93,6 @@ class Edit(commands.Cog):
             record.project = proj
         if flags.to_chapter:
             record.number = flags.to_chapter
-        if flags.notes is not MISSING:
-            record.notes = flags.notes
         image = await record.get_report(record)
         embed1 = discord.Embed(
             color=discord.Colour.dark_blue(),

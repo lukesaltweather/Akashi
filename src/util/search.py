@@ -63,7 +63,7 @@ async def searchproject(sti, session):
     sti = sti.lower()
     stmt = select(project.Project).where(
         or_(
-            func.similarity(project.Project.title, sti) > 0.4,
+            func.word_similarity(sti, project.Project.title) > 0.4,
             func.lower(project.Project.altNames).contains(sti),
         )
     )
@@ -76,8 +76,8 @@ async def searchproject(sti, session):
 async def searchprojects(sti, session):
     stmt = select(project.Project).where(
         or_(
-            project.Project.title.op("%")(sti),
-            project.Project.altNames.contains(sti),
+            func.word_similarity(sti, project.Project.title) > 0.4,
+            func.lower(project.Project.altNames).contains(sti),
         )
     )
     return await get_all(session, stmt)

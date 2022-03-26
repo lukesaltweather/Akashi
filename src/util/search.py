@@ -1,7 +1,7 @@
 import discord
 import discord.ext
 from discord.ext.commands import CommandError
-from sqlalchemy.sql.expression import select, or_
+from sqlalchemy.sql.expression import select, or_, func
 
 import src.model.project as project
 import src.model.staff as staff
@@ -60,10 +60,11 @@ async def searchstaffpayload(passstr, sessions):
 
 
 async def searchproject(sti, session):
+    sti = sti.lower()
     stmt = select(project.Project).where(
         or_(
-            project.Project.title.op("%")(sti),
-            project.Project.altNames.contains(sti),
+            func.similarity(project.Project.title, sti) > 0.4,
+            func.lower(project.Project.altNames).contains(sti),
         )
     )
     proj = await get_first(session, stmt)

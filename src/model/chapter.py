@@ -84,6 +84,7 @@ class Chapter(Base, ReportMixin):
     async def convert(cls, ctx, arg: str):
         chapter = float(arg.split(" ")[-1])
         proj = arg[0 : len(arg) - len(arg.split(" ")[-1])]
+        proj = proj.rstrip()
 
         session = ctx.session
         project = await searchproject(proj, session)

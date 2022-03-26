@@ -60,10 +60,10 @@ async def searchstaffpayload(passstr, sessions):
 
 
 async def searchproject(sti, session):
-    stmt = select(project.Project).filter(
+    stmt = select(project.Project).where(
         or_(
-            project.Project.title.ilike("%" + sti + "%"),
-            project.Project.altNames.ilike("%" + sti + ",%"),
+            project.Project.title.op("%")(sti),
+            project.Project.altNames.contains(sti),
         )
     )
     proj = await get_first(session, stmt)
@@ -73,10 +73,10 @@ async def searchproject(sti, session):
 
 
 async def searchprojects(sti, session):
-    stmt = select(project.Project).filter(
+    stmt = select(project.Project).where(
         or_(
-            project.Project.title.ilike("%" + sti + "%"),
-            project.Project.altNames.ilike("%" + sti + ",%"),
+            project.Project.title.op("%")(sti),
+            project.Project.altNames.contains(sti),
         )
     )
     return await get_all(session, stmt)

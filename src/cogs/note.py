@@ -48,13 +48,17 @@ class RemoveView(discord.ui.View):
 
     @discord.ui.select(max_values=25, row=0)
     async def selected(
-        self, select: discord.ui.Select, interaction: discord.Interaction
+        self,
+        interaction: discord.Interaction,
+        select: discord.ui.Select,
     ):
         self.value = select.values
 
     @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green, row=1)
     async def confirm(
-        self, button: discord.ui.Button, interaction: discord.Interaction
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
     ):
         print()
         await interaction.response.defer()
@@ -63,7 +67,11 @@ class RemoveView(discord.ui.View):
         self.stop()
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red, row=1)
-    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def cancel(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ):
         self.value = None
         await interaction.response.defer()
         if self.delete_after:

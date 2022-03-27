@@ -55,7 +55,9 @@ class DoneView(discord.ui.View):
 
     @discord.ui.button(label="Notify", style=discord.ButtonStyle.green, emoji="✉")
     async def ping_mention(
-        self, button: discord.ui.Button, interaction: discord.Interaction
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
     ):
         self.value = True
         await interaction.response.defer()
@@ -65,7 +67,9 @@ class DoneView(discord.ui.View):
 
     @discord.ui.button(label="Don't Notify", style=discord.ButtonStyle.green, emoji="📝")
     async def ping_no_mention(
-        self, button: discord.ui.Button, interaction: discord.Interaction
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
     ):
         self.value = False
         await interaction.response.defer()
@@ -74,7 +78,11 @@ class DoneView(discord.ui.View):
         self.stop()
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red, emoji="❌")
-    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def cancel(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ):
         self.value = None
         await interaction.response.defer()
         if self.delete_after:

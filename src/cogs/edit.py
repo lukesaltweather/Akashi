@@ -260,5 +260,5 @@ class Edit(commands.Cog):
         )
 
 
-def setup(Bot):
-    Bot.add_cog(Edit(Bot))
+async def setup(Bot):
+    await Bot.add_cog(Edit(Bot))

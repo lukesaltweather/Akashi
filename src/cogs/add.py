@@ -245,5 +245,5 @@ class Add(commands.Cog):
             await ctx.send(f"An error occured while adding the chapter: {error}")
 
 
-def setup(Bot):
-    Bot.add_cog(Add(Bot))
+async def setup(Bot):
+    await Bot.add_cog(Add(Bot))

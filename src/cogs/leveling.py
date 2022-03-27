@@ -60,5 +60,5 @@ class Leveling(commands.Cog):
         await self.pool.release(con)
 
 
-def setup(bot: commands.bot):
-    bot.add_cog(Leveling(bot))
+async def setup(bot: commands.bot):
+    await bot.add_cog(Leveling(bot))

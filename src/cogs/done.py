@@ -651,5 +651,5 @@ class Done(commands.Cog):
         )
 
 
-def setup(Bot):
-    Bot.add_cog(Done(Bot))
+async def setup(Bot):
+    await Bot.add_cog(Done(Bot))

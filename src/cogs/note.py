@@ -302,5 +302,5 @@ class Note(commands.Cog):
             await ctx.reply("Cancelling...", delete_after=10)
 
 
-def setup(Bot):
-    Bot.add_cog(Note(Bot))
+async def setup(Bot):
+    await Bot.add_cog(Note(Bot))

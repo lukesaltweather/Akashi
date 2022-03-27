@@ -4,6 +4,7 @@ import logging
 import os
 import sys
 import traceback
+import asyncio
 
 import aiofiles
 import asyncpg
@@ -46,13 +47,7 @@ class Bot(commands.Bot):
         self.config = toml.load("config.toml")
         self.logger.info(msg="Loaded Config.")
         self.logger.info(msg="Creating asnypg pool...")
-        self.pool = self.loop.run_until_complete(
-            asyncpg.create_pool(
-                "postgres://Akashi:CWyYxRCvRg5hs@51.15.107.70:5432/akashitest",
-                min_size=1,
-                max_size=10,
-            )
-        )
+        self.pool = None
         self.logger.info(msg="Finished setting up asyncpg connection pool.")
         self.logger.info(msg="Setting up SQLAlchemy Sessionmaker...")
         self.Session = sessionmaker(
@@ -66,20 +61,7 @@ class Bot(commands.Bot):
         self.em = emojis
         self.uptime = datetime.datetime.now()
         self.logger.info(msg="Loading Cogs...")
-        self.load_extension("src.cogs.loops")
-        self.load_extension("src.cogs.edit")
-        self.load_extension("src.cogs.misc")
-        self.load_extension("src.cogs.info")
-        self.load_extension("src.cogs.add")
-        self.load_extension("src.cogs.done")
-        self.load_extension("src.cogs.note")
-        self.load_extension("src.cogs.help")
-        self.load_extension("src.cogs.database")
-        # self.load_extension("src.slash.done")
-        self.load_extension("jishaku")
         self.logger.info(msg="Finished loading Cogs.")
-
-        self.loop.create_task(self.async_startup())
 
     async def get_context(self, message, *, cls=None):
         return await super().get_context(message, cls=CstmContext)
@@ -89,6 +71,30 @@ class Bot(commands.Bot):
             await file.write(toml.dumps(self.config))
         os.replace("config.toml.new", "config.toml")
         self.logger.info(msg="Config File overridden.")
+
+    async def setup_hook(self) -> None:
+        await self.load_extension("src.cogs.loops")
+        await self.load_extension("src.cogs.edit")
+        await self.load_extension("src.cogs.misc")
+        await self.load_extension("src.cogs.info")
+        await self.load_extension("src.cogs.add")
+        await self.load_extension("src.cogs.done")
+        await self.load_extension("src.cogs.note")
+        await self.load_extension("src.cogs.help")
+        await self.load_extension("src.cogs.database")
+        # self.load_extension("src.slash.done")
+        await self.load_extension("jishaku")
+
+        self.logger.info(msg="Syncing slash commands.")
+        await self.tree.sync(guild=discord.Object(603203362133114891))
+        self.logger.info(msg="Finished syncing slash commands.")
+        self.logger.info(msg="Init complete.")
+
+        self.pool = await asyncpg.create_pool(
+            self.config["general"]["uri"].replace("+asyncpg", ""),
+            min_size=1,
+            max_size=10,
+        )
 
     def get_cog_insensitive(self, name):
         """Gets the cog instance requested.
@@ -112,15 +118,8 @@ class Bot(commands.Bot):
         print(f"Exception in {event_method}", file=sys.stderr)
         traceback.print_exc()
 
-    async def async_startup(self):
-        await self.wait_until_ready()
-        self.logger.info(msg="Syncing slash commands.")
-        await self.tree.sync(guild=discord.Object(603203362133114891))
-        self.logger.info(msg="Finished syncing slash commands.")
-        self.logger.info(msg="Init complete.")
 
-
-bot = Bot(command_prefix="$", intents=Intents.all())
+bot = Bot(command_prefix="$", intents=Intents.all(), application_id=603216263484801039)
 
 print(version_info)
 

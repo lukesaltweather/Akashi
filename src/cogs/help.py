@@ -314,5 +314,5 @@ class EmbedHelper:
         return self.embed
 
 
-def setup(Bot):
-    Bot.add_cog(MyCog(Bot))
+async def setup(Bot):
+    await Bot.add_cog(MyCog(Bot))

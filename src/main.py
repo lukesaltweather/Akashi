@@ -82,11 +82,10 @@ class Bot(commands.Bot):
         await self.load_extension("src.cogs.note")
         await self.load_extension("src.cogs.help")
         await self.load_extension("src.cogs.database")
-        # self.load_extension("src.slash.done")
+        await self.load_extension("src.slash.edit")
         await self.load_extension("jishaku")
 
         self.logger.info(msg="Syncing slash commands.")
-        # await self.tree.sync(guild=discord.Object(603203362133114891))
         self.logger.info(msg="Finished syncing slash commands.")
         self.logger.info(msg="Init complete.")
 
@@ -119,7 +118,7 @@ class Bot(commands.Bot):
         traceback.print_exc()
 
 
-bot = Bot(command_prefix="$", intents=Intents.all(), application_id=603216263484801039)
+bot = Bot(command_prefix="$", intents=Intents.all())
 
 print(version_info)
 
@@ -214,4 +213,9 @@ async def on_member_update(before: discord.Member, after: discord.Member):
             await session1.close()
 
 
-bot.run(bot.config["general"]["bot_key"])
+async def main():
+    async with bot:
+        await bot.start(bot.config["general"]["bot_key"])
+
+
+asyncio.run(main())

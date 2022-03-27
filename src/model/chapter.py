@@ -13,7 +13,7 @@ from src.util.misc import format_number
 from src.util.search import searchproject, searchprojects
 
 
-class Chapter(Base, ReportMixin):
+class Chapter(Base, ReportMixin, discord.app_commands.Transformer):
     __tablename__ = "chapters"
     id = Column(Integer, primary_key=True)
     number = Column(Float)
@@ -98,6 +98,25 @@ class Chapter(Base, ReportMixin):
             return await get_one(ctx.session, query)
         except Exception:
             raise discord.ext.commands.BadArgument(f"{chapter} could not be found.")
+
+    @classmethod
+    async def transform(cls, interaction: discord.Interaction, value):
+        async with interaction.client.Session() as session:
+            chapter = float(value.split(" ")[-1])
+            proj = value[0 : len(value) - len(value.split(" ")[-1])]
+            proj = proj.rstrip()
+
+            project = await searchproject(proj, session)
+
+            query = (
+                select(Chapter)
+                .filter(Chapter.project_id == project.id)
+                .filter(Chapter.number == chapter)
+            )
+            try:
+                return await get_one(session, query)
+            except Exception:
+                pass
 
     def __str__(self):
         return f"{self.project} {format_number(self.number)}"

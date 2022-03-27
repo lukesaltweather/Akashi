@@ -1,0 +1,116 @@
+import typing as t
+import re
+
+from sqlalchemy import select
+
+import discord
+import discord.app_commands as ac
+from discord.ext import commands
+
+from src.model import Chapter, Project
+from src.util.search import get_staff_from_discord_id, searchprojects, searchstaff
+from src.util.db import get_all, get_one
+from src.slash.autocomplete import chapter_autocomplete, project_autocomplete
+
+from src.slash.helper import monitor_changes
+
+
+class EditC(commands.Cog, ac.Group, name="edit"):
+    def __init__(self, bot) -> None:
+        self.bot = bot
+        super().__init__()
+
+    @commands.command()
+    async def sync(self, ctx):
+        await self.bot.tree.sync()
+        await ctx.send("Done.")
+
+    @ac.command(name="chapter", description="Edit a chapter")
+    @ac.autocomplete(chapter=chapter_autocomplete, to_project=project_autocomplete)
+    @ac.describe(
+        chapter="The chapter to be edited.",
+        to_project="The project to move the chapter to.",
+        tl="Translator",
+        ts="Typesetter",
+        rd="Redrawer",
+        pr="Proofreader",
+        link_tl="Link to Translation",
+        link_ts="Link to Typeset",
+        link_rd="Link to Redraws",
+        link_pr="Link to Proofread Doc",
+        link_qcts="Link to Finished Chapter.",
+        link_raw="Link to chapter's raws.",
+        title="The title of the chapter.",
+        to_chapter="Used for editing the chapter's number.",
+    )
+    async def chapter(
+        self,
+        inter: discord.Interaction,
+        chapter: Chapter,
+        title: str | None,
+        tl: discord.Member | None,
+        rd: discord.Member | None,
+        ts: discord.Member | None,
+        pr: discord.Member | None,
+        link_tl: str | None,
+        link_rd: str | None,
+        link_ts: str | None,
+        link_pr: str | None,
+        link_qcts: str | None,
+        link_raw: str | None,
+        to_project: Project | None,
+        to_chapter: float | None,
+    ):
+        "Edit a chapters properties. Will prompt for confirmation."
+        async with self.bot.Session() as session:
+            chapter = await get_one(
+                session, select(Chapter).where(Chapter.id == chapter.id)
+            )
+            await inter.response.defer(thinking=True)
+            if title is not None:
+                chapter.title = title
+            if tl is not None:
+                chapter.translator = await get_staff_from_discord_id(tl.id, session)
+            if rd is not None:
+                chapter.redrawer = await get_staff_from_discord_id(rd.id, session)
+            if ts is not None:
+                chapter.typesetter = await get_staff_from_discord_id(ts.id, session)
+            if pr is not None:
+                chapter.proofreader = await get_staff_from_discord_id(pr.id, session)
+            if link_tl is not None:
+                chapter.link_tl = link_tl
+            if link_rd is not None:
+                chapter.link_rd = link_rd
+            if link_ts is not None:
+                chapter.link_ts = link_ts
+            if link_pr is not None:
+                chapter.link_pr = link_pr
+            if link_qcts is not None:
+                chapter.link_qcts = link_qcts
+            if link_raw is not None:
+                chapter.link_raw = link_raw
+            if to_project is not None:
+                to_project = await get_one(
+                    session, select(Project).where(Project.id == to_project.id)
+                )
+                chapter.project = to_project
+            if to_chapter is not None:
+                chapter.number = to_chapter
+            image = await chapter.get_report(str(chapter))
+            embed1 = discord.Embed(
+                color=discord.Colour.dark_blue(),
+                title="Do you want to commit these changes to this chapter?",
+            )
+            embed1.set_image(url="attachment://image.png")
+            await monitor_changes(
+                chapter,
+                embed=embed1,
+                file=image,
+                inter=inter,
+                session=session,
+                bot=self.bot,
+            )
+
+
+async def setup(bot):
+    await bot.add_cog(EditC(bot))

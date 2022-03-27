@@ -5,10 +5,12 @@ from src.util.db import Base
 from src.model.ReportMixin import ReportMixin
 import src.util.search as search
 
+import discord
+
 icon_default = "https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128"
 
 
-class Project(Base, ReportMixin):
+class Project(Base, ReportMixin, discord.app_commands.Transformer):
     __tablename__ = "projects"
     id = Column(Integer, primary_key=True)
     title = Column(String, nullable=False)
@@ -61,6 +63,10 @@ class Project(Base, ReportMixin):
     @classmethod
     async def convert(cls, ctx, arg):
         return await search.searchproject(arg, ctx.session)
+
+    @classmethod
+    async def transform(cls, interaction: discord.Interaction, value):
+        return await search.searchproject(value, interaction.client.Session())
 
     def __str__(self):
         return self.title

@@ -20,6 +20,11 @@ async def discordstaff(sti: str, ctx):
     return None
 
 
+async def get_staff_from_discord_id(discord_id, session):
+    stmt = select(staff.Staff).where(staff.Staff.discord_id == discord_id)
+    return await get_one(session, stmt)
+
+
 async def dbstaff(passid: int, session2):
     stmt = select(staff.Staff).filter(staff.Staff.discord_id == passid)
     st = await get_first(session2, stmt)

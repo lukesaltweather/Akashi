@@ -17,6 +17,8 @@ from src.util.db import get_all
 class Loops(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    async def cog_load(self) -> None:
         self.refreshembed.start()
 
     def cog_unload(self):

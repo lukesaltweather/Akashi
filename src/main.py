@@ -86,7 +86,7 @@ class Bot(commands.Bot):
         await self.load_extension("jishaku")
 
         self.logger.info(msg="Syncing slash commands.")
-        await self.tree.sync(guild=discord.Object(603203362133114891))
+        # await self.tree.sync(guild=discord.Object(603203362133114891))
         self.logger.info(msg="Finished syncing slash commands.")
         self.logger.info(msg="Init complete.")
 
@@ -153,7 +153,6 @@ async def only_members(ctx):
 async def on_ready():
     activity = discord.Activity(name="$help", type=discord.ActivityType.playing)
     await bot.change_presence(activity=activity)
-    await bot.wait_until_ready()
     logging.getLogger("akashi").info(f"Login and startup complete.")
 
 

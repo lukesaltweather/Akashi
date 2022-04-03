@@ -29,14 +29,12 @@ class DoneView(discord.ui.View):
         timeout: float,
         author_id: int,
         reacquire: bool,
-        ctx: "CstmContext",
         delete_after: bool,
     ) -> None:
         super().__init__(timeout=timeout)
         self.value: t.Optional[bool] = None
         self.delete_after: bool = delete_after
         self.author_id: int = author_id
-        self.ctx: CstmContext = ctx
         self.reacquire: bool = reacquire
         self.message: t.Optional[discord.Message] = None
 
@@ -115,7 +113,6 @@ class command_helper:
                 timeout=15,
                 author_id=self.ctx.author.id,
                 reacquire=True,
-                ctx=self.ctx,
                 delete_after=True,
             )
             message = await self.ctx.send(embed=embed, view=view)

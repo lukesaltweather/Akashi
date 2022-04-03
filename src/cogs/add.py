@@ -163,8 +163,8 @@ class Add(commands.Cog):
             for i, link in enumerate(content, start_chp):
                 chp = Chapter(i, link)
                 chp.date_created = date_created
-                chp.project = project
                 session.add(chp)
+                chp.project = project
                 chapters.append(chp)
 
         # prompt user to confirm
@@ -172,8 +172,7 @@ class Add(commands.Cog):
         for chp in chapters:
             table.add_row([chp.number, chp.link_raw])
         image = await misc.drawimage(table.get_string())
-        await ctx.monitor_changes(
-            entity=chapters,
+        await ctx.prompt_and_commit(
             text=f"Do you really want to add these chapters to project {project.title}?",
             file=image,
         )

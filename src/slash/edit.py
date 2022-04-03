@@ -13,6 +13,7 @@ from src.util.db import get_all, get_one
 from src.slash.autocomplete import chapter_autocomplete, project_autocomplete
 
 from src.slash.helper import monitor_changes
+from src.util.flags.converters import DateTimeConverter
 
 
 class EditC(commands.Cog, ac.Group, name="edit"):
@@ -27,6 +28,7 @@ class EditC(commands.Cog, ac.Group, name="edit"):
 
     @ac.command(name="chapter", description="Edit a chapter")
     @ac.autocomplete(chapter=chapter_autocomplete, to_project=project_autocomplete)
+    @ac.checks.has_role(345799525274746891)
     @ac.describe(
         chapter="The chapter to be edited.",
         to_project="The project to move the chapter to.",
@@ -40,6 +42,13 @@ class EditC(commands.Cog, ac.Group, name="edit"):
         link_pr="Link to Proofread Doc",
         link_qcts="Link to Finished Chapter.",
         link_raw="Link to chapter's raws.",
+        date_release="The date the chapter was released.",
+        date_tl="The date the chapter was translated.",
+        date_ts="The date the chapter was typeset.",
+        date_rd="The date the chapter was redrawn.",
+        date_pr="The date the chapter was proofread.",
+        date_qcts="The date the chapter was finished.",
+        date_created="The date the chapter's raws were uploaded.",
         title="The title of the chapter.",
         to_chapter="Used for editing the chapter's number.",
     )
@@ -58,6 +67,13 @@ class EditC(commands.Cog, ac.Group, name="edit"):
         link_pr: str | None,
         link_qcts: str | None,
         link_raw: str | None,
+        date_created: DateTimeConverter | None,
+        date_tl: DateTimeConverter | None,
+        date_rd: DateTimeConverter | None,
+        date_ts: DateTimeConverter | None,
+        date_pr: DateTimeConverter | None,
+        date_qcts: DateTimeConverter | None,
+        date_release: DateTimeConverter | None,
         to_project: Project | None,
         to_chapter: float | None,
     ):
@@ -89,6 +105,20 @@ class EditC(commands.Cog, ac.Group, name="edit"):
                 chapter.link_qcts = link_qcts
             if link_raw is not None:
                 chapter.link_raw = link_raw
+            if date_created is not None:
+                chapter.date_created = date_created
+            if date_tl is not None:
+                chapter.date_tl = date_tl
+            if date_rd is not None:
+                chapter.date_rd = date_rd
+            if date_ts is not None:
+                chapter.date_ts = date_ts
+            if date_pr is not None:
+                chapter.date_pr = date_pr
+            if date_qcts is not None:
+                chapter.date_qcts = date_qcts
+            if date_release is not None:
+                chapter.date_release = date_release
             if to_project is not None:
                 to_project = await get_one(
                     session, select(Project).where(Project.id == to_project.id)

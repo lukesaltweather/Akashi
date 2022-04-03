@@ -3,7 +3,7 @@ import re
 import discord
 
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship, backref, synonym
 from sqlalchemy.sql.expression import select
 
 from src.model.ReportMixin import ReportMixin
@@ -24,6 +24,7 @@ class Chapter(Base, ReportMixin, discord.app_commands.Transformer):
     link_rd = Column(String)
     link_pr = Column(String)
     link_rl = Column(String)
+    link_qcts = synonym("link_rl")
 
     date_created = Column(DateTime)
     date_tl = Column(DateTime)

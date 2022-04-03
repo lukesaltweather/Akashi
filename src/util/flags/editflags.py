@@ -2,7 +2,7 @@ from typing import Optional, Literal, Type, Union, TypeVar, Generic
 
 from discord import Colour
 from discord.ext.commands import FlagConverter, flag, ColourConverter
-from .converters import ChapterConverter, DateTimeConverter
+from .converters import DateTimeConverter
 
 from src.util.flags.flagutils import ChapterFlags
 from src.model.staff import Staff
@@ -26,6 +26,13 @@ class EditChapterFlags(ChapterFlags, error_on_unknown=True):
     link_raw: TypeOrMissing[str] = flag(default=MISSING)
     to_project: Optional[Project]
     to_chapter: Optional[float]
+    date_created: TypeOrMissing[DateTimeConverter] = flag(default=MISSING)
+    date_tl: TypeOrMissing[DateTimeConverter] = flag(default=MISSING)
+    date_rd: TypeOrMissing[DateTimeConverter] = flag(default=MISSING)
+    date_ts: TypeOrMissing[DateTimeConverter] = flag(default=MISSING)
+    date_pr: TypeOrMissing[DateTimeConverter] = flag(default=MISSING)
+    date_qcts: TypeOrMissing[DateTimeConverter] = flag(default=MISSING)
+    date_release: TypeOrMissing[DateTimeConverter] = flag(default=MISSING)
 
 
 class ReleaseFlags(ChapterFlags, error_on_unknown=True):

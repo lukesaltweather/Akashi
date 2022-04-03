@@ -75,11 +75,13 @@ class CstmContext(commands.Context):
         return self._session
 
     async def notify(self, entity):
-        to_notify = (
-            entity.to_notify
-            if isinstance(entity, Project)
-            else [*entity.to_notify, *entity.project.to_notify]
-        )
+        if isinstance(entity, Chapter):
+            to_notify = [*entity.to_notify, *entity.project.to_notify]
+        elif isinstance(entity, Project):
+            to_notify = [entity.to_notify]
+        else:
+            to_notify = [item.to_notify for item in entity]
+            entity = entity[0]
         if to_notify:
             table = PrettyTable()
             table.add_column("", ["ORIGINAL", "EDIT"])

@@ -23,7 +23,7 @@ boto3 = "1.17.102"
 aiofiles = "0.7.0"
 docutils = "0.17.1"
 toml = "0.10.2"
-humanize = "3.13"
+humanize = "4.0.0"
 loguru = "0.6.0"
 alembic = "1.7.6"
 hondana = { git = "https://github.com/AbstractUmbra/Hondana", branch="main" }

@@ -14,7 +14,13 @@ from src.model.note import Note
 from src.model.staff import Staff
 from src.util import exceptions
 from src.util.flags.doneflags import DoneFlags, AssignFlags
-from src.util.search import fakesearch, dbstaff, searchstaff, discordstaff
+from src.util.search import (
+    fakesearch,
+    dbstaff,
+    get_staff_from_discord_id,
+    searchstaff,
+    discordstaff,
+)
 from src.util.misc import format_number, MISSING
 from src.util.context import CstmContext
 from abc import abstractmethod
@@ -208,7 +214,6 @@ class TL_helper(command_helper):
         await self._set_translator()
         self.chapter.link_tl = self.flags.link
         self.chapter.date_tl = func.now()
-        self.session.add(Note(self.chapter, self.flags.note, self.ctx.author))
         if not self.chapter.link_rd:
             if self.chapter.redrawer:
                 await self._no_redraws()
@@ -339,7 +344,6 @@ class TS_helper(command_helper):
         await self.__set_typesetter()
         self.chapter.link_ts = self.flags.link
         self.chapter.date_ts = func.now()
-        self.session.add(Note(self.chapter, self.flags.note, self.ctx.author))
         if self.chapter.proofreader:
             await self.__proofreader()
         else:
@@ -400,7 +404,6 @@ class PR_helper(command_helper):
         await self.__set_proofreader()
         self.chapter.link_pr = self.flags.link
         self.chapter.date_pr = func.now()
-        self.session.add(Note(self.chapter, self.flags.note, self.ctx.author))
         if self.chapter.typesetter:
             await self.__typesetter()
         else:
@@ -434,7 +437,6 @@ class QCTS_helper(command_helper):
     async def execute(self):
         self.chapter.link_rl = self.flags.link
         self.chapter.date_rl = func.now()
-        self.session.add(Note(self.chapter, self.flags.note, self.ctx.author))
         if self.chapter.proofreader:
             await self.__proofreader()
         else:
@@ -601,6 +603,14 @@ class Done(commands.Cog):
         elif flags.step == "rd":
             RD = RD_helper(ctx, flags)
             await RD.execute()
+        if flags.note is not None:
+            ctx.session.add(
+                Note(
+                    flags.chapter,
+                    flags.note,
+                    await get_staff_from_discord_id(ctx.author.id, ctx.session),
+                )
+            )
         await ctx.notify(flags.chapter)
         await ctx.session.commit()
         await ctx.success()

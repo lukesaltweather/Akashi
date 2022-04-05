@@ -24,7 +24,7 @@ class Mangadex(commands.Cog, ac.Group):
         files="A compressed zip file with all the pages of the chapter.",
     )
     @ac.autocomplete(chapter=chapter_autocomplete)
-    @ac.checks.has_role(345799525274746891)
+    @ac.checks.has_role(702185392795025471)
     @ac.rename(files="files")
     async def upload(
         self,

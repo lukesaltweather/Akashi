@@ -3,6 +3,7 @@ import discord.app_commands as ac
 
 from src.util.db import get_all
 from src.util.search import searchprojects
+from src.util.misc import format_number
 from src.model import Project
 
 from sqlalchemy import select
@@ -31,7 +32,10 @@ async def chapter_autocomplete(
             )
         )
     res = list(
-        map(lambda chapter: f"{chapter.project.title} {chapter.number}", chapters)
+        map(
+            lambda chapter: f"{chapter.project.title} {format_number(chapter.number)}",
+            chapters,
+        )
     )[:10]
     await session.close()
     return [ac.Choice(name=i, value=i) for i in res]

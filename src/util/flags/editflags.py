@@ -53,6 +53,7 @@ class EditProjectFlags(FlagConverter, error_on_unknown=True):
     thumbnail: Optional[str]
     icon: TypeOrMissing[str] = flag(default=MISSING)
     link: Optional[str]
+    mangadex_id: Optional[str]
 
 
 class EditStaffFlags(FlagConverter, error_on_unknown=True):

@@ -10,6 +10,7 @@ import aiofiles
 import asyncpg
 import discord
 import toml
+import hondana
 from discord import version_info, Intents
 from discord.ext import commands
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
@@ -83,7 +84,13 @@ class Bot(commands.Bot):
         await self.load_extension("src.cogs.help")
         await self.load_extension("src.cogs.database")
         await self.load_extension("src.slash.edit")
+        await self.load_extension("src.slash.misc")
         await self.load_extension("jishaku")
+
+        self.mangadex_client = hondana.Client(
+            username=self.config["mangadex"]["username"],
+            password=self.config["mangadex"]["password"],
+        )
 
         self.logger.info(msg="Syncing slash commands.")
         self.logger.info(msg="Finished syncing slash commands.")

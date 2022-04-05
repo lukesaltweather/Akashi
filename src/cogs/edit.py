@@ -143,6 +143,8 @@ class Edit(commands.Cog):
             | The color the project's embed has in the info board. Can be a hex or one of these colors: [:doc:`/Types/color`]
         :position:
             | Where the embed of the project appears in the info board. [:doc:`/Types/number`]
+        :mangadex_id:
+            | The id of the project on mangadex. [:doc:`/Types/text`]
         """
         record = flags.project
         if flags.title:
@@ -173,6 +175,8 @@ class Edit(commands.Cog):
             record.icon = flags.icon
         if flags.link:
             record.link = flags.link
+        if flags.mangadex_id:
+            record.mangadex_id = flags.mangadex_id
         image = await record.get_report(f"{record.title}")
 
         await ctx.monitor_changes(

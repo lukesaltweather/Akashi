@@ -25,6 +25,7 @@ class Project(Base, ReportMixin, discord.app_commands.Transformer):
     redrawer_id = Column(Integer, ForeignKey("staff.id", ondelete="SET NULL"))
     translator_id = Column(Integer, ForeignKey("staff.id", ondelete="SET NULL"))
     proofreader_id = Column(Integer, ForeignKey("staff.id", ondelete="SET NULL"))
+    mangadex_id = Column(String, nullable=True)
 
     typesetter = relationship(
         "Staff",

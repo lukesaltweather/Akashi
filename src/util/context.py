@@ -5,6 +5,7 @@ import discord
 from discord.ext import commands
 from prettytable import PrettyTable
 from sqlalchemy import inspect
+from sqlalchemy.orm.collections import InstrumentedList
 
 from src.model.chapter import Chapter
 from src.model.project import Project
@@ -74,11 +75,11 @@ class CstmContext(commands.Context):
     def session(self):
         return self._session
 
-    async def notify(self, entity):
+    async def notify(self, entity: Chapter | Project | list):
         if isinstance(entity, Chapter):
             to_notify = [*entity.to_notify, *entity.project.to_notify]
         elif isinstance(entity, Project):
-            to_notify = [entity.to_notify]
+            to_notify = entity.to_notify
         else:
             to_notify = [item.to_notify for item in entity]
             entity = entity[0]
@@ -176,7 +177,7 @@ class CstmContext(commands.Context):
         await view.wait()
         if view.value:
             await self.reply("Commited changes.", mention_author=False)
-            if entity is list:
+            if isinstance(entity, (InstrumentedList, list)):
                 for e in entity:
                     await self.notify(e)
             else:

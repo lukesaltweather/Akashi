@@ -73,12 +73,21 @@ Commands
     bot.build_docs()
 
 
+def type_reference_role(
+    role, rawtext, text, lineno, inliner, options=None, content=None
+):
+    node = docutils.nodes.Text(text)
+    return [node], []
+
+
 def parse_rst(text: str) -> docutils.nodes.document:
     parser = docutils.parsers.rst.Parser()
     components = (docutils.parsers.rst.Parser,)
     settings = docutils.frontend.OptionParser(
         components=components
     ).get_default_values()
+
+    docutils.parsers.rst.roles.register_canonical_role("doc", type_reference_role)
     document = docutils.utils.new_document("<rst-doc>", settings=settings)
     parser.parse(text, document)
     return document

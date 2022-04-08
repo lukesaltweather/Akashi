@@ -234,7 +234,9 @@ class EmbedHelper:
 
         self.embed[
             0
-        ].description = f"{self.embed[0].description if self.embed[0].description is not discord.Embed.Empty else ''}{string}"
+        ].description = (
+            f"{self.embed[0].description if self.embed[0].description else ''}{string}"
+        )
         self.page = self.page + 1
 
     def add_cog(self, coms, cogname: str):

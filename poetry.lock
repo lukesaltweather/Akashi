@@ -335,7 +335,7 @@ docs = ["sphinx"]
 
 [[package]]
 name = "hondana"
-version = "3.0.2"
+version = "3.0.3"
 description = "An asynchronous wrapper around the MangaDex v5 API"
 category = "main"
 optional = false
@@ -355,7 +355,7 @@ tests = ["pytest"]
 type = "git"
 url = "https://github.com/AbstractUmbra/Hondana"
 reference = "main"
-resolved_reference = "d44d417ef713029c112dc1990c63240c19718049"
+resolved_reference = "6d3754a5389ee2b0f98781d4137bfdeba1d30da9"
 
 [[package]]
 name = "humanize"
@@ -403,7 +403,7 @@ test = ["pytest", "pytest-cov"]
 
 [[package]]
 name = "jishaku"
-version = "2.4.0a409+g577c663.master"
+version = "2.5.0a415+ge080c2c.master"
 description = "A discord.py extension including useful tools for bot development and debugging."
 category = "main"
 optional = false
@@ -427,7 +427,7 @@ voice = ["yt-dlp (>=2022.3.8)"]
 type = "git"
 url = "https://github.com/Gorialis/jishaku"
 reference = "master"
-resolved_reference = "577c6630435beec35d3906566c8428c32e7c48aa"
+resolved_reference = "e080c2c62b29bc033857c81d6a99947690ad0899"
 
 [[package]]
 name = "jmespath"
@@ -567,7 +567,7 @@ virtualenv = ">=20.0.8"
 
 [[package]]
 name = "prettytable"
-version = "3.1.1"
+version = "3.3.0"
 description = "A simple Python library for easily displaying tabular data in a visually appealing ASCII table format"
 category = "main"
 optional = false
@@ -790,7 +790,7 @@ sqlalchemy = []
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "a1de5d76361ba40f308766e223fa003d200d3bfcb45e0bd81afc81d2ef622917"
+content-hash = "58adc481eba42292b55d4e04d42d187ac26a990549035240e2fa76d1dbd709f4"
 
 [metadata.files]
 aiofiles = [
@@ -1364,8 +1364,8 @@ pre-commit = [
     {file = "pre_commit-2.18.1.tar.gz", hash = "sha256:5d445ee1fa8738d506881c5d84f83c62bb5be6b2838e32207433647e8e5ebe10"},
 ]
 prettytable = [
-    {file = "prettytable-3.1.1-py3-none-any.whl", hash = "sha256:f546d42de21ac14d791c91e4e9814f02271f4a5bf27b894457914be7513dc92b"},
-    {file = "prettytable-3.1.1.tar.gz", hash = "sha256:43c9e23272ca253d038ae76fe3adde89794e92e7fcab2ddf5b94b38642ef4f21"},
+    {file = "prettytable-3.3.0-py3-none-any.whl", hash = "sha256:d1c34d72ea2c0ffd6ce5958e71c428eb21a3d40bf3133afe319b24aeed5af407"},
+    {file = "prettytable-3.3.0.tar.gz", hash = "sha256:118eb54fd2794049b810893653b20952349df6d3bc1764e7facd8a18064fa9b0"},
 ]
 psutil = [
     {file = "psutil-5.9.0-cp27-cp27m-manylinux2010_i686.whl", hash = "sha256:55ce319452e3d139e25d6c3f85a1acf12d1607ddedea5e35fb47a552c051161b"},

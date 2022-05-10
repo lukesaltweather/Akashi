@@ -39,7 +39,7 @@ frozenlist = ">=1.1.0"
 
 [[package]]
 name = "alembic"
-version = "1.7.6"
+version = "1.7.7"
 description = "A database migration tool for SQLAlchemy."
 category = "main"
 optional = false
@@ -335,7 +335,7 @@ docs = ["sphinx"]
 
 [[package]]
 name = "hondana"
-version = "3.0.2"
+version = "3.0.3"
 description = "An asynchronous wrapper around the MangaDex v5 API"
 category = "main"
 optional = false
@@ -355,7 +355,7 @@ tests = ["pytest"]
 type = "git"
 url = "https://github.com/AbstractUmbra/Hondana"
 reference = "main"
-resolved_reference = "d44d417ef713029c112dc1990c63240c19718049"
+resolved_reference = "6d3754a5389ee2b0f98781d4137bfdeba1d30da9"
 
 [[package]]
 name = "humanize"
@@ -403,7 +403,7 @@ test = ["pytest", "pytest-cov"]
 
 [[package]]
 name = "jishaku"
-version = "2.4.0a409+g577c663.master"
+version = "2.5.0a415+ge080c2c.master"
 description = "A discord.py extension including useful tools for bot development and debugging."
 category = "main"
 optional = false
@@ -427,7 +427,7 @@ voice = ["yt-dlp (>=2022.3.8)"]
 type = "git"
 url = "https://github.com/Gorialis/jishaku"
 reference = "master"
-resolved_reference = "577c6630435beec35d3906566c8428c32e7c48aa"
+resolved_reference = "e080c2c62b29bc033857c81d6a99947690ad0899"
 
 [[package]]
 name = "jmespath"
@@ -790,7 +790,7 @@ sqlalchemy = []
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "a1de5d76361ba40f308766e223fa003d200d3bfcb45e0bd81afc81d2ef622917"
+content-hash = "b50977d022d9822e114580fb986cbc33e3a18a029352727c3e872940d3f23161"
 
 [metadata.files]
 aiofiles = [
@@ -876,8 +876,8 @@ aiosignal = [
     {file = "aiosignal-1.2.0.tar.gz", hash = "sha256:78ed67db6c7b7ced4f98e495e572106d5c432a93e1ddd1bf475e1dc05f5b7df2"},
 ]
 alembic = [
-    {file = "alembic-1.7.6-py3-none-any.whl", hash = "sha256:ad842f2c3ab5c5d4861232730779c05e33db4ba880a08b85eb505e87c01095bc"},
-    {file = "alembic-1.7.6.tar.gz", hash = "sha256:6c0c05e9768a896d804387e20b299880fe01bc56484246b0dffe8075d6d3d847"},
+    {file = "alembic-1.7.7-py3-none-any.whl", hash = "sha256:29be0856ec7591c39f4e1cb10f198045d890e6e2274cf8da80cb5e721a09642b"},
+    {file = "alembic-1.7.7.tar.gz", hash = "sha256:4961248173ead7ce8a21efb3de378f13b8398e6630fab0eb258dc74a8af24c58"},
 ]
 astunparse = [
     {file = "astunparse-1.6.3-py2.py3-none-any.whl", hash = "sha256:c2652417f2c8b5bb325c885ae329bdf3f86424075c4fd1a128674bc6fba4b8e8"},

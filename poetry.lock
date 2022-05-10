@@ -335,7 +335,7 @@ docs = ["sphinx"]
 
 [[package]]
 name = "hondana"
-version = "3.0.2"
+version = "3.0.3"
 description = "An asynchronous wrapper around the MangaDex v5 API"
 category = "main"
 optional = false
@@ -355,15 +355,15 @@ tests = ["pytest"]
 type = "git"
 url = "https://github.com/AbstractUmbra/Hondana"
 reference = "main"
-resolved_reference = "d44d417ef713029c112dc1990c63240c19718049"
+resolved_reference = "6d3754a5389ee2b0f98781d4137bfdeba1d30da9"
 
 [[package]]
 name = "humanize"
-version = "3.13.0"
+version = "4.1.0"
 description = "Python humanize utilities"
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [package.extras]
 tests = ["freezegun", "pytest", "pytest-cov"]
@@ -403,7 +403,7 @@ test = ["pytest", "pytest-cov"]
 
 [[package]]
 name = "jishaku"
-version = "2.4.0a409+g577c663.master"
+version = "2.5.0a415+ge080c2c.master"
 description = "A discord.py extension including useful tools for bot development and debugging."
 category = "main"
 optional = false
@@ -427,7 +427,7 @@ voice = ["yt-dlp (>=2022.3.8)"]
 type = "git"
 url = "https://github.com/Gorialis/jishaku"
 reference = "master"
-resolved_reference = "577c6630435beec35d3906566c8428c32e7c48aa"
+resolved_reference = "e080c2c62b29bc033857c81d6a99947690ad0899"
 
 [[package]]
 name = "jmespath"
@@ -790,7 +790,7 @@ sqlalchemy = []
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "a1de5d76361ba40f308766e223fa003d200d3bfcb45e0bd81afc81d2ef622917"
+content-hash = "0d9fccd8e5bb42db3a2204a2f9ca04560e467277b45a4f5abb03d73860a5a701"
 
 [metadata.files]
 aiofiles = [
@@ -1167,8 +1167,8 @@ greenlet = [
 ]
 hondana = []
 humanize = [
-    {file = "humanize-3.13.0-py3-none-any.whl", hash = "sha256:577047f95ac86445a98df030e807011a9a4283eb6e06bdc5edc9fde0358336fa"},
-    {file = "humanize-3.13.0.tar.gz", hash = "sha256:46ffbe63f71eeeb8f475c7f420f7f61bd53534a3c38eda0d7f7fdba53ca39af2"},
+    {file = "humanize-4.1.0-py3-none-any.whl", hash = "sha256:953b393f5bd67e19d47a4c0fd20c3a3537853967b307e49729c4755d3551753c"},
+    {file = "humanize-4.1.0.tar.gz", hash = "sha256:3a119b242ec872c029d8b7bf8435a61a5798f124b244a08013aec5617302f80e"},
 ]
 identify = [
     {file = "identify-2.5.0-py2.py3-none-any.whl", hash = "sha256:3acfe15a96e4272b4ec5662ee3e231ceba976ef63fd9980ed2ce9cc415df393f"},

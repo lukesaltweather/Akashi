@@ -206,7 +206,7 @@ class command_helper:
         return e
 
     async def confirm_and_send_embed(self, *, confirm_text: str, next_in_line: int, finished_step: str, next_step: str):
-            self.message = self.confirm(confirm_text)
+            self.message = await self.confirm(confirm_text)
             next = fakesearch(next_in_line, self.ctx).mention
             embed = await self.completed_embed(
                 self.chapter,
@@ -284,7 +284,7 @@ class TL_helper(command_helper):
         @return: None
         """
         if self.chapter.project.redrawer is None:
-            self.confirm_and_send_embed(confirm_text="Notify Calendar", next_in_line=345802935961255936, finished_step="TL", next_step="RD")
+            await self.confirm_and_send_embed(confirm_text="Notify Calendar", next_in_line=345802935961255936, finished_step="TL", next_step="RD")
         else:
             self.message = await self.confirm("Notify Default Redrawer")
             rd = fakesearch(self.chapter.project.redrawer.discord_id, self.ctx).mention
@@ -307,7 +307,7 @@ class TL_helper(command_helper):
         @return:
         """
         if self.chapter.project.typesetter is None:
-            self.confirm_and_send_embed(confirm_text="Notify Calendar", next_in_line=345802935961255936, finished_step="TL", next_step="TS")
+            await self.confirm_and_send_embed(confirm_text="Notify Calendar", next_in_line=345802935961255936, finished_step="TL", next_step="TS")
         else:
             self.message = await self.confirm("Notify Default Typesetter")
             ts = fakesearch(
@@ -349,7 +349,7 @@ class TS_helper(command_helper):
 
     async def __no_proofreader(self):
         if self.chapter.project.proofreader is None:
-            self.confirm_and_send_embed(confirm_text="Notify Calendar", next_in_line=345802935961255936, finished_step="TS", next_step="PR")
+            await self.confirm_and_send_embed(confirm_text="Notify Calendar", next_in_line=345802935961255936, finished_step="TS", next_step="PR")
         else:
             self.message = await self.confirm("Notify Default Proofreader")
             self.chapter.proofreader = self.chapter.project.proofreader
@@ -521,7 +521,7 @@ class RD_helper(command_helper):
             self.chapter.typesetter = self.chapter.project.typesetter
 
         else:
-            self.confirm_and_send_embed(confirm_text="Notify Calendar", next_in_line=345802935961255936, finished_step="RD", next_step="TS")
+            await self.confirm_and_send_embed(confirm_text="Notify Calendar", next_in_line=345802935961255936, finished_step="RD", next_step="TS")
 
 
 class Done(commands.Cog):

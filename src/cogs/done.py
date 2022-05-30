@@ -205,6 +205,20 @@ class command_helper:
         )
         return e
 
+    async def confirm_and_send_embed(self, *, confirm_text: str, next_in_line: int, finished_step: str, next_step: str):
+            self.message = self.confirm(confirm_text)
+            next = fakesearch(next_in_line, self.ctx).mention
+            embed = await self.completed_embed(
+                self.chapter,
+                self.ctx.author,
+                fakesearch(next_in_line, self.ctx),
+                finished_step,
+                next_step,
+            )
+            await self.channel.send(
+                content=f"{next}", embed=embed, allowed_mentions=self.message
+            )
+
 
 class TL_helper(command_helper):
     async def execute(self):
@@ -270,18 +284,7 @@ class TL_helper(command_helper):
         @return: None
         """
         if self.chapter.project.redrawer is None:
-            self.message = await self.confirm("Notify Redrawer Role")
-            rd = self.ctx.guild.get_role(self.bot.config["server"]["roles"]["rd"])
-            msg = await self.channel.send(
-                f"{rd}\nRedrawer required for `{self.chapter.project.title} {format_number(self.chapter.number)}`. React below to assign yourself.",
-                allowed_mentions=self.message,
-            )
-            await msg.add_reaction("🙋")
-            msgdb = Message(msg.id, self.bot.config["server"]["roles"]["rd"], "🙋")
-            await msg.pin()
-            msgdb.chapter = self.chapter.id
-            msgdb.created_on = func.now()
-            self.session.add(msgdb)
+            self.confirm_and_send_embed(confirm_text="Notify Calendar", next_in_line=345802935961255936, finished_step="TL", next_step="RD")
         else:
             self.message = await self.confirm("Notify Default Redrawer")
             rd = fakesearch(self.chapter.project.redrawer.discord_id, self.ctx).mention
@@ -304,18 +307,7 @@ class TL_helper(command_helper):
         @return:
         """
         if self.chapter.project.typesetter is None:
-            self.message = await self.confirm("Notify Typesetter Role")
-            ts = self.ctx.guild.get_role(self.bot.config["server"]["roles"]["ts"])
-            msg = await self.channel.send(
-                f"{ts}\nTypesetter required for `{self.chapter.project.title} {format_number(self.chapter.number)}`. React below to assign yourself.",
-                allowed_mentions=self.message,
-            )
-            await msg.add_reaction("🙋")
-            await msg.pin()
-            msgdb = Message(msg.id, self.bot.config["server"]["roles"]["ts"], "🙋")
-            msgdb.chapter = self.chapter.id
-            msgdb.created_on = func.now()
-            self.session.add(msgdb)
+            self.confirm_and_send_embed(confirm_text="Notify Calendar", next_in_line=345802935961255936, finished_step="TL", next_step="TS")
         else:
             self.message = await self.confirm("Notify Default Typesetter")
             ts = fakesearch(
@@ -357,18 +349,7 @@ class TS_helper(command_helper):
 
     async def __no_proofreader(self):
         if self.chapter.project.proofreader is None:
-            self.message = await self.confirm("Notify Proofreader Role")
-            pr = self.ctx.guild.get_role(self.bot.config["server"]["roles"]["pr"])
-            msg = await self.channel.send(
-                f"{pr}\nProofreader required for `{self.chapter.project.title} {format_number(self.chapter.number)}`. React below to assign yourself.",
-                allowed_mentions=self.message,
-            )
-            await msg.add_reaction("🙋")
-            await msg.pin()
-            msgdb = Message(msg.id, self.bot.config["server"]["roles"]["pr"], "🙋")
-            msgdb.chapter = self.chapter.id
-            msgdb.created_on = func.now()
-            self.session.add(msgdb)
+            self.confirm_and_send_embed(confirm_text="Notify Calendar", next_in_line=345802935961255936, finished_step="TS", next_step="PR")
         else:
             self.message = await self.confirm("Notify Default Proofreader")
             self.chapter.proofreader = self.chapter.project.proofreader
@@ -537,20 +518,10 @@ class RD_helper(command_helper):
             await self.channel.send(
                 content=ts, embed=embed, allowed_mentions=self.message
             )
+            self.chapter.typesetter = self.chapter.project.typesetter
 
         else:
-            self.message = await self.confirm("Notify Typesetter Role")
-            ts = self.ctx.guild.get_role(self.bot.config["server"]["roles"]["ts"])
-            msg = await self.channel.send(
-                f"{ts}\nTypesetter required for `{self.chapter.project.title} {format_number(self.chapter.number)}`.\nReact below to assign yourself.",
-                allowed_mentions=self.message,
-            )
-            await msg.add_reaction("🙋")
-            msgdb = Message(msg.id, self.bot.config["server"]["roles"]["ts"], "🙋")
-            await msg.pin()
-            msgdb.chapter = self.chapter.id
-            msgdb.created_on = func.now()
-            self.session.add(msgdb)
+            self.confirm_and_send_embed(confirm_text="Notify Calendar", next_in_line=345802935961255936, finished_step="RD", next_step="TS")
 
 
 class Done(commands.Cog):

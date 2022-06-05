@@ -1,24 +1,30 @@
+import asyncio
 import datetime
+import json
 import typing as t
-from abc import abstractmethod
 
 import discord
 import humanize
 from discord.ext import commands
 from discord.ext.commands.errors import CommandError
 from sqlalchemy import func
-
 from src.model.chapter import Chapter
+from src.model.message import Message
 from src.model.note import Note
 from src.model.staff import Staff
-from src.util.context import CstmContext
+from src.util import exceptions
 from src.util.flags.doneflags import DoneFlags, AssignFlags
-from src.util.misc import format_number
 from src.util.search import (
     fakesearch,
     dbstaff,
     get_staff_from_discord_id,
+    searchstaff,
+    discordstaff,
 )
+from src.util.misc import format_number, MISSING
+from src.util.context import CstmContext
+from abc import abstractmethod
+
 from src.util.types import staffroles
 
 
@@ -199,6 +205,27 @@ class command_helper:
         )
         return e
 
+    async def confirm_and_send_embed(
+        self,
+        *,
+        confirm_text: str,
+        next_in_line: int,
+        finished_step: str,
+        next_step: str,
+    ):
+        self.message = await self.confirm(confirm_text)
+        next = fakesearch(next_in_line, self.ctx).mention
+        embed = await self.completed_embed(
+            self.chapter,
+            self.ctx.author,
+            fakesearch(next_in_line, self.ctx),
+            finished_step,
+            next_step,
+        )
+        await self.channel.send(
+            content=f"{next}", embed=embed, allowed_mentions=self.message
+        )
+
 
 class TL_helper(command_helper):
     async def execute(self):
@@ -264,20 +291,12 @@ class TL_helper(command_helper):
         @return: None
         """
         if self.chapter.project.redrawer is None:
-            self.message = await self.confirm("Notify Calendars")
-            rd = self.ctx.guild.get_role(453730138056556544).mention
-            embed = await self.completed_embed(
-                self.chapter,
-                self.ctx.author,
-                fakesearch(self.chapter.project.redrawer.discord_id, self.ctx),
-                "TL",
-                "RD",
+            await self.confirm_and_send_embed(
+                confirm_text="Notify Calendar",
+                next_in_line=345802935961255936,
+                finished_step="TL",
+                next_step="RD",
             )
-            await self.channel.send(
-                content=f"{rd}", embed=embed, allowed_mentions=self.message
-            )
-
-            self.chapter.redrawer = self.chapter.project.redrawer
         else:
             self.message = await self.confirm("Notify Default Redrawer")
             rd = fakesearch(self.chapter.project.redrawer.discord_id, self.ctx).mention
@@ -300,19 +319,12 @@ class TL_helper(command_helper):
         @return:
         """
         if self.chapter.project.typesetter is None:
-            self.message = await self.confirm("Notify Calendars")
-            ts = self.ctx.guild.get_role(453730138056556544).mention
-            embed = await self.completed_embed(
-                self.chapter,
-                self.ctx.author,
-                fakesearch(self.chapter.project.typesetter.discord_id, self.ctx),
-                "TL",
-                "TS",
+            await self.confirm_and_send_embed(
+                confirm_text="Notify Calendar",
+                next_in_line=345802935961255936,
+                finished_step="TL",
+                next_step="TS",
             )
-            await self.channel.send(
-                content=ts, embed=embed, allowed_mentions=self.message
-            )
-            self.chapter.typesetter = self.chapter.project.typesetter
         else:
             self.message = await self.confirm("Notify Default Typesetter")
             ts = fakesearch(
@@ -354,17 +366,11 @@ class TS_helper(command_helper):
 
     async def __no_proofreader(self):
         if self.chapter.project.proofreader is None:
-            self.message = await self.confirm("Notify Calendars")
-            ts = self.ctx.guild.get_role(453730138056556544).mention
-            embed = await self.completed_embed(
-                self.chapter,
-                self.ctx.author,
-                fakesearch(self.chapter.project.proofreader.discord_id, self.ctx),
-                "TS",
-                "PR",
-            )
-            await self.channel.send(
-                content=ts, embed=embed, allowed_mentions=self.message
+            await self.confirm_and_send_embed(
+                confirm_text="Notify Calendar",
+                next_in_line=345802935961255936,
+                finished_step="TS",
+                next_step="PR",
             )
         else:
             self.message = await self.confirm("Notify Default Proofreader")
@@ -534,19 +540,14 @@ class RD_helper(command_helper):
             await self.channel.send(
                 content=ts, embed=embed, allowed_mentions=self.message
             )
+            self.chapter.typesetter = self.chapter.project.typesetter
 
         else:
-            self.message = await self.confirm("Mention Calendars")
-            ts = self.ctx.guild.get_role(453730138056556544).mention
-            embed = await self.completed_embed(
-                self.chapter,
-                self.ctx.author,
-                fakesearch(self.chapter.project.typesetter.discord_id, self.ctx),
-                "PR",
-                "QCTS",
-            )
-            await self.channel.send(
-                content=ts, embed=embed, allowed_mentions=self.message
+            await self.confirm_and_send_embed(
+                confirm_text="Notify Calendar",
+                next_in_line=345802935961255936,
+                finished_step="RD",
+                next_step="TS",
             )
 
 

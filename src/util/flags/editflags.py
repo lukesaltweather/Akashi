@@ -1,18 +1,17 @@
-from typing import Optional, Literal, Type, Union, TypeVar, Generic
+from typing import Optional, Literal
 
 from discord import Colour
-from discord.ext.commands import FlagConverter, flag, ColourConverter
+from discord.ext.commands import FlagConverter, flag
+
+from src.model.project import Project
+from src.model.staff import Staff
+from src.util.flags.flagutils import ChapterFlags
+from src.util.flags.flagutils import TypeOrMissing
+from src.util.misc import MISSING
 from .converters import DateTimeConverter
 
-from src.util.flags.flagutils import ChapterFlags
-from src.model.staff import Staff
-from src.model.project import Project
 
-from src.util.misc import MISSING
-from src.util.flags.flagutils import TypeOrMissing
-
-
-class EditChapterFlags(ChapterFlags, error_on_unknown=True):
+class EditChapterFlags(ChapterFlags):
     title: TypeOrMissing[str] = flag(default=MISSING)
     tl: TypeOrMissing[Staff] = flag(default=MISSING)
     rd: TypeOrMissing[Staff] = flag(default=MISSING)
@@ -35,11 +34,11 @@ class EditChapterFlags(ChapterFlags, error_on_unknown=True):
     date_release: TypeOrMissing[DateTimeConverter] = flag(default=MISSING)
 
 
-class ReleaseFlags(ChapterFlags, error_on_unknown=True):
+class ReleaseFlags(ChapterFlags):
     date: Optional[DateTimeConverter]
 
 
-class EditProjectFlags(FlagConverter, error_on_unknown=True):
+class EditProjectFlags(FlagConverter):
     project: Project = flag(aliases=["p"])
     title: Optional[str]
     status: Optional[str]
@@ -56,7 +55,7 @@ class EditProjectFlags(FlagConverter, error_on_unknown=True):
     mangadex_id: Optional[str]
 
 
-class EditStaffFlags(FlagConverter, error_on_unknown=True):
+class EditStaffFlags(FlagConverter):
     member: Staff
     id: Optional[int]
     name: Optional[str]

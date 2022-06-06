@@ -1,29 +1,26 @@
 import discord
 from discord.ext import commands
-
 from sqlalchemy import func
 
-from src.util.misc import MISSING
-
 from src.util.checks import is_admin, is_pu
-
 from src.util.context import CstmContext
-
 from src.util.flags.editflags import (
     EditStaffFlags,
     EditChapterFlags,
     EditProjectFlags,
     ReleaseFlags,
 )
+from src.util.misc import MISSING
 
 
-class Edit(commands.Cog):
+class Edit(commands.GroupCog):
     """
     Test description
     """
 
     def __init__(self, client):
         self.bot = client
+        super().__init__()
 
     @commands.command(
         aliases=["editch", "editc", "ec"],

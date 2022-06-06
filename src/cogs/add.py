@@ -1,7 +1,7 @@
 import asyncio
 
+import discord.ext.commands as commands
 import sqlalchemy
-from discord.ext import commands
 from prettytable import PrettyTable, prettytable
 from sqlalchemy import func
 
@@ -22,17 +22,18 @@ from src.util.misc import format_number
 from src.util.search import searchproject
 
 
-class Add(commands.Cog):
+class Add(commands.GroupCog, name="add"):
     """
     Cog with all of the commands used for adding to the database
     """
 
     def __init__(self, client):
         self.bot = client
+        super().__init__()
 
     @commands.command()
     @is_admin()
-    async def addstaff(self, ctx: CstmContext, *, flags: AddStaffFlags):
+    async def staff(self, ctx: CstmContext, *, flags: AddStaffFlags):
         """
         Description
         ==============
@@ -58,7 +59,7 @@ class Add(commands.Cog):
         aliases=["ap", "addp", "addproj"],
     )
     @is_pu()
-    async def addproject(self, ctx: CstmContext, *, flags: AddProjectFlags):
+    async def project(self, ctx: CstmContext, *, flags: AddProjectFlags):
         """
         Description
         ==============
@@ -86,7 +87,7 @@ class Add(commands.Cog):
         :ts, rd, pr, tl:
             | Default staff for the project.  [:doc:`/Types/staff`]
         :status:
-            | Current status of the project, defaults to "active".  [:doc:`/Types/text `]
+            | Current status of the project, defaults to "active".  [:doc:`/Types/text`]
         :altnames:
             | Aliases for the project, divided by comma.  [:doc:`/Types/text`]
         """
@@ -181,7 +182,7 @@ class Add(commands.Cog):
     @commands.command(
         aliases=["ac", "addch", "addc"],
     )
-    async def addchapter(self, ctx: CstmContext, *, flags: AddChapterFlags):
+    async def chapter(self, ctx: CstmContext, *, flags: AddChapterFlags):
         """
         Description
         ==============
@@ -236,7 +237,7 @@ class Add(commands.Cog):
             file=await misc.drawimage(t),
         )
 
-    @addchapter.error
+    @chapter.error
     async def on_chapter_error(self, ctx, error):
         if isinstance(error.original, sqlalchemy.exc.IntegrityError):
             await ctx.send("Chapter couldn't be added, as it already exists.")

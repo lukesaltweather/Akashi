@@ -1,22 +1,17 @@
-import typing as t
-import re
-
-from sqlalchemy import select
-
 import discord
 import discord.app_commands as ac
 from discord.ext import commands
+from sqlalchemy import select
 
 from src.model import Chapter, Project
-from src.util.search import get_staff_from_discord_id, searchprojects, searchstaff
-from src.util.db import get_all, get_one
 from src.slash.autocomplete import chapter_autocomplete, project_autocomplete
-
 from src.slash.helper import monitor_changes
+from src.util.db import get_one
 from src.util.flags.converters import DateTimeConverter
+from src.util.search import get_staff_from_discord_id
 
 
-class EditC(commands.Cog, ac.Group, name="edit"):
+class EditC(commands.GroupCog, name="edit"):
     def __init__(self, bot) -> None:
         self.bot = bot
         super().__init__()

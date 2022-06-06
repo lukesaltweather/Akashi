@@ -1,16 +1,16 @@
+import asyncio
 import datetime
 import json
 import logging
 import os
 import sys
 import traceback
-import asyncio
 
 import aiofiles
 import asyncpg
 import discord
-import toml
 import hondana
+import toml
 from discord import version_info, Intents
 from discord.ext import commands
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
@@ -83,7 +83,7 @@ class Bot(commands.Bot):
         await self.load_extension("src.cogs.note")
         await self.load_extension("src.cogs.help")
         await self.load_extension("src.cogs.database")
-        await self.load_extension("src.slash.edit")
+        # await self.load_extension("src.slash.edit")
         await self.load_extension("src.slash.misc")
         await self.load_extension("jishaku")
 
@@ -101,6 +101,7 @@ class Bot(commands.Bot):
             min_size=1,
             max_size=10,
         )
+        # self.tree.copy_global_to(guild=discord.Object(603203362133114891))
 
     def get_cog_insensitive(self, name):
         """Gets the cog instance requested.

@@ -10,23 +10,22 @@ from src.util.misc import MISSING
 
 
 class InfoChapter(FlagConverter):
-    class InfoChapter(FlagConverter):
-        project: List[Project] = flag(default=MISSING, aliases=["p"])
-        title: List[str] = flag(default=MISSING)
-        chapter_from: Optional[float]
-        chapter_upto: Optional[float]
-        chapter: List[float] = flag(default=[], aliases=["c", "ch"])
-        id: List[int] = flag(default=[])
-        tl: List[Staff] = flag(default=[])
-        rd: List[Staff] = flag(default=[])
-        ts: List[Staff] = flag(default=[])
-        pr: List[Staff] = flag(default=[])
-        release_from: Optional[DateTimeConverter]
-        release_upto: Optional[DateTimeConverter]
-        release_on: Optional[DateTimeConverter]
-        links: Optional[bool]
-        status: Optional[Literal["active", "tl", "ts", "rd", "pr", "qcts", "ready"]]
-        fields: Optional[CommaList[str]] = flag(default=tuple())
+    project: List[Project] = flag(default=MISSING, aliases=["p"])
+    title: List[str] = flag(default=MISSING)
+    chapter_from: Optional[float]
+    chapter_upto: Optional[float]
+    chapter: List[float] = flag(default=[], aliases=["c", "ch"])
+    id: List[int] = flag(default=[])
+    tl: List[Staff] = flag(default=[])
+    rd: List[Staff] = flag(default=[])
+    ts: List[Staff] = flag(default=[])
+    pr: List[Staff] = flag(default=[])
+    release_from: Optional[DateTimeConverter]
+    release_upto: Optional[DateTimeConverter]
+    release_on: Optional[DateTimeConverter]
+    links: Optional[bool]
+    status: Optional[Literal["active", "tl", "ts", "rd", "pr", "qcts", "ready"]]
+    fields: Optional[CommaList[str]] = flag(default=tuple())
 
 
 class InfoProject(FlagConverter):

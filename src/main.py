@@ -202,7 +202,7 @@ async def on_command_error(ctx, error):
 @is_admin()
 async def restart(ctx):
     logging.getLogger("akashi").info(f"Restarting bot...")
-    ctx.bot.close()
+    await ctx.bot.close()
 
 
 @bot.event

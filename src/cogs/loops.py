@@ -1,17 +1,15 @@
 import asyncio
 import random
-from traceback import print_exc
-
-from sqlalchemy.sql.expression import select
 
 import discord
 from discord.ext import tasks, commands
 from sqlalchemy.orm import joinedload
+from sqlalchemy.sql.expression import select
 
 from src.model.chapter import Chapter
 from src.model.project import Project
-from src.util.misc import format_number, divide_chunks, BoardPaginator
 from src.util.db import get_all
+from src.util.misc import format_number, divide_chunks, BoardPaginator
 
 
 class Loops(commands.Cog):
@@ -24,7 +22,7 @@ class Loops(commands.Cog):
     def cog_unload(self):
         self.refreshembed.cancel()
 
-    @tasks.loop(seconds=60, reconnect=True)
+    @tasks.loop(seconds=60)
     async def refreshembed(self):
         await self.bot.wait_until_ready()
         session = self.bot.Session()
@@ -203,9 +201,8 @@ class Loops(commands.Cog):
 
     @refreshembed.error
     async def refresherror(self, e):
-        ch = await self.bot.fetch_channel(
-            self.bot.config["server"]["channels"]["board"]
-        )
+        await self.bot.wait_until_ready()
+        ch = await self.bot.fetch_user(self.bot.owner_id)
         await ch.send(f"Board errored with error: {e} {type(e)}")
         try:
             self.refreshembed.cancel()
@@ -218,25 +215,31 @@ class Loops(commands.Cog):
             await ch.send("Task is being cancelled!")
             await asyncio.sleep(20)
         self.refreshembed.start()
+        self.refreshembed.restart()
         await ch.send("Restarted task successfully")
 
-    @staticmethod
-    async def foundStaff(
-        channel: discord.TextChannel, member: str, m: discord.Message, chapter
-    ):
-        await m.clear_reactions()
-        await m.unpin()
-        await m.add_reaction("✅")
-        msg = f"`{chapter.project.title} {format_number(chapter.number)}` was assigned to {member}."
-        await m.edit(content=msg)
-        msg = m.jump_url
-        embed = discord.Embed(color=discord.Colour.green())
-        embed.set_author(
-            name="Assignment",
-            icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128",
-        )
-        embed.description = f"*{chapter.project.title}* {format_number(chapter.number)}\nA staffmember has already been assigned!\n[Jump!]({msg})\n"
-        await channel.send(embed=embed)
+    @refreshembed.before_loop
+    async def embed_before_loop(self):
+        await self.bot.wait_until_ready()
+
+
+@staticmethod
+async def foundStaff(
+    channel: discord.TextChannel, member: str, m: discord.Message, chapter
+):
+    await m.clear_reactions()
+    await m.unpin()
+    await m.add_reaction("✅")
+    msg = f"`{chapter.project.title} {format_number(chapter.number)}` was assigned to {member}."
+    await m.edit(content=msg)
+    msg = m.jump_url
+    embed = discord.Embed(color=discord.Colour.green())
+    embed.set_author(
+        name="Assignment",
+        icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128",
+    )
+    embed.description = f"*{chapter.project.title}* {format_number(chapter.number)}\nA staffmember has already been assigned!\n[Jump!]({msg})\n"
+    await channel.send(embed=embed)
 
 
 async def setup(bot):

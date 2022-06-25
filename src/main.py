@@ -144,6 +144,8 @@ async def globally_block_dms(ctx):
 
 @bot.check
 async def only_members(ctx):
+    if ctx.command.name == "apply":
+        return True
     worker = ctx.guild.get_role(ctx.bot.config["server"]["roles"]["member"])
     ia = worker in ctx.message.author.roles
     ic = ctx.channel.id in ctx.bot.config["server"]["channels"]["commands"]
@@ -190,7 +192,7 @@ async def on_command_error(ctx, error):
     elif issubclass(type(error), commands.CommandError):
         await ctx.send(error.__str__())
     else:
-        await ctx.send("An unknown error ocurred...")
+        await ctx.send(f"An unknown error ocurred...\n`{error}`")
         logging.getLogger("akashi.commands").critical(
             f"Error for {ctx.command.name} couldn't be resolved gracefully: Message: {getattr(error, 'message', 'No Message')}; \n Type: {type(error)}; \n String: {str(error)}."
         )
@@ -200,7 +202,7 @@ async def on_command_error(ctx, error):
 @is_admin()
 async def restart(ctx):
     logging.getLogger("akashi").info(f"Restarting bot...")
-    os.system("systemctl restart akashi")
+    ctx.bot.close()
 
 
 @bot.event

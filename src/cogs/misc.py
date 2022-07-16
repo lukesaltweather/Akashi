@@ -82,10 +82,6 @@ class Misc(commands.Cog):
         )
 
     @commands.command()
-    async def sync(self, ctx):
-        await self.bot.tree.sync()
-
-    @commands.command()
     async def apply(self, ctx):
         role = ctx.guild.get_role(self.bot.config["server"]["roles"]["applicant"])
         await ctx.author.add_roles(role)

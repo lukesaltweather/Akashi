@@ -83,7 +83,7 @@ class Bot(commands.Bot):
         await self.load_extension("src.cogs.note")
         await self.load_extension("src.cogs.help")
         await self.load_extension("src.cogs.database")
-        # await self.load_extension("src.slash.edit")
+        await self.load_extension("src.slash.edit")
         # await self.load_extension("src.slash.misc")
         await self.load_extension("jishaku")
 

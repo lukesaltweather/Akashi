@@ -1,20 +1,15 @@
 import datetime
 import itertools
-import json
 import os
-import time
-from io import BytesIO
 
-import aiohttp
 import discord
 import humanize
 import pkg_resources
 import psutil
 import pygit2
 from discord.ext import commands
-from src.model.staff import Staff
-from src.util import checks, exceptions
-from src.util.checks import is_admin, is_worker
+
+from src.util.checks import is_admin
 from src.util.context import CstmContext
 
 
@@ -87,6 +82,10 @@ class Misc(commands.Cog):
         )
 
     @commands.command()
+    async def sync(self, ctx):
+        await self.bot.tree.sync()
+
+    @commands.command()
     async def apply(self, ctx):
         role = ctx.guild.get_role(self.bot.config["server"]["roles"]["applicant"])
         await ctx.author.add_roles(role)
@@ -156,17 +155,17 @@ class Misc(commands.Cog):
         embed.add_field(name="CPU Usage", value=f"{cpu} %", inline=False)
         embed.add_field(
             name="Memory",
-            value=f"{round((mem.total-mem.available)/1073741824, 2)} **GB** / {round(mem.total/1073741824, 2)} **GB** *({round((mem.total-mem.available)*100/mem.total, 2)}* **%** used)",
+            value=f"{round((mem.total - mem.available) / 1073741824, 2)} **GB** / {round(mem.total / 1073741824, 2)} **GB** *({round((mem.total - mem.available) * 100 / mem.total, 2)}* **%** used)",
             inline=False,
         )
         embed.add_field(
             name="Disk Usage",
-            value=f"{round((disc.used/1073741824), 2)} **GB** / {round((disc.total/1073741824), 2)} **GB** (*{disc.percent}* **%**)",
+            value=f"{round((disc.used / 1073741824), 2)} **GB** / {round((disc.total / 1073741824), 2)} **GB** (*{disc.percent}* **%**)",
             inline=False,
         )
         embed.add_field(
             name="Websocket Latency",
-            value=f"{round(self.bot.latency*1000, 2)} **ms**",
+            value=f"{round(self.bot.latency * 1000, 2)} **ms**",
             inline=True,
         )
         embed.add_field(name="Uptime", value=f"{self.get_bot_uptime()}")

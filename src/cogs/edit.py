@@ -13,7 +13,7 @@ from src.util.flags.editflags import (
 from src.util.misc import MISSING
 
 
-class Edit(commands.GroupCog):
+class Edit(commands.Cog, name="editcog"):
     """
     Test description
     """

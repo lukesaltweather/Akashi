@@ -4,7 +4,7 @@ from discord.ext import commands
 from sqlalchemy import select
 
 from src.model import Chapter, Project
-from src.slash.autocomplete import chapter_autocomplete, project_autocomplete
+from src.slash.autocomplete import project_autocomplete
 from src.slash.helper import monitor_changes
 from src.util.db import get_one
 from src.util.flags.converters import DateTimeConverter
@@ -22,7 +22,7 @@ class EditC(commands.GroupCog, name="edit"):
         await ctx.send("Done.")
 
     @ac.command(name="chapter", description="Edit a chapter")
-    @ac.autocomplete(chapter=chapter_autocomplete, to_project=project_autocomplete)
+    @ac.autocomplete(to_project=project_autocomplete)
     @ac.checks.has_role(345799525274746891)
     @ac.describe(
         chapter="The chapter to be edited.",

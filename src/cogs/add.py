@@ -92,8 +92,6 @@ class Add(commands.GroupCog, name="add"):
             | Aliases for the project, divided by comma.  [:doc:`/Types/text`]
         """
         session = ctx.session
-        if searchproject(flags.title, session):
-            raise ProjectAlreadyExists()
 
         pr = Project(flags.title, flags.status, flags.link, flags.altnames)
         pr.tl = flags.tl

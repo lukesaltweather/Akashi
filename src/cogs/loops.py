@@ -195,12 +195,15 @@ class Loops(commands.Cog):
                 self.bot.config["server"]["board_message"] = used_ids
                 await self.bot.store_config()
         except Exception as e:
+            self.bot.logger.error(e)
+            await session.close()
             raise e
         finally:
             await session.close()
 
     @refreshembed.error
     async def refresherror(self, e):
+        self.bot.logger.info("Now handling board loop error")
         await self.bot.wait_until_ready()
         ch = await self.bot.fetch_user(self.bot.owner_id)
         await ch.send(f"Board errored with error: {e} {type(e)}")

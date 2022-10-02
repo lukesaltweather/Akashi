@@ -229,8 +229,7 @@ class Add(commands.GroupCog, name="add"):
         chp.date_created = func.now()
         ctx.session.add(chp)
         t = table.get_string(title="Chapter Preview")
-        await ctx.monitor_changes(
-            entity=chp,
+        await ctx.prompt_and_commit(
             text="Do you really want to add this chapter?",
             file=await misc.drawimage(t),
         )

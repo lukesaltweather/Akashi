@@ -10,7 +10,7 @@ python = "^3.10"
 sqlalchemy = { version = "1.4.31", optional = false }
 pillow = "9.0.1"
 python-dateutil = "2.8.1"
-jishaku = "2.5.1"
+jishaku = "*"
 "discord.py" = { git = "https://github.com/lukesaltweather/discord.py" }
 "discord-ext-menus" = { git = "https://github.com/Rapptz/discord-ext-menus" }
 "discord-ext-menus-views" = { git = "https://github.com/oliver-ni/discord-ext-menus-views" }

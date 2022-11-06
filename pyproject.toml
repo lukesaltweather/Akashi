@@ -11,7 +11,7 @@ sqlalchemy = { version = "1.4.31", optional = false }
 pillow = "9.0.1"
 python-dateutil = "2.8.1"
 jishaku = { git = "https://github.com/Gorialis/jishaku" }
-"discord.py" = { git = "https://github.com/lukesaltweather/discord.py" }
+"discord.py" = { git = "https://github.com/Rapptz/discord.py", branch = "master" }
 "discord-ext-menus" = { git = "https://github.com/Rapptz/discord-ext-menus" }
 "discord-ext-menus-views" = { git = "https://github.com/oliver-ni/discord-ext-menus-views" }
 "discord-ext-ipc" = "2.0.0"
@@ -26,17 +26,23 @@ toml = "0.10.2"
 humanize = "3.13"
 loguru = "0.6.0"
 alembic = "1.7.6"
-hondana = { git = "https://github.com/AbstractUmbra/Hondana", branch="main" }
+hondana = "*"
 lark = "*"
 
 [tool.poetry.dev-dependencies]
 flake8 = "*"
 black = "*"
 pre-commit = "*"
+maturin = "^0.13.7"
 
 [tool.poetry.extras]
 sqlalchemy = ["asyncio"]
 
+[tool.maturin]
+python-source = "Akashi"
+
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0", "maturin>=0.13,<0.14"]
+build-backend = "maturin"
+
+

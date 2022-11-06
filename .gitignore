@@ -4,7 +4,7 @@ Pipfile
 chapter.cpython-38.pyc
 **/**/*.pyc
 venv/
-src/util/config.json
+Akashi/util/config.json
 vcs.xml
 workspace.xml
 /.idea/*
@@ -25,3 +25,4 @@ backupscript
 **/__pycache__/*
 .idea/poetry.xml
 config.toml
+target/*

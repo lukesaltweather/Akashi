@@ -1,0 +1,16 @@
+[package]
+name = "Akashi"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "ariadne_wrapper"
+crate-type = ["cdylib"]
+
+[package.metadata.maturin]
+python-source = "Akashi"
+
+[dependencies]
+pyo3 = { version = "0.17.1", features = ["extension-module"] }
+ariadne = { version = "0.1.*" }

@@ -62,7 +62,7 @@ Commands
                         if command.help:
                             file.write(command.help)
 
-    bot = Bot(command_prefix="?")
+    bot = Bot(command_prefix="?", intents=discord.Intents.default())
     bot.load_extension("src.cogs.edit")
     bot.load_extension("src.cogs.misc")
     bot.load_extension("src.cogs.info")

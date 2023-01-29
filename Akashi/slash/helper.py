@@ -1,14 +1,14 @@
 import typing
-from Akashi.model.chapter import Chapter
-from Akashi.model.project import Project
-from Akashi.model.staff import Staff
-
-from Akashi.util.context import ConfirmationView
-from Akashi.util.misc import drawimage
 
 import discord
 from prettytable import PrettyTable
 from sqlalchemy import inspect
+
+from Akashi.model.chapter import Chapter
+from Akashi.model.project import Project
+from Akashi.model.staff import Staff
+from Akashi.util.context import ConfirmationView
+from Akashi.util.misc import drawimage
 
 
 class ConfirmationView(discord.ui.View):

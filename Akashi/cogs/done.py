@@ -1,30 +1,25 @@
-import asyncio
 import datetime
-import json
+import datetime
 import typing as t
+from abc import abstractmethod
 
 import discord
 import humanize
 from discord.ext import commands
 from discord.ext.commands.errors import CommandError
 from sqlalchemy import func
+
 from Akashi.model.chapter import Chapter
-from Akashi.model.message import Message
 from Akashi.model.note import Note
 from Akashi.model.staff import Staff
-from Akashi.util import exceptions
+from Akashi.util.context import CstmContext
 from Akashi.util.flags.doneflags import DoneFlags, AssignFlags
+from Akashi.util.misc import format_number
 from Akashi.util.search import (
     fakesearch,
     dbstaff,
     get_staff_from_discord_id,
-    searchstaff,
-    discordstaff,
 )
-from Akashi.util.misc import format_number, MISSING
-from Akashi.util.context import CstmContext
-from abc import abstractmethod
-
 from Akashi.util.types import staffroles
 
 

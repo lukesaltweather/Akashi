@@ -1,5 +1,4 @@
 import asyncio
-from collections import namedtuple
 import functools
 import io
 import json
@@ -9,9 +8,7 @@ from typing import Any
 import aiohttp
 import discord
 import prettytable
-from discord import member
 from PIL import Image, ImageDraw, ImageFont
-from sqlalchemy import or_
 from sqlalchemy.orm import sessionmaker
 
 resolve_attr_key = {"ts"}
@@ -23,7 +20,7 @@ async def get_roles(member: discord.Member):
     @param member: discord user object
     @return: list of string, with possible entries ts, rd, pr and tl as string
     """
-    with open("src/util/config.json", "r") as f:
+    with open("Akashi/util/config.json", "r") as f:
         config = json.load(f)
     return member.roles
 
@@ -59,7 +56,7 @@ def strlist(stl: str):
 
 
 def is_ts(ctx):
-    with open("src/util/config.json", "r") as f:
+    with open("Akashi/util/config.json", "r") as f:
         config = json.load(f)
     ts = discord.utils.find(lambda r: r.id == config["ts_id"], ctx.message.guild.roles)
     if ts in ctx.member.roles:
@@ -68,7 +65,7 @@ def is_ts(ctx):
 
 
 def is_tl(ctx):
-    with open("src/util/config.json", "r") as f:
+    with open("Akashi/util/config.json", "r") as f:
         config = json.load(f)
     tl = discord.utils.find(lambda r: r.id == config["tl_id"], ctx.message.guild.roles)
     if tl in ctx.member.roles:
@@ -77,7 +74,7 @@ def is_tl(ctx):
 
 
 def is_rd(ctx):
-    with open("src/util/config.json", "r") as f:
+    with open("Akashi/util/config.json", "r") as f:
         config = json.load(f)
     rd = discord.utils.find(lambda r: r.id == config["rd_id"], ctx.message.guild.roles)
     if rd in ctx.member.roles:
@@ -86,7 +83,7 @@ def is_rd(ctx):
 
 
 def is_pr(ctx):
-    with open("src/util/config.json", "r") as f:
+    with open("Akashi/util/config.json", "r") as f:
         config = json.load(f)
     pr = discord.utils.find(lambda r: r.id == config["pr_id"], ctx.message.guild.roles)
     if pr in ctx.member.roles:
@@ -113,7 +110,7 @@ def drawimage(string):
 
 def async_drawimage(string):
     fontsize = 25  # starting font size
-    font = ImageFont.truetype("src/util/fonts/DroidSansMono.ttf", fontsize)
+    font = ImageFont.truetype("Akashi/util/fonts/DroidSansMono.ttf", fontsize)
     lines = string.split("\n")
     img = Image.new(
         "RGB",

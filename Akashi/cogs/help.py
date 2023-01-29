@@ -1,14 +1,13 @@
 import inspect
 import itertools
+from typing import List
 
 import discord
 from discord.ext import commands
 from discord.ext import menus
+from discord.ext.commands.core import Group
 from discord.ext.menus.views import ViewMenuPages
-from typing import List
-from discord.ext.commands.core import Group, Command
 
-from Akashi.util import exceptions
 from Akashi.util.docs import parse_rst, MyVisitor
 
 

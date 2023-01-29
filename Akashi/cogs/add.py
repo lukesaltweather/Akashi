@@ -11,7 +11,6 @@ from Akashi.model.staff import Staff
 from Akashi.util import misc
 from Akashi.util.checks import is_admin, is_pu
 from Akashi.util.context import CstmContext
-from Akashi.util.exceptions import ProjectAlreadyExists
 from Akashi.util.flags.addflags import (
     AddStaffFlags,
     AddProjectFlags,
@@ -19,7 +18,6 @@ from Akashi.util.flags.addflags import (
     MassAddFlags,
 )
 from Akashi.util.misc import format_number
-from Akashi.util.search import searchproject
 
 
 class Add(commands.GroupCog, name="add"):

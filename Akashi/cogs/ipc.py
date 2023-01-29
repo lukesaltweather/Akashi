@@ -1,5 +1,5 @@
-from discord.ext import commands, ipc
 import discord
+from discord.ext import commands, ipc
 
 from Akashi.util.misc import format_number
 

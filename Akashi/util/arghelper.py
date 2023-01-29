@@ -1,7 +1,7 @@
 from sqlalchemy import or_
 
 from Akashi.model.chapter import Chapter
-from Akashi.util.search import searchproject, searchstaff
+from Akashi.util.search import searchstaff
 
 
 class arghelper:

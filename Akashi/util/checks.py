@@ -1,8 +1,4 @@
-import json
-
 from discord.ext import commands
-
-from Akashi.util import exceptions
 
 
 def is_worker():

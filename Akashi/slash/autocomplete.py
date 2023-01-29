@@ -1,13 +1,13 @@
+import re
+
 import discord
 import discord.app_commands as ac
-
-from Akashi.util.db import get_all
-from Akashi.util.search import searchprojects
-from Akashi.util.misc import format_number
-from Akashi.model import Project
-
 from sqlalchemy import select
-import re
+
+from Akashi.model import Project
+from Akashi.util.db import get_all
+from Akashi.util.misc import format_number
+from Akashi.util.search import searchprojects
 
 
 async def chapter_autocomplete(

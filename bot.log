@@ -1,12 +1,12 @@
-2022-07-16 11:55:51,465:WARNING:discord.client: PyNaCl is not installed, voice will NOT be supported
-2022-07-16 11:55:51,467:INFO:akashi: Loaded Config.
-2022-07-16 11:55:51,467:INFO:akashi: Creating asnypg pool...
-2022-07-16 11:55:51,467:INFO:akashi: Finished setting up asyncpg connection pool.
-2022-07-16 11:55:51,467:INFO:akashi: Setting up SQLAlchemy Sessionmaker...
-2022-07-16 11:55:51,482:INFO:akashi: Finished setting up SQLAlchemy Sessionmaker.
-2022-07-16 11:55:51,482:INFO:akashi: Loading Cogs...
-2022-07-16 11:55:51,482:INFO:akashi: Finished loading Cogs.
-2022-07-16 11:55:51,483:INFO:discord.client: logging in using static token
-2022-07-16 11:55:51,888:INFO:akashi: Syncing slash commands.
-2022-07-16 11:55:51,888:INFO:akashi: Finished syncing slash commands.
-2022-07-16 11:55:51,888:INFO:akashi: Init complete.
+2023-01-29 15:59:21,883:WARNING:discord.client: PyNaCl is not installed, voice will NOT be supported
+2023-01-29 15:59:21,884:INFO:akashi: Loaded Config.
+2023-01-29 15:59:21,884:INFO:akashi: Creating asnypg pool...
+2023-01-29 15:59:21,884:INFO:akashi: Finished setting up asyncpg connection pool.
+2023-01-29 15:59:21,885:INFO:akashi: Setting up SQLAlchemy Sessionmaker...
+2023-01-29 15:59:21,904:INFO:akashi: Finished setting up SQLAlchemy Sessionmaker.
+2023-01-29 15:59:21,904:INFO:akashi: Loading Cogs...
+2023-01-29 15:59:21,904:INFO:akashi: Finished loading Cogs.
+2023-01-29 15:59:21,905:INFO:discord.client: logging in using static token
+2023-01-29 15:59:22,660:INFO:akashi: Syncing slash commands.
+2023-01-29 15:59:22,660:INFO:akashi: Finished syncing slash commands.
+2023-01-29 15:59:22,660:INFO:akashi: Init complete.

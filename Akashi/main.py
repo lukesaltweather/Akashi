@@ -25,7 +25,7 @@ from Akashi.util.exceptions import (
     AkashiException,
 )
 
-with open("src/util/emojis.json", "r") as f:
+with open("Akashi/util/emojis.json", "r") as f:
     emojis = json.load(f)
 
 logger = logging.getLogger("discord")
@@ -74,17 +74,17 @@ class Bot(commands.Bot):
         self.logger.info(msg="Config File overridden.")
 
     async def setup_hook(self) -> None:
-        await self.load_extension("src.cogs.loops")
-        await self.load_extension("src.cogs.edit")
-        await self.load_extension("src.cogs.misc")
-        await self.load_extension("src.cogs.info")
-        await self.load_extension("src.cogs.add")
-        await self.load_extension("src.cogs.done")
-        await self.load_extension("src.cogs.note")
-        await self.load_extension("src.cogs.help")
-        await self.load_extension("src.cogs.database")
-        await self.load_extension("src.slash.edit")
-        # await self.load_extension("src.slash.misc")
+        await self.load_extension("Akashi.cogs.loops")
+        await self.load_extension("Akashi.cogs.edit")
+        await self.load_extension("Akashi.cogs.misc")
+        await self.load_extension("Akashi.cogs.info")
+        await self.load_extension("Akashi.cogs.add")
+        await self.load_extension("Akashi.cogs.done")
+        await self.load_extension("Akashi.cogs.note")
+        await self.load_extension("Akashi.cogs.help")
+        await self.load_extension("Akashi.cogs.database")
+        await self.load_extension("Akashi.slash.edit")
+        # await self.load_extension("Akashi.slash.misc")
         await self.load_extension("jishaku")
 
         self.mangadex_client = hondana.Client(
@@ -191,6 +191,9 @@ async def on_command_error(ctx, error):
         await ctx.send(error.message)
     elif issubclass(type(error), commands.CommandError):
         await ctx.send(error.__str__())
+    elif isinstance(error, commands.BadFlagArgument):
+        if error.flag.name in ["tl", "rd", "ts", "pr"]:
+            await ctx.send(f"Could not find staffmember {error.argument}")
     else:
         await ctx.send(f"An unknown error ocurred...\n`{error}`")
         logging.getLogger("akashi.commands").critical(

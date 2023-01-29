@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, String, BigInteger
 from sqlalchemy.orm import relationship
 
-from Akashi.util.db import Base
 import Akashi.util.search as s
+from Akashi.util.db import Base
 
 
 class Staff(Base):

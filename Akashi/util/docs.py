@@ -1,16 +1,9 @@
-from ast import arguments
-import os
-import subprocess
-from typing import List
+from pathlib import Path
 
-import discord
+import docutils.frontend
 import docutils.nodes
 import docutils.parsers.rst
 import docutils.utils
-import docutils.frontend
-from docutils.parsers.rst import directives
-from pathlib import Path
-
 
 if __name__ == "__main__":
     from discord.ext import commands
@@ -63,14 +56,14 @@ Commands
                             file.write(command.help)
 
     bot = Bot(command_prefix="?")
-    bot.load_extension("src.cogs.edit")
-    bot.load_extension("src.cogs.misc")
-    bot.load_extension("src.cogs.info")
-    bot.load_extension("src.cogs.add")
-    bot.load_extension("src.cogs.done")
-    bot.load_extension("src.cogs.note")
-    bot.load_extension("src.cogs.help")
-    bot.load_extension("src.cogs.database")
+    bot.load_extension("Akashi.cogs.edit")
+    bot.load_extension("Akashi.cogs.misc")
+    bot.load_extension("Akashi.cogs.info")
+    bot.load_extension("Akashi.cogs.add")
+    bot.load_extension("Akashi.cogs.done")
+    bot.load_extension("Akashi.cogs.note")
+    bot.load_extension("Akashi.cogs.help")
+    bot.load_extension("Akashi.cogs.database")
 
     bot.build_docs()
 

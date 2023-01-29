@@ -7,7 +7,6 @@ import humanize
 from discord import SelectOption
 from discord.ext import commands
 from discord.ext.commands import CommandError
-from discord.ui import Select
 from sqlalchemy import select
 
 from Akashi.model.note import Note as _Note

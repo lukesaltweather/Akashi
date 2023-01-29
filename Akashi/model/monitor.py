@@ -1,9 +1,6 @@
-import datetime
-
-import sqlalchemy.sql.functions
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.sql.schema import Column, ForeignKey
-from sqlalchemy.sql.sqltypes import String, Integer, DateTime, BigInteger
+from sqlalchemy.sql.sqltypes import Integer
 
 from Akashi.util.db import Base
 

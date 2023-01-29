@@ -83,7 +83,7 @@ class Bot(commands.Bot):
         await self.load_extension("Akashi.cogs.note")
         await self.load_extension("Akashi.cogs.help")
         await self.load_extension("Akashi.cogs.database")
-        await self.load_extension("Akashi.slash.edit")
+        # await self.load_extension("Akashi.slash.edit")
         # await self.load_extension("Akashi.slash.misc")
         await self.load_extension("jishaku")
 

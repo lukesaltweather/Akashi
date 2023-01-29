@@ -189,11 +189,12 @@ async def on_command_error(ctx, error):
     )
     if issubclass(type(error), AkashiException):
         await ctx.send(error.message)
+    elif isinstance(error, commands.BadUnionArgument):
+        await ctx.send(
+            f"Could not find one of your specified staffmembers. Make sure every letter was capitalised correctly."
+        )
     elif issubclass(type(error), commands.CommandError):
         await ctx.send(error.__str__())
-    elif isinstance(error, commands.BadFlagArgument):
-        if error.flag.name in ["tl", "rd", "ts", "pr"]:
-            await ctx.send(f"Could not find staffmember {error.argument}")
     else:
         await ctx.send(f"An unknown error ocurred...\n`{error}`")
         logging.getLogger("akashi.commands").critical(

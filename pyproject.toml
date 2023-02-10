@@ -7,7 +7,7 @@ license = "Apache-2.0"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-sqlalchemy = { version = "1.4.31", optional = false }
+sqlalchemy = { version = "2.0.3", optional = false }
 pillow = "9.0.1"
 python-dateutil = "2.8.1"
 jishaku = "2.5.1"

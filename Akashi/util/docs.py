@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import discord
 import docutils.frontend
 import docutils.nodes
 import docutils.parsers.rst
@@ -55,7 +56,7 @@ Commands
                         if command.help:
                             file.write(command.help)
 
-    bot = Bot(command_prefix="?")
+    bot = Bot(command_prefix="?", intents=discord.Intents.none())
     bot.load_extension("Akashi.cogs.edit")
     bot.load_extension("Akashi.cogs.misc")
     bot.load_extension("Akashi.cogs.info")

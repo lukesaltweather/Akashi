@@ -23,6 +23,7 @@ class Chapter(Base, ReportMixin, discord.app_commands.Transformer):
     link_rd = Column(String)
     link_pr = Column(String)
     link_rl = Column(String)
+    link_qc = Column(String)
     link_qcts = synonym("link_rl")
 
     date_created = Column(DateTime)
@@ -37,6 +38,7 @@ class Chapter(Base, ReportMixin, discord.app_commands.Transformer):
     translator_id = Column(Integer, ForeignKey("staff.id", ondelete="SET NULL"))
     redrawer_id = Column(Integer, ForeignKey("staff.id", ondelete="SET NULL"))
     proofreader_id = Column(Integer, ForeignKey("staff.id", ondelete="SET NULL"))
+    qualitychecker_id = Column(Integer, ForeignKey("staff.id", ondelete="SET NULL"))
     project_id = Column(Integer, ForeignKey("projects.id"))
 
     typesetter = relationship(
@@ -60,6 +62,12 @@ class Chapter(Base, ReportMixin, discord.app_commands.Transformer):
     proofreader = relationship(
         "Staff",
         foreign_keys=[proofreader_id],
+        uselist=False,
+        lazy="joined",
+    )
+    qualitychecker = relationship(
+        "Staff",
+        foreign_keys=[qualitychecker_id],
         uselist=False,
         lazy="joined",
     )

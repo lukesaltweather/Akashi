@@ -213,13 +213,25 @@ def divide_chunks(l, n):
 
 
 class BoardPaginator:
-    def __init__(self, color, title=None, url="https://nekyou.com"):
-        self.color = color
-        self.title = title
-        self.url = url
+    def __init__(self, project=None):
         self.current_length = 0
         self.embeds = list()
         self.thumbnail = ""
+        if project:
+            self.set_author(name=project.title, icon_url=project.icon, url=project.link)
+            self.set_thumbnail(
+                project.thumbnail
+                if project.thumbnail
+                else "https://nekyou.mangadex.com/wp-content/uploads/sites/83/2019/06/About-Nekyou.png"
+            )
+            self.title = "Link to project"
+            self.url = project.link
+            if not project.color:
+                self.color = discord.Colour.random(seed=35685)
+            else:
+                self.color = discord.Colour(int(project.color, 16))
+        else:
+            self.color = discord.Colour.blue()
 
     def __len__(self):
         l = 0

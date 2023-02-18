@@ -1,15 +1,14 @@
 import asyncio
-import random
 
-import discord
 from discord.ext import tasks, commands
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import select
 
 from Akashi.model.chapter import Chapter
 from Akashi.model.project import Project
+from Akashi.util.board import get_chapter_string, join_chapters
 from Akashi.util.db import get_all
-from Akashi.util.misc import format_number, divide_chunks, BoardPaginator
+from Akashi.util.misc import BoardPaginator
 
 
 class Loops(commands.Cog):
@@ -28,6 +27,7 @@ class Loops(commands.Cog):
         session = self.bot.Session()
         used_ids = []
         channel = self.bot.get_channel(self.bot.config["server"]["channels"]["board"])
+        all_embeds = list()
         try:
             stmt = (
                 select(Project)
@@ -35,7 +35,6 @@ class Loops(commands.Cog):
                 .order_by(Project.position.asc())
             )
             projects = await get_all(session, stmt)
-            all_embeds = list()
             for project in projects:
                 stmt = (
                     select(Chapter)
@@ -44,134 +43,31 @@ class Loops(commands.Cog):
                         joinedload(Chapter.typesetter),
                         joinedload(Chapter.redrawer),
                         joinedload(Chapter.proofreader),
+                        joinedload(Chapter.qualitychecker),
                     )
                     .filter(Chapter.project_id == project.id)
                     .order_by(Chapter.number.asc())
                 )
                 chapters = await get_all(session, stmt)
-                list_in_progress_project = []
-                list_done_project = []
+                in_progress_chapters = []
+                ready_chapters = []
+
                 for chapter in chapters:
-                    done = 0
-                    chapter_string = f" [Raws]({chapter.link_raw}) |"
-                    if not chapter.translator and not chapter.link_tl:
-                        chapter_string = chapter_string + " ~~TL~~ |"
-                    elif chapter.translator and not chapter.link_tl:
-                        chapter_string = (
-                            chapter_string + f" **TL** ({chapter.translator.name}) |"
-                        )
-                    elif chapter.link_tl:
-                        chapter_string = "{} [TL ({})]({}) |".format(
-                            chapter_string,
-                            chapter.translator.name if chapter.translator else "None",
-                            chapter.link_tl,
-                        )
-                        done += 1
-                    if not chapter.redrawer and not chapter.link_rd:
-                        chapter_string = chapter_string + " ~~RD~~ |"
-                    elif chapter.redrawer and not chapter.link_rd:
-                        chapter_string = (
-                            chapter_string + f" **RD** ({chapter.redrawer.name}) |"
-                        )
-                    elif chapter.link_rd:
-                        chapter_string = (
-                            chapter_string
-                            + f" [RD ({chapter.redrawer.name if chapter.redrawer else 'None'})]({chapter.link_rd}) |"
-                        )
-                        done += 1
-                    if not chapter.typesetter and not chapter.link_ts:
-                        chapter_string = chapter_string + " ~~TS~~ |"
-                    elif chapter.typesetter and not chapter.link_ts:
-                        chapter_string = (
-                            chapter_string + f" **TS** ({chapter.typesetter.name}) |"
-                        )
-                    elif chapter.link_ts:
-                        chapter_string = (
-                            chapter_string
-                            + f" [TS ({chapter.typesetter.name if chapter.typesetter else 'None'})]({chapter.link_ts}) |"
-                        )
-                        done += 1
-                    if not chapter.proofreader and not chapter.link_pr:
-                        chapter_string = chapter_string + " ~~PR~~ |"
-                    elif chapter.proofreader and not chapter.link_pr:
-                        chapter_string = (
-                            chapter_string + f" **PR** ({chapter.proofreader.name}) |"
-                        )
-                    elif chapter.link_pr:
-                        chapter_string = (
-                            chapter_string
-                            + f" [PR ({chapter.proofreader.name if chapter.proofreader else 'None'})]({chapter.link_pr}) |"
-                        )
-                    if chapter.link_rl:
-                        chapter_string = chapter_string + f" [QCTS]({chapter.link_rl})"
-                        done += 1
-                    else:
-                        chapter_string = chapter_string + f" ~~QCTS~~"
-                    done += 1
-                    if chapter_string and done != 5 and not chapter.date_release:
-                        num = format_number(chapter.number)
-                        chapter_string = "Chapter {}:{}".format(num, chapter_string)
-                        list_in_progress_project.append(f"{chapter_string}\n")
-                    elif chapter_string and done == 5 and not chapter.date_release:
-                        num = format_number(chapter.number)
-                        chapter_string = "Chapter {}:{}".format(num, chapter_string)
-                        list_done_project.append(f"{chapter_string}\n")
-                if not project.color:
-                    color = random.choice(
-                        [
-                            discord.Colour.blue(),
-                            discord.Colour.green(),
-                            discord.Colour.purple(),
-                            discord.Colour.dark_red(),
-                            discord.Colour.dark_teal(),
-                        ]
+                    s = get_chapter_string(chapter)
+                    if chapter.link_qcts and not chapter.date_release:
+                        ready_chapters.append(s)
+                    elif not chapter.date_release:
+                        in_progress_chapters.append(s)
+
+                project_embed = BoardPaginator(project)
+                if len(in_progress_chapters) != 0:  # -> join_chapters
+                    join_chapters(
+                        in_progress_chapters, project_embed, "Chapters in Progress"
                     )
-                else:
-                    color = discord.Colour(int(project.color, 16))
-                project_embed = BoardPaginator(color)
-                project_embed.set_author(
-                    name=project.title, icon_url=project.icon, url=project.link
-                )
-                project_embed.set_thumbnail(
-                    project.thumbnail
-                    if project.thumbnail
-                    else "https://nekyou.mangadex.com/wp-content/uploads/sites/83/2019/06/About-Nekyou.png"
-                )
-                project_embed.title = "Link to project"
-                project_embed.url = project.link
-                if len(list_in_progress_project) != 0:
-                    lists = list(divide_chunks(list_in_progress_project, 2))
-                    first = True
-                    for lis in lists:
-                        if first:
-                            c = " ".join(b for b in lis)
-                            project_embed.add_field(
-                                name="Chapters in Progress", value="" + c, inline=False
-                            )
-                            first = False
-                        else:
-                            c = " ".join(b for b in lis)
-                            project_embed.add_field(
-                                name="\u200b", value="" + c, inline=False
-                            )
-                if len(list_done_project) != 0:
-                    lists = list(divide_chunks(list_done_project, 2))
-                    first = True
-                    for lis in lists:
-                        if first:
-                            c = " ".join(b for b in lis)
-                            project_embed.add_field(
-                                name="Chapters ready for release",
-                                value="" + c,
-                                inline=False,
-                            )
-                            first = False
-                        else:
-                            c = " ".join(b for b in lis)
-                            project_embed.add_field(
-                                name="\u200b", value="" + c, inline=False
-                            )
+                if len(ready_chapters) != 0:
+                    join_chapters(ready_chapters, project_embed, "Finished Chapters")
                 all_embeds += project_embed.embeds
+
             currlen = 0
             message_embeds = [[]]
             for embed in all_embeds:
@@ -207,7 +103,6 @@ class Loops(commands.Cog):
         except Exception as embed:
             self.bot.logger.error(embed)
             await session.close()
-            raise embed
         finally:
             await session.close()
 
@@ -234,25 +129,6 @@ class Loops(commands.Cog):
     @refreshembed.before_loop
     async def embed_before_loop(self):
         await self.bot.wait_until_ready()
-
-
-@staticmethod
-async def foundStaff(
-    channel: discord.TextChannel, member: str, m: discord.Message, chapter
-):
-    await m.clear_reactions()
-    await m.unpin()
-    await m.add_reaction("✅")
-    msg = f"`{chapter.project.title} {format_number(chapter.number)}` was assigned to {member}."
-    await m.edit(content=msg)
-    msg = m.jump_url
-    embed = discord.Embed(color=discord.Colour.green())
-    embed.set_author(
-        name="Assignment",
-        icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128",
-    )
-    embed.description = f"*{chapter.project.title}* {format_number(chapter.number)}\nA staffmember has already been assigned!\n[Jump!]({msg})\n"
-    await channel.send(embed=embed)
 
 
 async def setup(bot):

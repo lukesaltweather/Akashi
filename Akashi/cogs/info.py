@@ -47,7 +47,7 @@ class Info(commands.Cog):
         ------------
         :project:
             | List of projects the chapters can belong to. [:doc:`/Types/project`]
-        :tl, rd, ts, pr:
+        :tl, rd, ts, pr, qc:
             | List of staff working on respective steps. [:doc:`/Types/staff`]
         :chapter_from, chapter_upto:
             | Give a minimum and/or maximum chapter number to look for. [:doc:`/Types/number`]
@@ -187,7 +187,7 @@ class Info(commands.Cog):
 
             stmt = query.order_by(Project.title).order_by(Chapter.number)
             records = await get_all(session, stmt)
-            embed = BoardPaginator(color=discord.Colour.blue(), title="Infochapter")
+            embed = BoardPaginator()
             embed.set_author(
                 name="Links",
                 icon_url="https://cdn.discordapp.com/icons/345797456614785024/9ef2a960cb5f91439556068b8127512a.webp?size=128",

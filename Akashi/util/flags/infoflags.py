@@ -20,6 +20,7 @@ class InfoChapter(FlagConverter):
     rd: List[Staff] = flag(default=[])
     ts: List[Staff] = flag(default=[])
     pr: List[Staff] = flag(default=[])
+    qc: List[Staff] = flag(default=[])
     release_from: Optional[DateTimeConverter]
     release_upto: Optional[DateTimeConverter]
     release_on: Optional[DateTimeConverter]

@@ -11,7 +11,7 @@ class DoneFlags(ChapterFlags):
     link: str
     note: Optional[str]
     skipconfirm: bool = flag(default=False)
-    step: Literal["tl", "ts", "rd", "pr", "qcts", "qc", "prts"]
+    step: Literal["tl", "ts", "rd", "pr", "qcts", "qc"]
 
 
 class AssignFlags(ChapterFlags):

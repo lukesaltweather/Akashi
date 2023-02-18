@@ -48,7 +48,7 @@ class Edit(commands.Cog, name="editcog"):
         ------------
         :title:
             | Title of the chapter. [:doc:`/Types/text`]
-        :tl, rd, ts, pr:
+        :tl, rd, ts, pr, qc:
             | Staff for the chapter. [:doc:`/Types/staff`]
         :link_tl, link_rd, link_ts, link_pr, link_qcts, link_raw:
             | Links to specific steps of chapter on Box. [:doc:`/Types/text`]
@@ -73,6 +73,9 @@ class Edit(commands.Cog, name="editcog"):
         if flags.pr is not MISSING:
             pr = flags.pr
             record.proofreader = pr
+        if flags.qc is not MISSING:
+            qc = flags.qc
+            record.proofreader = qc
         if flags.link_ts is not MISSING:
             record.link_ts = flags.link_ts
         if flags.link_tl is not MISSING:

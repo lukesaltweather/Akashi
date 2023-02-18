@@ -17,12 +17,14 @@ class EditChapterFlags(ChapterFlags):
     rd: TypeOrMissing[Staff] = flag(default=MISSING)
     ts: TypeOrMissing[Staff] = flag(default=MISSING)
     pr: TypeOrMissing[Staff] = flag(default=MISSING)
+    qc: TypeOrMissing[Staff] = flag(default=MISSING)
     link_tl: TypeOrMissing[str] = flag(default=MISSING)
     link_rd: TypeOrMissing[str] = flag(default=MISSING)
     link_ts: TypeOrMissing[str] = flag(default=MISSING)
     link_pr: TypeOrMissing[str] = flag(default=MISSING)
     link_qcts: TypeOrMissing[str] = flag(default=MISSING)
     link_raw: TypeOrMissing[str] = flag(default=MISSING)
+    link_qc: TypeOrMissing[str] = flag(default=MISSING)
     to_project: Optional[Project]
     to_chapter: Optional[float]
     date_created: TypeOrMissing[DateTimeConverter] = flag(default=MISSING)

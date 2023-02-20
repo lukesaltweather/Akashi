@@ -75,7 +75,7 @@ class Edit(commands.Cog, name="editcog"):
             record.proofreader = pr
         if flags.qc is not MISSING:
             qc = flags.qc
-            record.proofreader = qc
+            record.qualitychecker = qc
         if flags.link_ts is not MISSING:
             record.link_ts = flags.link_ts
         if flags.link_tl is not MISSING:

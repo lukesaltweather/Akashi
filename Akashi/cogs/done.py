@@ -212,7 +212,8 @@ class DoneCommand:
                 358244935041810443, self.ctx.session
             )
             self.chapter.qualitychecker = staff
-        self.next_in_line = staff.discord_id
+        if staff:
+            self.next_in_line = staff.discord_id
 
     def edit_chapter(self):
         if self.finished_step == "tl":

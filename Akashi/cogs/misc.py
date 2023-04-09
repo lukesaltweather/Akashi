@@ -78,6 +78,21 @@ class Misc(commands.Cog):
                 await member.remove_roles(discord.Object(345886396046770176))
             elif payload.emoji.__str__() == "🍲":
                 await member.remove_roles(discord.Object(464213892109828097))
+        elif payload.message_id == 1094627517748498564:
+            guild: discord.Guild = await self.bot.fetch_guild(345797456614785024)
+            member: discord.Member = await guild.fetch_member(payload.user_id)
+            if payload.emoji.__str__() == "🇦":
+                await member.remove_roles(discord.Object(1094623244834832485))
+            elif payload.emoji.__str__() == "🇾":
+                await member.remove_roles(discord.Object(1094623413835935764))
+            elif payload.emoji.__str__() == "🇨":
+                await member.remove_roles(discord.Object(1094623358471122986))
+            elif payload.emoji.__str__() == "🇫":
+                await member.remove_roles(discord.Object(1094623634145939546))
+            elif payload.emoji.__str__() == "🇲":
+                await member.remove_roles(discord.Object(1094623534854180864))
+            elif payload.emoji.__str__() == "🇺":
+                await member.remove_roles(discord.Object(1094623452972982403))
 
     @commands.command()
     async def hello(self, ctx):

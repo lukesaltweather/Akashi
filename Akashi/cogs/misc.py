@@ -39,20 +39,29 @@ class Misc(commands.Cog):
         if payload.message_id == 818205833220325404:
             guild: discord.Guild = await self.bot.fetch_guild(345797456614785024)
             member: discord.Member = await guild.fetch_member(payload.user_id)
-            print(payload.emoji.__str__())
             if payload.emoji.__str__() == "⌨️":
                 await member.add_roles(discord.Object(717869431623254028))
             elif payload.emoji.__str__() == "🎲":
                 await member.add_roles(discord.Object(717869655695425558))
             elif payload.emoji.__str__() == "🎮":
                 await member.add_roles(discord.Object(717869966136967330))
-            elif payload.emoji.__str__() == "✉️":
-                await member.add_roles(discord.Object(345886396046770176))
-                await guild.get_channel(345887844663033856).send(
-                    f"Hi {member.mention}! Please send your application in here."
-                )
             elif payload.emoji.__str__() == "🍲":
                 await member.add_roles(discord.Object(464213892109828097))
+        elif payload.message_id == 1094627517748498564:
+            guild: discord.Guild = await self.bot.fetch_guild(345797456614785024)
+            member: discord.Member = await guild.fetch_member(payload.user_id)
+            if payload.emoji.__str__() == "🇦":
+                await member.add_roles(discord.Object(1094623244834832485))
+            elif payload.emoji.__str__() == "🇾":
+                await member.add_roles(discord.Object(1094623413835935764))
+            elif payload.emoji.__str__() == "🇨":
+                await member.add_roles(discord.Object(1094623358471122986))
+            elif payload.emoji.__str__() == "🇫":
+                await member.add_roles(discord.Object(1094623634145939546))
+            elif payload.emoji.__str__() == "🇲":
+                await member.add_roles(discord.Object(1094623534854180864))
+            elif payload.emoji.__str__() == "🇺":
+                await member.add_roles(discord.Object(1094623452972982403))
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):

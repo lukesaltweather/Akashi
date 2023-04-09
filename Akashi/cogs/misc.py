@@ -52,15 +52,15 @@ class Misc(commands.Cog):
             member: discord.Member = await guild.fetch_member(payload.user_id)
             if payload.emoji.__str__() == "🇦":
                 await member.add_roles(discord.Object(1094623244834832485))
-            elif payload.emoji.__str__() == "🇾":
+            elif payload.emoji.__str__() == "<:yukikopout:696442500952621056>":
                 await member.add_roles(discord.Object(1094623413835935764))
-            elif payload.emoji.__str__() == "🇨":
+            elif payload.emoji.__str__() == "🔺":
                 await member.add_roles(discord.Object(1094623358471122986))
-            elif payload.emoji.__str__() == "🇫":
+            elif payload.emoji.__str__() == "👪":
                 await member.add_roles(discord.Object(1094623634145939546))
-            elif payload.emoji.__str__() == "🇲":
+            elif payload.emoji.__str__() == "🖌️":
                 await member.add_roles(discord.Object(1094623534854180864))
-            elif payload.emoji.__str__() == "🇺":
+            elif payload.emoji.__str__() == "🦄":
                 await member.add_roles(discord.Object(1094623452972982403))
 
     @commands.Cog.listener()
@@ -83,15 +83,15 @@ class Misc(commands.Cog):
             member: discord.Member = await guild.fetch_member(payload.user_id)
             if payload.emoji.__str__() == "🇦":
                 await member.remove_roles(discord.Object(1094623244834832485))
-            elif payload.emoji.__str__() == "🇾":
+            elif payload.emoji.__str__() == "<:yukikopout:696442500952621056>":
                 await member.remove_roles(discord.Object(1094623413835935764))
-            elif payload.emoji.__str__() == "🇨":
+            elif payload.emoji.__str__() == "🔺":
                 await member.remove_roles(discord.Object(1094623358471122986))
-            elif payload.emoji.__str__() == "🇫":
+            elif payload.emoji.__str__() == "👪":
                 await member.remove_roles(discord.Object(1094623634145939546))
-            elif payload.emoji.__str__() == "🇲":
+            elif payload.emoji.__str__() == "🖌️":
                 await member.remove_roles(discord.Object(1094623534854180864))
-            elif payload.emoji.__str__() == "🇺":
+            elif payload.emoji.__str__() == "🦄":
                 await member.remove_roles(discord.Object(1094623452972982403))
 
     @commands.command()

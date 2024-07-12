@@ -117,7 +117,7 @@ class Misc(commands.Cog):
         return humanize.naturaldelta(delta)
 
     def get_last_commits(self, count=3):
-        repo = pygit2.Repository(".git")
+        repo = pygit2.Repository("/app/.git")
         commits = list(
             itertools.islice(
                 repo.walk(repo.head.target, pygit2.GIT_SORT_TOPOLOGICAL), count  # type: ignore

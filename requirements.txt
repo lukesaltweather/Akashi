@@ -77,7 +77,7 @@ multidict==6.0.5
     # via
     #   aiohttp
     #   yarl
-pillow==9.0.1
+pillow==10.3.0
     # via akashi (pyproject.toml)
 prettytable==3.1.1
     # via akashi (pyproject.toml)

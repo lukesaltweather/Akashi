@@ -122,7 +122,7 @@ def async_drawimage(string):
     d = ImageDraw.Draw(img)
     for line in lines:
         d.text((margin, offset), line, font=font, fill="black")
-        offset += font.getbbox(line)[3] - font.getbbox(line)[3]
+        offset += font.getbbox(line)[3] - font.getbbox(line)[1]
     arr = io.BytesIO()
     img.save(arr, format="PNG")
     arr.seek(0)

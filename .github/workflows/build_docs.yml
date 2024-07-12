@@ -22,10 +22,11 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip uv
-        uv pip install .
+        pip install -r requirements.txt
     - name: Build Docs
       run: |
-        uv run python -m Akashi.util.docs
+        cd src
+        python -m Akashi.util.docs
     - uses: EndBug/add-and-commit@v7 # You can change this to use a specific version.
       with:
         add: 'docs/*'

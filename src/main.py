@@ -30,7 +30,7 @@ with open("Akashi/util/emojis.json", "r") as f:
 
 logger = logging.getLogger("discord")
 logger.setLevel(logging.INFO)
-handler = logging.FileHandler(filename="bot.log", encoding="utf-8", mode="w")
+handler = logging.FileHandler(filename="/app/bot.log", encoding="utf-8", mode="w")
 handler.setFormatter(
     logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
 )
@@ -45,7 +45,7 @@ class Bot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.logger = loggerBot
-        self.config = toml.load("config.toml")
+        self.config = toml.load("/app/config/config.toml")
         self.logger.info(msg="Loaded Config.")
         self.logger.info(msg="Creating asnypg pool...")
         self.pool = None

@@ -120,7 +120,8 @@ class Misc(commands.Cog):
         repo = pygit2.Repository("/app/.git")
         commits = list(
             itertools.islice(
-                repo.walk(repo.head.target, pygit2.GIT_SORT_TOPOLOGICAL), count  # type: ignore
+                repo.walk(repo.head.target, pygit2.GIT_SORT_TOPOLOGICAL),
+                count,  # type: ignore
             )
         )
         return "\n".join(self.format_commit(c) for c in commits)

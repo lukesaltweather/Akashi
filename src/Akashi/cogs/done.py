@@ -68,7 +68,9 @@ class DoneView(discord.ui.View):
             await interaction.delete_original_response()
         self.stop()
 
-    @discord.ui.button(label="Don't Notify", style=discord.ButtonStyle.green, emoji="📝")
+    @discord.ui.button(
+        label="Don't Notify", style=discord.ButtonStyle.green, emoji="📝"
+    )
     async def ping_no_mention(
         self,
         interaction: discord.Interaction,

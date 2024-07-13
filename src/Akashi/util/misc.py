@@ -114,7 +114,10 @@ def async_drawimage(string):
     lines = string.split("\n")
     img = Image.new(
         "RGB",
-        (font.getbbox(lines[0])[2] - font.getbbox(lines[0])[0] + 40, len(lines) * 30 + 70),
+        (
+            font.getbbox(lines[0])[2] - font.getbbox(lines[0])[0] + 40,
+            len(lines) * 30 + 70,
+        ),
         color=(255, 255, 255),
     )
     offset = 30

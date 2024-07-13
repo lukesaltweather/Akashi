@@ -748,9 +748,7 @@ class Info(commands.Cog):
         to_rd = await get_all(
             session,
             (
-                query.filter(Chapter.redrawer == typ).filter(
-                    Chapter.link_rd.is_(None)
-                )  # type: ignore
+                query.filter(Chapter.redrawer == typ).filter(Chapter.link_rd.is_(None))  # type: ignore
             ),
         )
         to_ts = await get_all(
@@ -842,9 +840,7 @@ class Info(commands.Cog):
         to_rd = await get_all(
             session,
             (
-                query.filter(Chapter.redrawer == typ).filter(
-                    Chapter.link_rd.is_(None)
-                )  # type: ignore
+                query.filter(Chapter.redrawer == typ).filter(Chapter.link_rd.is_(None))  # type: ignore
             ),
         )
         to_ts = await get_all(

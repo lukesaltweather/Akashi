@@ -40,6 +40,7 @@ logger.addHandler(logging.StreamHandler())
 loggerBot = logging.getLogger("akashi")
 loggerBot.setLevel(logging.INFO)
 loggerBot.addHandler(handler)
+loggerBot.addHandler(logging.StreamHandler())
 
 
 class Bot(commands.Bot):

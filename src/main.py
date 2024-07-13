@@ -35,6 +35,7 @@ handler.setFormatter(
     logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
 )
 logger.addHandler(handler)
+logger.addHandler(logging.StreamHandler())
 
 loggerBot = logging.getLogger("akashi")
 loggerBot.setLevel(logging.INFO)

@@ -20,7 +20,7 @@ dependencies = [
   "docutils==0.17.1",
   "toml==0.10.2",
   "humanize==3.13",
-  "loguru==0.6.0",
+  "loguru==0.7.2",
   "alembic==1.7.6",
   "hondana",
   "lark",    

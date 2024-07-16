@@ -41,7 +41,7 @@ discord-py==2.1.1
     #   akashi (pyproject.toml)
     #   discord-ext-ipc
     #   discord-ext-menus
-docutils==0.17.1
+docutils==0.21.2
     # via akashi (pyproject.toml)
 frozenlist==1.4.1
     # via

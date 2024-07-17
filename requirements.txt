@@ -49,7 +49,7 @@ frozenlist==1.4.1
     #   aiosignal
 greenlet==3.0.3
     # via sqlalchemy
-hondana==3.4.7
+hondana==3.5.1
     # via akashi (pyproject.toml)
 humanize==3.13.0
     # via akashi (pyproject.toml)

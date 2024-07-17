@@ -57,7 +57,7 @@ idna==3.7
     # via yarl
 import-expression==1.1.5
     # via jishaku
-jishaku==2.5.1
+jishaku==2.5.2
     # via akashi (pyproject.toml)
 jmespath==0.10.0
     # via

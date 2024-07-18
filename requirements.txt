@@ -51,7 +51,7 @@ greenlet==3.0.3
     # via sqlalchemy
 hondana==3.5.1
     # via akashi (pyproject.toml)
-humanize==3.13.0
+humanize==4.10.0
     # via akashi (pyproject.toml)
 idna==3.7
     # via yarl

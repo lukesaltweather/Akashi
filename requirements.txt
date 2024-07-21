@@ -55,7 +55,7 @@ humanize==3.13.0
     # via akashi (pyproject.toml)
 idna==3.7
     # via yarl
-import-expression==1.1.5
+import-expression==2.1.0.post1
     # via jishaku
 jishaku==2.5.2
     # via akashi (pyproject.toml)

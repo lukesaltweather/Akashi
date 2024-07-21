@@ -128,7 +128,7 @@ class Misc(commands.Cog):
 
     def format_commit(self, commit):
         short, _, _ = commit.message.partition("\n")
-        short_sha2 = commit.hex[0:6]
+        short_sha2 = commit.short_id
         commit_tz = datetime.timezone(
             datetime.timedelta(minutes=commit.commit_time_offset)
         )
@@ -139,7 +139,7 @@ class Misc(commands.Cog):
             commit_time.astimezone(datetime.timezone.utc).replace(tzinfo=None)
             + datetime.timedelta(hours=2)
         )
-        return f"[`{short_sha2}`](https://github.com/lukesaltweather/akashi/commit/{commit.hex}) {short} ({offset} ago)"
+        return f"[`{short_sha2}`](https://github.com/lukesaltweather/akashi/commit/{commit.id}) {short} ({offset} ago)"
 
     @commands.command(
         aliases=["statistics", "status", "usage", "about", "uptime", "akashi"]

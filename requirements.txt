@@ -97,7 +97,7 @@ six==1.16.0
     # via
     #   astunparse
     #   python-dateutil
-sqlalchemy==1.4.31
+sqlalchemy==2.0.31
     # via
     #   akashi (pyproject.toml)
     #   alembic

@@ -92,6 +92,8 @@ class Bot(commands.Bot):
         self.mangadex_client = hondana.Client(
             username=self.config["mangadex"]["username"],
             password=self.config["mangadex"]["password"],
+            client_id=self.config["mangadex"]["client_id"],
+            client_secret=self.config["mangadex"]["client_secret"]
         )
 
         self.logger.info(msg="Syncing slash commands.")

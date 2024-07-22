@@ -21,7 +21,7 @@ dependencies = [
   "toml==0.10.2",
   "humanize==3.13",
   "loguru==0.7.2",
-  "alembic==1.7.6",
+  "alembic==1.13.2",
   "hondana",
   "lark",    
 ]

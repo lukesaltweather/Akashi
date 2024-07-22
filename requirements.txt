@@ -36,7 +36,7 @@ discord-ext-menus @ git+https://github.com/Rapptz/discord-ext-menus@8686b5d1bbc1
     # via akashi (pyproject.toml)
 discord-ext-menus-views @ git+https://github.com/oliver-ni/discord-ext-menus-views@a472f3de648eb9e0fcffc2e101c69841de92f3ff
     # via akashi (pyproject.toml)
-discord-py==2.1.1
+discord-py==2.4.0
     # via
     #   akashi (pyproject.toml)
     #   discord-ext-ipc

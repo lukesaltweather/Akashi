@@ -8,7 +8,7 @@ aiohttp==3.9.5
     #   hondana
 aiosignal==1.3.1
     # via aiohttp
-alembic==1.7.6
+alembic==1.13.2
     # via akashi (pyproject.toml)
 astunparse==1.6.3
     # via import-expression

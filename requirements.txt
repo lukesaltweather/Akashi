@@ -20,7 +20,7 @@ attrs==23.2.0
     # via aiohttp
 boto3==1.17.102
     # via akashi (pyproject.toml)
-botocore==1.20.112
+botocore==1.35.42
     # via
     #   boto3
     #   s3transfer

@@ -59,7 +59,7 @@ import-expression==2.1.0.post1
     # via jishaku
 jishaku==2.5.2
     # via akashi (pyproject.toml)
-jmespath==0.10.0
+jmespath==1.0.1
     # via
     #   boto3
     #   botocore

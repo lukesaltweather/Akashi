@@ -24,4 +24,5 @@ dependencies = [
   "alembic==1.13.3",
   "hondana",
   "lark",    
+  "setuptools"
 ]

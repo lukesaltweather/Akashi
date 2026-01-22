@@ -1,7 +1,6 @@
-FROM python:3.11
+FROM ghcr.io/astral-sh/uv:python3.14-alpine
 
 WORKDIR /app
 ADD . .
-RUN ["pip", "install", "-r", "requirements.txt"]
 WORKDIR /app/src
-CMD [ "python", "main.py" ]
+CMD [ "uv", "run", "python", "main.py" ]

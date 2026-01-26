@@ -12,5 +12,5 @@ crate-type = ["cdylib"]
 python-source = "Akashi"
 
 [dependencies]
-pyo3 = { version = "0.17.1", features = ["extension-module"] }
+pyo3 = { version = "0.24.1", features = ["extension-module"] }
 ariadne = { version = "0.1.*" }

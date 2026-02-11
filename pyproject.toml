@@ -4,7 +4,7 @@ requires-python = ">= 3.11"
 version = "2.0.0"
 dependencies = [
   "sqlalchemy[asyncio]>=2.0.0",
-  "pillow==12.1.0",
+  "pillow==12.1.1",
   "python-dateutil==2.9.0.post0",
   "jishaku==2.6.3",
   "discord.py==2.4.*",

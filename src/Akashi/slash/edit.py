@@ -6,27 +6,49 @@ from sqlalchemy import select
 from Akashi.model import Chapter, Project
 from Akashi.slash.autocomplete import project_autocomplete, chapter_autocomplete
 from Akashi.slash.helper import monitor_changes
+from Akashi.util.context import CstmContext
 from Akashi.util.db import get_one
 from Akashi.util.flags.converters import DateTimeConverter
 from Akashi.util.search import get_staff_from_discord_id
 
+class EditLayout(discord.ui.Modal, title="Edit Layout"):
+    # you can add any top-level component (ui.ActionRow, ui.Section, ui.Container, ui.File, etc.) here
+
+    container = discord.ui.TextInput(
+            label='Name',
+            placeholder='Your name here...',
+        )
+
+def check_worker(interaction: discord.Interaction) -> bool:
+    return interaction.user.get_role(interaction.client.config["server"]["roles"]["member"]) is not None
 
 class EditC(commands.GroupCog, name="edit"):
     def __init__(self, bot) -> None:
+        print("Edit init")
         self.bot = bot
         super().__init__()
 
     @commands.command()
-    async def sync(self, ctx):
-        await self.bot.tree.sync()
-        await ctx.send("Done.")
+    @commands.is_owner()
+    async def sync(self, ctx: CstmContext):
+        MY_GUILD = discord.Object(id=603203362133114891)
+        self.bot.tree.copy_global_to(guild=MY_GUILD)
+        await self.bot.tree.sync(guild=MY_GUILD)
+
+    @ac.command()
+    @ac.guilds(603203362133114891)
+    async def view(
+        self,
+        inter: discord.Interaction):
+        """Sends a very special message!"""
+        await inter.response.send_modal(
+            EditLayout())
 
     @ac.command(name="chapter", description="Edit a chapter")
-    @ac.autocomplete(chapter=chapter_autocomplete, to_project=project_autocomplete)
-    @ac.checks.has_role(345799525274746891)
+    @ac.guilds(603203362133114891, 345797456614785024)
+    @ac.checks.check(check_worker)
     @ac.describe(
         chapter="The chapter to be edited.",
-        to_project="The project to move the chapter to.",
         tl="Translator",
         ts="Typesetter",
         rd="Redrawer",
@@ -69,7 +91,6 @@ class EditC(commands.GroupCog, name="edit"):
         date_pr: DateTimeConverter | None,
         date_qcts: DateTimeConverter | None,
         date_release: DateTimeConverter | None,
-        to_project: Project | None,
         to_chapter: float | None,
     ):
         "Edit a chapters properties. Will prompt for confirmation."
@@ -114,11 +135,6 @@ class EditC(commands.GroupCog, name="edit"):
                 chapter.date_qcts = date_qcts
             if date_release is not None:
                 chapter.date_release = date_release
-            if to_project is not None:
-                to_project = await get_one(
-                    session, select(Project).where(Project.id == to_project.id)
-                )
-                chapter.project = to_project
             if to_chapter is not None:
                 chapter.number = to_chapter
             image = await chapter.get_report(str(chapter))

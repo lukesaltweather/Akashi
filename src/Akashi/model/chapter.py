@@ -79,15 +79,6 @@ class Chapter(Base, ReportMixin, discord.app_commands.Transformer):
         primaryjoin="Project.id==Chapter.project_id",
     )
 
-    def __init__(self, number, link_raw):
-        self.number = number
-        self.link_raw = link_raw
-        self.link_tl = None
-        self.link_ts = None
-        self.link_rd = None
-        self.link_pr = None
-        self.link_rl = None
-
     @classmethod
     async def convert(cls, ctx, arg: str):
         chapter = float(arg.split(" ")[-1])
@@ -108,7 +99,7 @@ class Chapter(Base, ReportMixin, discord.app_commands.Transformer):
             raise discord.ext.commands.BadArgument(f"{chapter} could not be found.")
 
     @classmethod
-    async def transform(cls, interaction: discord.Interaction, value):
+    async def transform(cls, interaction: discord.Interaction, value: str):
         async with interaction.client.Session() as session:
             chapter = float(value.split(" ")[-1])
             proj = value[0 : len(value) - len(value.split(" ")[-1])]

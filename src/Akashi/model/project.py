@@ -54,12 +54,9 @@ class Project(Base, ReportMixin, discord.app_commands.Transformer):
     )
 
     def __init__(
-        self, title: str, status: str, link: str, altNames: str, icon=icon_default
+        self, icon=icon_default
     ):
-        self.title = title
-        self.status = status
-        self.link = link
-        self.altNames = altNames
+        super().__init__()
         self.icon = icon
 
     @classmethod

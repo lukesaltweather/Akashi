@@ -91,7 +91,11 @@ class Add(commands.GroupCog, name="add"):
         """
         session = ctx.session
 
-        pr = Project(flags.title, flags.status, flags.link, flags.altnames)
+        pr = Project()
+        pr.title = flags.title
+        pr.status = flags.status
+        pr.link = flags.link
+        pr.altNames = flags.altnames
         pr.tl = flags.tl
         pr.rd = flags.rd
         pr.ts = flags.ts
@@ -158,7 +162,9 @@ class Add(commands.GroupCog, name="add"):
             content = message2.content.split("\n")
             chapters = []
             for i, link in enumerate(content, start_chp):
-                chp = Chapter(i, link)
+                chp = Chapter()
+                chp.number = i
+                chp.link_raw = link
                 chp.date_created = date_created
                 session.add(chp)
                 chp.project = project
@@ -207,7 +213,9 @@ class Add(commands.GroupCog, name="add"):
         chapter_nbr = float(arg.split(" ")[-1])
 
         table = PrettyTable()
-        chp = Chapter(chapter_nbr, flags.raws)
+        chp = Chapter()
+        chp.number = chapter_nbr
+        chp.link_raw = flags.raws
         chp.project = await Project.convert(ctx, project_str)
         table.add_column("Project", [chp.project.title])
         table.add_column("Chapter", [format_number(chp.number)])

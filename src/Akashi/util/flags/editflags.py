@@ -25,8 +25,8 @@ class EditChapterFlags(ChapterFlags):
     link_qcts: TypeOrMissing[str] = flag(default=MISSING)
     link_raw: TypeOrMissing[str] = flag(default=MISSING)
     link_qc: TypeOrMissing[str] = flag(default=MISSING)
-    to_project: Optional[Project]
-    to_chapter: Optional[float]
+    to_project: Optional[Project] = flag(default=None)
+    to_chapter: Optional[float] = flag(default=None)
     date_created: TypeOrMissing[DateTimeConverter] = flag(default=MISSING)
     date_tl: TypeOrMissing[DateTimeConverter] = flag(default=MISSING)
     date_rd: TypeOrMissing[DateTimeConverter] = flag(default=MISSING)
@@ -37,13 +37,13 @@ class EditChapterFlags(ChapterFlags):
 
 
 class ReleaseFlags(ChapterFlags):
-    date: Optional[DateTimeConverter]
+    date: Optional[DateTimeConverter] = flag(default=None)
 
 
 class EditProjectFlags(FlagConverter):
     project: Project = flag(aliases=["p"])
-    title: Optional[str]
-    status: Optional[str]
+    title: Optional[str] = flag(default=None)
+    status: Optional[str] = flag(default=None)
     color: TypeOrMissing[Colour] = flag(default=MISSING)
     position: TypeOrMissing[int] = flag(default=MISSING)
     tl: TypeOrMissing[Staff] = flag(default=MISSING)
@@ -51,14 +51,14 @@ class EditProjectFlags(FlagConverter):
     ts: TypeOrMissing[Staff] = flag(default=MISSING)
     pr: TypeOrMissing[Staff] = flag(default=MISSING)
     altnames: TypeOrMissing[str] = flag(default=MISSING)
-    thumbnail: Optional[str]
+    thumbnail: Optional[str] = flag(default=None)
     icon: TypeOrMissing[str] = flag(default=MISSING)
-    link: Optional[str]
-    mangadex_id: Optional[str]
+    link: Optional[str] = flag(default=None)
+    mangadex_id: Optional[str] = flag(default=None)
 
 
 class EditStaffFlags(FlagConverter):
     member: Staff
-    id: Optional[int]
-    name: Optional[str]
+    id: Optional[int] = flag(default=None)
+    name: Optional[str] = flag(default=None)
     status: Optional[Literal["active", "inactive"]]

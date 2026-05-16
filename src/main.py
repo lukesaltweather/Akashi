@@ -87,6 +87,7 @@ class Bot(commands.Bot):
         await self.load_extension("Akashi.cogs.database")
         await self.load_extension("Akashi.slash.edit")
         # await self.load_extension("Akashi.slash.misc")
+        await self.load_extension("Akashi.slash.apply")
         await self.load_extension("jishaku")
 
         self.mangadex_client = hondana.Client(
